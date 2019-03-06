@@ -5,8 +5,8 @@ This tool is an early version of a quantitative process for vegetation classific
 
 Please note that this is a prototype tool, and will not be officially supported until the tool is in > Version 1.0
 
-Science team contact: Daniel Connolly (Daniel.Connolly@environment.nsw.gov.au) 
-Tool development contact: Ron Avery (Ron.Avery@environment.nsw.gov.au)
+Science team contact: Daniel Connolly (Daniel.Connolly@environment.nsw.gov.au)  
+Tool development contact: Ron Avery (Ron.Avery@environment.nsw.gov.au)  
 
 
 If users/public need to be directed to an earlier open access or publicly accessible version, they can be redirected here:   
