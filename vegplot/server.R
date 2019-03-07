@@ -16,6 +16,7 @@ library(dplyr)
 library(DT)
 library(vegan)
 library(parallel)
+library(googleway)
 
 source("functions.R")
 
@@ -68,11 +69,14 @@ shinyServer(function(input, output) {
   #   example_data$data <- readRDS("data/GAP-EAST_plots.rds")
   # })
   
+  
+  #/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  
   get_example_data <- reactive({
     readRDS("data/GAP-EAST_plots.rds")
   })
   
-  output$example <- downloadHandler(
+  output$linkDownloadSampleData <- downloadHandler(
     filename = function() {
       paste("example_floristic_data.csv")
     },
@@ -81,8 +85,16 @@ shinyServer(function(input, output) {
     }
   )
   
+  #/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  observe({
+    if (is.null(input$file1) || input$file1$name == "") {
+      shinyjs::hide("linkDownloadDataCheckReport")
+    } else {
+      shinyjs::show("linkDownloadDataCheckReport")
+    }
+  })
   
-  
+  #/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   # NORMAL APP FUNCTION - USER SUPPLIED DATA --------------------------------
   
   # print out some stats to know we're in business
@@ -99,6 +111,8 @@ shinyServer(function(input, output) {
     return(out_list)
   })
   
+  
+  #/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   # put together the file stats, once file is uploaded
   # (to start, no file is uploaded - print a promt to do so)
   output$num_sites <- renderText({
@@ -108,6 +122,8 @@ shinyServer(function(input, output) {
       "You have not uploaded any data yet (you can download the example data to test drive)."
     }
   })
+  
+  #num species htmlout
   output$num_species <- renderUI({
     if (!is.null(check_infile())) {
       if (length(check_infile()$missing_species) == 0) {
@@ -126,6 +142,124 @@ shinyServer(function(input, output) {
     }
   })
   
+  
+  
+  #/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  # upload information
+ 
+  uploadinfo <- reactive({
+    
+    HTMLResult <-paste0("<p style='padding:10px'><h4>Upload Information:</h4>
+                    You have not uploaded any data yet (you can download the example data to test drive).</p>") 
+    
+    if (!is.null(check_infile())) {
+      
+      numplots <- get_numplots(length(check_infile()$sites))
+      #numplots<- is.null(numplots) ? numplots : 0
+
+      # place holder at the moment. TODO: needs to be recalculated based on additional data from matrix file.
+      numplotsWithEnvAndSpatialData <- length(check_infile()$sites)
+
+      numspecies <- ncol(check_infile()$floristics)
+      #numspecies<- is.null(numspecies) ? numspecies : 0
+
+
+
+
+        HTMLResult<- paste0("<p style='padding:10px'><h4>Upload Information:</h4>
+                    <table border='1px' style='width:100%;'>
+                    <tr>
+                    <td style='width:35%'>Number of plots (rows)</td>
+                    <td>", numplots ,"</td>
+                    </tr>
+                    <tr>
+                    <td>Number of species (columns)</td>
+                    <td>", numspecies ,"</td>
+                    </tr>
+                    <tr>
+                    <td>Number of plots with environmental and spatial data included</td>
+                    <td>", numplotsWithEnvAndSpatialData ,"</td>
+                    </tr>
+                    </table></p>")
+        
+      }
+      
+  
+    return(list(uploadresults=HTMLResult))
+  })
+  
+  
+  #upload information htmloutput
+  output$uploadInformation <- renderUI({
+    if (!is.null(check_infile())) {
+      HTML(isolate(uploadinfo()$uploadresults))
+    }
+
+  })
+  
+  #/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  #dataChecksInfo
+   dataChecksInfo <-reactive({
+    
+    
+    if (!is.null(check_infile())) {
+
+      nummissingspecies <- length(check_infile()$missing_species)
+     
+      missingSpeciesList<-""
+      if (nummissingspecies>0){
+
+        missingSpeciesList<-paste0("There are ", ncol(check_infile()$floristics),
+                                        " species, <b><mark> and ",length(check_infile()$missing_species),
+                                        " could not be matched: ", paste(check_infile()$missing_species, collapse = ", "),
+                                        ", so were ignored in analysis.</mark></b>")
+
+      }else{
+
+        missingSpeciesList<-paste0("There are no missing",
+                                         " species: all species have been matched in the database.")
+      }
+
+      #check if spatial data. If yes then do numplotsOutsideStudy else "N/A. Spatial data not imported"
+
+      # numplotsOutsideStudy = TotalPlots - PlotsInStudyRegion
+      numplotsOutsideStudy <-NULL
+      numplotsOutsideStudyHTML <-""
+
+      if (is.null(numplotsOutsideStudy)){
+        numplotsOutsideStudyHTML <- HTML(paste0("N/A. Spatial data not imported"))
+      }else{
+
+        numplotsOutsideStudyHTML <- HTML(paste0(numplotsOutsideStudy))
+      }
+
+    }
+
+        return(list(results=paste0("<p style='padding:10px'><h4>Data checks:</h4>
+                                    <table border='1px' style='width:100%; padding:5px;'>
+                                   <tr>
+                                   <td style='width:15%; vertical-align:top'>Species names not found</td>
+                                   <td>", missingSpeciesList ,"</td>
+                                   </tr>
+                                   <tr>
+                                   <td>Plots outside study region</td>
+                                   <td>", numplotsOutsideStudyHTML ,"</td>
+                                   </tr>
+                                   </table></p>")))
+  })
+  
+  
+  #datachecks ui 
+  output$dataChecks <- renderUI({
+    
+    if (!is.null(check_infile())) {
+              HTML(isolate(dataChecksInfo()$results))
+      }
+    })
+  
+  
+  
+  #/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   # first gather the input data and make the data objects
   # once a file is obtained, calculate the stats
   match_data <- reactiveValues(matches = NULL) # reative storage
@@ -173,11 +307,41 @@ shinyServer(function(input, output) {
     }
   })
   
+  
+  #/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  # info on main screen
+  output$info_main_text <- renderText({
+    
+      # Text to show once analysis is done
+      "<p style='text-align:justify;padding:10px 10px 1px 10px;'>
+        This Plot to PCT matching tool is intended to assist in the assignment of standard 400m2 full floristic survey plots to Plant Community Types (PCT) for the east coast and tablelands of NSW.
+       </p>
+        <p style='text-align:justify;padding:1px 10px 1px 2px;'>
+        This tool functions for plots located within the east coast and tablelands region. Qualitative PCTs or PCTs occurring outside the study region cannot be identified using this tool.
+        </p>
+        <p style='text-align:justify;padding:1px 10px 1px 2px;'>
+        Information and data on all NSW PCTs is stored in the BioNet Vegetation Classification database. This tool draws on information stored in BioNet.
+        </p>
+        <p style='text-align:justify;padding:1px 10px 1px 2px;'>
+        Data imported into this tool is assumed to have been exported from the BioNet Flora Survey database in the correct format. If you haven’t yet done so, please enter plot data into BioNet FS and then follow the user guide to export data in the format ready for this tool.
+        </p>
+        <p style='text-align:justify;padding:1px 10px 1px 2px;'>
+        This tool is designed to assist with PCT allocation only. Allocation of a plot to a PCT requires consideration of floristic, environmental and spatial variables, as well as disturbance and condition of the plot.
+       </p>
+        <p style='text-align:justify;padding:1px 10px 1px 2px;'>
+        This tool was developed by OEH and UNSW with funding from the Australian Research Council (ARC) grant number xxxx.
+    </p>"
+    
+  })
+  
+  
+  
+  
   # info on analysis
-  output$info_text <- renderText({
+  output$info_analysis_text <- renderText({
     if (!is.null(match_data$matches)) {
       # Text to show once analysis is done
-      "<br>
+      "<p style='text-align:justify;padding:10px;'>
       The tables below show the top matches for your 
       submitted floristic data to the NSW vegetation plot 
       database. You can follow the links for each vegetation 
@@ -187,12 +351,15 @@ shinyServer(function(input, output) {
       based matches. The combined matches tab shows the 
       types that were matched in both (ordered by distance to
       centroid). The tabs above show more info about the data,
-      along with plots."
+      along with plots.</p>"
     } else {
       if (!is.null(check_infile())) {"<br> Press the analyse button to start!"}
     }
     })
   
+  
+  
+  #/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   # now we can return the top n matches based on the slider
   style_matches <- reactive({
     topn <- input$topn
@@ -211,6 +378,8 @@ shinyServer(function(input, output) {
                 combined = combined_matches))
   })
   
+  
+  #/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   output$char_table <- renderDataTable({
     if (!is.null(match_data$matches)) style_matches()$char
   })
@@ -221,6 +390,10 @@ shinyServer(function(input, output) {
     if (!is.null(match_data$matches)) style_matches()$combined
   })
 
+  
+  
+  
+  #/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   # Allow user to download the matches (topn they've decided)
   download_matches <- reactive({
     topn <- input$topn
@@ -244,6 +417,20 @@ shinyServer(function(input, output) {
       write.csv(download_matches()$cent, file, row.names = F)
     }
   )
+  
+  getDataCheckReport <- reactive({
+    return (isolate(dataChecksInfo()$results))
+  })
+ 
+  output$linkDownloadDataCheckReport <- downloadHandler(
+    filename = function() {
+      paste(gsub(".csv","",input$file1$name), "_data_check_report", ".html", sep = "")
+    },
+    content = function(file) {
+      write.csv(getDataCheckReport(), file, row.names = F)
+    }
+  )
+  
 
   # return the ordination plot of sites
   # get_ords <- reactive({
@@ -257,6 +444,24 @@ shinyServer(function(input, output) {
       text(ord_sites$ord$points, labels = ord_sites$sites, cex = 1)
     }
   })
+  
+  
+  
+  map_key <- 'AIzaSyCiWLYufriPNDL7DIiWKyeYeKYVSDCPoZ0'
+  
+  output$map <- renderGoogle_map({
+    
+    ## different colour palettes
+    lstPalette <- list(fill_colour = colorRampPalette(c("red","blue")),
+                       stroke_colour = viridisLite::plasma)
+    
+    google_map(key = map_key, data = tram_stops) %>%
+      add_circles(lat = "stop_lat", lon = "stop_lon", fill_colour = "stop_name",
+                  stroke_weight = 0.3, stroke_colour = "stop_name", palette = lstPalette, info_window ="stop_id")
+    
+  })
+  
+  
 })
 
 

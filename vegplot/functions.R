@@ -149,6 +149,10 @@ style_matches_cent <- function(table) {
 }
 
 
+get_numplots <- function(n){
+  n
+}
+
 
 # ordination plot of sites ------------------------------------------------
 

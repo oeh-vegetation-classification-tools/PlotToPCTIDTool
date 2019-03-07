@@ -13,76 +13,137 @@
 
 library(shiny)
 library(DT)
+library(shinydashboard)
+library(googleway)
+library(shinyjs)
+
 
 # Define UI for application 
-shinyUI(fluidPage(
-    # Application title
-    headerPanel("NSW vegetation plot allocation tool (prototype v1)"),
-    sidebarLayout(
-      # the control panel
-      sidebarPanel(
-        # Input floristic file - can modify down the track to choose/process different data types, header, species match ups etc.
-        fileInput('file1', 'Input File: comma separated .csv, first column site names, remaining columns floristic data with PATN label column names',
-                  accept=c('text/csv', 
-                           'text/comma-separated-values,text/plain', 
-                           '.csv')),
-        actionButton("goMatch", "Analyse data"),
-        tags$hr(),
-        # number of matches to give back to the user
-        sliderInput("topn",
-                    "Number of matches to report",
-                    min = 1,
-                    max = 10,
-                    value = 5,
-                    step = 1),
-        tags$hr(),
-        # button to download the example data
-        downloadButton("example", "Download example data")
-      ),
-      mainPanel(
-        tabsetPanel(
-          tabPanel("Home",
-                   fluidPage(
-                     tags$img(src="banner.jpg"),
-                     tags$hr(),
-                     textOutput("num_sites"),
-                     htmlOutput("num_species"),
-                     htmlOutput("cores"),
-                     htmlOutput("info_text")
-                   )),
-          tabPanel("Ordination plot",
-                   fluidPage(
-                     plotOutput("ord_site_plt", width = "600px", height = "600px")
-                   )),
-          tabPanel("Information",
-                   fluidPage(
-                     h5("Note that this is not the official NSW Office of Environment and Heritage version - the official version will eventually be hosted under a different domain, but this version will continue to be useable and updated with functionality")
-                   ))
-        )
-      )
-    ),
-  tags$hr(),
-  fluidRow(
-    tabsetPanel(
-      tabPanel("Char. spp. matches",
-               fluidRow(
-                 column(12, DT::dataTableOutput("char_table"))
-               )),
-      tabPanel("Centroid matches",
-               fluidRow(
-                 column(12, DT::dataTableOutput("cent_table"))
-               )),
-      tabPanel("Combined matches",
-               fluidRow(
-                 column(12, DT::dataTableOutput("combined_table"))
-               )),
-      tabPanel("Download matches",
-               fluidRow(
-                 # download all of the match data
-                 downloadButton("download_char_matches", "Download char. spp. matches"),
-                 tags$hr(),
-                 downloadButton("download_cent_matches", "Download centroid matches")
-               ))
-    )
-  )
-))
+ui<-  htmlTemplate("main.html",
+                   
+              
+                    mainView= mainPanel(
+                       tabsetPanel(
+                         
+                         tabPanel("Information",
+                                  fluidPage(
+                                    
+                                    tags$img(src="EasternNSWStudyRegionMap_wIBRA50.jpg",alt="Eastern NSW Study Region Map with IBRA",style="float:left"),
+                                    htmlOutput("info_main_text"),
+                                    tags$hr(),
+                                    fluidRow(
+                                      
+                                      # button to launch the userguide
+                                     actionButton(inputId='lnkUserGuide', label="User Guide", 
+                                                    icon = icon("fas fa-external-link-alt"), 
+                                                    onclick ="window.open('http://google.com', '_blank')"),
+                                      
+                                      
+                                      # button to view paper methodology page (pdf)
+                                     actionButton(inputId='linkPaperMethodology', label="View to paper on methodology", 
+                                                  icon = icon("fas fa-external-link-alt"), 
+                                                  onclick ="window.open('http://google.com', '_blank')"),
+                                      
+                                      # button to go to VIS Flora Survey public site
+                                     actionButton(inputId='linkVISFloraSurveyPublic', label="Visit BioNet Flora Survey", 
+                                                  icon = icon("fas fa-external-link-alt"), 
+                                                  onclick ="window.open('https://www.environment.nsw.gov.au/atlaspublicapp/UI_Modules/YETI_/FloraSearch.aspx', '_blank')"),
+                                      
+                                      # button to go to Veg Classfication public site
+                                     actionButton(inputId='linkVegClassfnPublic', label="Visit BioNet Vegetation Classification", 
+                                                  icon = icon("fas fa-external-link-alt"), 
+                                                  onclick ="window.open('https://www.environment.nsw.gov.au/NSWVCA20PRapp/LoginPR.aspx', '_blank')"),
+                                      
+                                      # button to download the example data
+                                      downloadButton("linkDownloadSampleData", "Download Sample Data")
+                                    )
+                                  )),
+                         
+                         
+                         
+                         
+                         tabPanel("Input",
+                                  
+                                 verticalLayout(
+                                   
+                                   sidebarPanel(
+                                      # Input floristic file - can modify down the track to choose/process different data types, header, species match ups etc.
+                                      fileInput('file1', label='Input File: comma separated .csv, first column site names, remaining columns floristic data with PATN label column names',
+                                                accept=c('text/csv', 
+                                                         'text/comma-separated-values,text/plain', 
+                                                         '.csv'),buttonLabel="Browse..."),
+                                      actionButton("goMatch", "Analyse data")
+                                        ) ,
+                             
+                                      htmlOutput("uploadInformation", style="padding:20px"),
+                                      htmlOutput("dataChecks", style="padding:20px"),
+                                      
+                                      shinyjs::useShinyjs(),
+                                      # button to download the data check report
+                                      tags$div(downloadButton("linkDownloadDataCheckReport", "Download data check report"),style="padding:20px"),
+                                   
+                                      tags$hr(),
+                                      htmlOutput("cores", style="padding:20px")
+                                
+                                  )),
+                         
+                         tabPanel("Analysis output",
+                                 
+                                  fluidRow(
+                                    
+                                    sidebarPanel(
+                                    htmlOutput("info_analysis_text"),
+                                    tags$hr(),
+                                    
+                                    
+                                    # number of matches to give back to the user
+                                    sliderInput("topn",
+                                                "Number of matches to report",
+                                                min = 1,
+                                                max = 10,
+                                                value = 5,
+                                                step = 1),
+                                    tags$hr()
+                                    ),
+                                    
+                                    tabsetPanel(
+                                      tabPanel("Char. spp. matches",
+                                               fluidRow(
+                                                 column(12, DT::dataTableOutput("char_table"))
+                                               )),
+                                      tabPanel("Centroid matches",
+                                               fluidRow(
+                                                 column(12, DT::dataTableOutput("cent_table"))
+                                               )),
+                                      tabPanel("Combined matches",
+                                               fluidRow(
+                                                 column(12, DT::dataTableOutput("combined_table"))
+                                               )),
+                                      tabPanel("Download matches",
+                                               fluidRow(
+                                                 # download all of the match data
+                                                 downloadButton("download_char_matches", "Download char. spp. matches"),
+                                                 tags$hr(),
+                                                 downloadButton("download_cent_matches", "Download centroid matches")
+                                                 
+                                               
+                                                
+                                               ))
+                                    )
+                                  )
+                                  
+                                  ),
+                         
+                         tabPanel("Ordination plot",
+                                  fluidPage(
+                                    plotOutput("ord_site_plt", width = "600px", height = "600px")
+                                  )),
+                        
+                         tabPanel("Map view",
+                                        box(google_mapOutput(outputId = "map", width = "100%"), width = "100%", height="100%")
+                                  )
+                       )
+                     , width = "auto")
+             
+                   
+                   )
