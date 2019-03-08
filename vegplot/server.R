@@ -323,7 +323,7 @@ shinyServer(function(input, output) {
         Information and data on all NSW PCTs is stored in the BioNet Vegetation Classification database. This tool draws on information stored in BioNet.
         </p>
         <p style='text-align:justify;padding:1px 10px 1px 2px;'>
-        Data imported into this tool is assumed to have been exported from the BioNet Flora Survey database in the correct format. If you haven’t yet done so, please enter plot data into BioNet FS and then follow the user guide to export data in the format ready for this tool.
+        Data imported into this tool is assumed to have been exported from the BioNet Flora Survey database in the correct format. If you havenâ€™t yet done so, please enter plot data into BioNet FS and then follow the user guide to export data in the format ready for this tool.
         </p>
         <p style='text-align:justify;padding:1px 10px 1px 2px;'>
         This tool is designed to assist with PCT allocation only. Allocation of a plot to a PCT requires consideration of floristic, environmental and spatial variables, as well as disturbance and condition of the plot.

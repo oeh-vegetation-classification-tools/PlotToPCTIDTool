@@ -116,9 +116,9 @@ ui<-  htmlTemplate("main.html",
                                                                                                               
                                                                                                               Each PCT is defined by a specific group of existing plots; the centroid of each group is a collection of features that defines the floristics of the PCT.
                                                                                                               
-                                                                                                              The analysis calculates the ecological ‘distance’ between the PCT group centroids and the new plots.
+                                                                                                              The analysis calculates the ecological â€˜distanceâ€™ between the PCT group centroids and the new plots.
                                                                                                               
-                                                                                                              The table presents the PCTs to which the new plot(s) are most closely related. The smaller the number listed in the ‘Match’ columns, the stronger the floristic relationship.
+                                                                                                              The table presents the PCTs to which the new plot(s) are most closely related. The smaller the number listed in the â€˜Matchâ€™ columns, the stronger the floristic relationship.
                                                                                                               </p>
                                                                                                               </td>
                                                                                                               <td style='padding:5px;'>
@@ -184,7 +184,7 @@ ui<-  htmlTemplate("main.html",
                                                                                                 
                                                                                                 The analysis calculates the percentage of species in the new plot(s) that are characteristic species for each PCT.
                                                                                                 
-                                                                                                The table presents the PCTs which have the highest percentage. The higher the number listed in the ‘Match’ columns, the stronger the floristic relationship.
+                                                                                                The table presents the PCTs which have the highest percentage. The higher the number listed in the â€˜Matchâ€™ columns, the stronger the floristic relationship.
                                                                                                  </p>
                                                                                                </td>
                                                                                                <td style='padding:5px;'>
