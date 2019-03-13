@@ -57,7 +57,7 @@ ui<-  htmlTemplate("main.html",
                                       # button to download the example data
                                       downloadButton("linkDownloadSampleData", "Download Sample Data")
                                     )
-                                  )),
+                                  ),style="padding:20px;"),
                          
                          
                          
@@ -129,7 +129,7 @@ ui<-  htmlTemplate("main.html",
                                                                                                               </td>
                                                                                                               </tr>
                                                                                                               <tr>
-                                                                                                              <td valign='top' style='width:50%;border:solid #A6A6A6 1.0pt;background:#92D050;padding:5px;'>
+                                                                                                              <td valign='top' style='width:50%;border:solid #A6A6A6 1.0pt;background:#7FFF00;padding:5px;'>
                                                                                                               <p>0.0-0.65</p>
                                                                                                               </td>
                                                                                                               <td valign='top' style='border:solid #A6A6A6 1.0pt;padding:5px;'>
@@ -137,7 +137,7 @@ ui<-  htmlTemplate("main.html",
                                                                                                               </td>
                                                                                                               </tr>
                                                                                                               <tr>
-                                                                                                              <td valign=top style='border:solid #A6A6A6 1.0pt;background:#C5E0B4;padding:5px;'>
+                                                                                                              <td valign=top style='border:solid #A6A6A6 1.0pt;background:#8FBC8F;padding:5px;'>
                                                                                                               <p>0.6501-0.695</p>
                                                                                                               </td>
                                                                                                               <td valign=top style='border:solid #A6A6A6 1.0pt;padding:5px;'>
@@ -154,7 +154,7 @@ ui<-  htmlTemplate("main.html",
                                                                                                               </tr>
                                                                                                               <tr>
                                                                                                               <td valign=top style='border:solid red 1.0pt;padding:5px;'></td>
-                                                                                                              <td valign=top style='border-top:none;border-left:
+                                                                                                              <td valign=top style='border-top:solid red 1.0pt;border-left:
                                                                                                               none;border-bottom:solid #A6A6A6 1.0pt;border-right:solid #A6A6A6 1.0pt;padding:5px;'>
                                                                                                               <p>Plot is outside of environmental domain
                                                                                                               for this PCT</p>
@@ -195,7 +195,7 @@ ui<-  htmlTemplate("main.html",
                                                                                                </td>
                                                                                                </tr>
                                                                                                <tr>
-                                                                                               <td valign='top' style='width:50%;border:solid #A6A6A6 1.0pt;background:#92D050;padding:5px;'>
+                                                                                               <td valign='top' style='width:50%;border:solid #A6A6A6 1.0pt;background:#7FFF00;padding:5px;'>
                                                                                                <p>76-100</p>
                                                                                                </td>
                                                                                                <td valign='top' style='border:solid #A6A6A6 1.0pt;padding:5px;'>
@@ -203,7 +203,7 @@ ui<-  htmlTemplate("main.html",
                                                                                                </td>
                                                                                                </tr>
                                                                                                <tr>
-                                                                                               <td valign=top style='border:solid #A6A6A6 1.0pt;background:#C5E0B4;padding:5px;'>
+                                                                                               <td valign=top style='border:solid #A6A6A6 1.0pt;background:#8FBC8F;padding:5px;'>
                                                                                                <p>51-75</p>
                                                                                                </td>
                                                                                                <td valign=top style='border:solid #A6A6A6 1.0pt;padding:5px;'>
@@ -220,7 +220,7 @@ ui<-  htmlTemplate("main.html",
                                                                                                </tr>
                                                                                                <tr>
                                                                                                <td valign=top style='border:solid red 1.0pt;padding:5px;'></td>
-                                                                                               <td valign=top style='border-top:none;border-left:
+                                                                                               <td valign=top style='border-top:solid red 1.0pt;border-left:
                                                                                                none;border-bottom:solid #A6A6A6 1.0pt;border-right:solid #A6A6A6 1.0pt;padding:5px;'>
                                                                                                <p>Plot is outside of environmental domain
                                                                                                for this PCT</p>
@@ -258,7 +258,7 @@ ui<-  htmlTemplate("main.html",
                                                                                                </td>
                                                                                                </tr>
                                                                                                <tr>
-                                                                                               <td valign='top' style='width:50%;border:solid #A6A6A6 1.0pt;background:#92D050;padding:5px;'>
+                                                                                               <td valign='top' style='width:50%;border:solid #A6A6A6 1.0pt;background:#7FFF00;padding:5px;'>
                                                                                                <p>Centroid &gt; x AND Combined &gt; y </p>
                                                                                                </td>
                                                                                                <td valign='top' style='border:solid #A6A6A6 1.0pt;padding:5px;'>
@@ -266,7 +266,7 @@ ui<-  htmlTemplate("main.html",
                                                                                                </td>
                                                                                                </tr>
                                                                                                <tr>
-                                                                                               <td valign=top style='border:solid #A6A6A6 1.0pt;background:#C5E0B4;padding:5px;'>
+                                                                                               <td valign=top style='border:solid #A6A6A6 1.0pt;background:#8FBC8F;padding:5px;'>
                                                                                                <p></p>
                                                                                                </td>
                                                                                                <td valign=top style='border:solid #A6A6A6 1.0pt;padding:5px;'>
@@ -283,7 +283,7 @@ ui<-  htmlTemplate("main.html",
                                                                                                </tr>
                                                                                                <tr>
                                                                                                <td valign=top style='border:solid red 1.0pt;padding:5px;'></td>
-                                                                                               <td valign=top style='border-top:none;border-left:
+                                                                                               <td valign=top style='border-top:solid red 1.0pt;border-left:
                                                                                                none;border-bottom:solid #A6A6A6 1.0pt;border-right:solid #A6A6A6 1.0pt;padding:5px;'>
                                                                                                <p>Plot is outside of environmental domain
                                                                                                for this PCT</p>

@@ -90,8 +90,12 @@ calculate_centroids <- function(floristic_raw, site_labels, centroids) {
   rownames(cent_matches) <- NULL
   colnames(cent_matches) <- rownames(centroids)
   df_out <- data.frame(site_labels, as.data.frame(round(cent_matches, 3)), stringsAsFactors = F)
+  
+  
+  
   attr(df_out, "mc_cores") <- mc_cores
-  df_out
+  
+  df_out  
   # cent_matches_top <- data.frame(site_labels,
   #                                round(t(bind_rows(lapply(distances, `[[`, 1))), 3),
   #                                t(bind_rows(lapply(distances, `[[`, 2))))
@@ -153,6 +157,47 @@ get_numplots <- function(n){
   n
 }
 
+
+##///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+## Reorder columns
+reorder_data<-function(matchedData) {
+  
+  columnnames <- names(matchedData)
+  
+  colNamesMatch <-array()
+  colNamesGroup<-array()
+  n=0
+  m=0
+  for(p in columnnames) {
+    
+    if (substr(p,1,nchar(p)-1)=="match")
+    {
+      n<-n+1
+      colNamesMatch[n] <- p     		
+    }
+    
+    if (substr(p,1,nchar(p)-1)=="group")
+    {
+      m<-m+1
+      colNamesGroup[m] <- p     		
+    }  
+    
+  }
+  
+  newColNames<-NULL
+  for (i in seq(1,length(colNamesMatch),1)){
+    
+    newColNames <- paste0(newColNames,",",colNamesMatch[i],",",colNamesGroup[i])
+    
+  }
+  newColNames <- paste0(columnnames[1],substr(newColNames,1,nchar(newColNames)))
+  newColNames <- unlist(strsplit(newColNames,","))
+  
+  #print(newColNames)
+  matchedData <- matchedData[c(newColNames)]
+  matchedData
+}
+##///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 # ordination plot of sites ------------------------------------------------
 

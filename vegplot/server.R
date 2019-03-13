@@ -294,12 +294,17 @@ shinyServer(function(input, output) {
                                ord_sites = list(ord = ord_sites, sites = infile_df[,1]),
                                mc_cores = attr(cent_matches, "mc_cores"),
                                compute_time = round(as.numeric(difftime(Sys.time(), tic, units = "secs"))))
+    
+    
     progress$set(message = "Compiling matches", value = 0.95)
   })
   
   # info about processing
   output$cores <- renderText({
     if (!is.null(match_data$matches)) {
+      
+     
+      
       paste0("CPU cores used: ", match_data$matches$mc_cores,
              " (analysis took ~", match_data$matches$compute_time, " seconds).")
     } else {
@@ -373,8 +378,8 @@ shinyServer(function(input, output) {
       )))
     rownames(combined_matches) <- NULL
     names(combined_matches) <- c("Site", 1:topn)
-    return(list(char = style_matches_char(top_char_matches),
-                cent = style_matches_cent(top_cent_matches),
+    return(list(char = style_matches_char(reorder_data(top_char_matches)),
+                cent = style_matches_cent(reorder_data(top_cent_matches)),
                 combined = combined_matches))
   })
   
@@ -384,7 +389,8 @@ shinyServer(function(input, output) {
     if (!is.null(match_data$matches)) style_matches()$char
   })
   output$cent_table <- renderDataTable({
-    if (!is.null(match_data$matches)) style_matches()$cent
+    
+     if (!is.null(match_data$matches)) style_matches()$cent
   })
   output$combined_table <- renderDataTable({
     if (!is.null(match_data$matches)) style_matches()$combined
