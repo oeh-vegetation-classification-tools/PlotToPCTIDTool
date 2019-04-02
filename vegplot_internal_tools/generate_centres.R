@@ -15,10 +15,10 @@ calculate_centres <- function(data, groups) {
 
 # load floristic data and assignments for all plots in database -----------
 
-floristics_allocations <- readRDS("floristics_allocations.rds")
+floristics_allocations <- readRDS("intermediates/floristics_allocations.rds")
 
 floristics <- floristics_allocations %>%
-  select(-site:-init_groups)
+  select(-site:-rcp)
 
 groups <- floristics_allocations %>%
   select(group)
@@ -35,4 +35,4 @@ centroids <- calculate_centres(floristics, groups)
 
 
 # save for use in allocation tool
-saveRDS(centroids, file = "species_centroids.rds")
+saveRDS(centroids, file = "tool_inputs/species_centroids.rds")
