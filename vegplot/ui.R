@@ -182,9 +182,9 @@ ui<-  htmlTemplate("main.html",
 
                                                                                                 Each PCT is defined by a specific group of existing plots; the characteristic species for each group is defined by modelling the occurrence of each flora species across all groups.
                                                                                                 
-                                                                                                The analysis calculates the percentage of species in the new plot(s) that are characteristic species for each PCT.
+                                                                                                The analysis calculates the percentage of characteristic species (for each PCT) that were observed in the new plot(s).
                                                                                                 
-                                                                                                The table presents the PCTs which have the highest percentage. The higher the number listed in the ‘Match’ columns, the stronger the floristic relationship.
+                                                                                                The table presents the PCTs to which the highest percentage matches were obtained. The higher the number listed in the ‘Match’ columns, the stronger the floristic relationship.
                                                                                                  </p>
                                                                                                </td>
                                                                                                <td style='padding:5px;'>

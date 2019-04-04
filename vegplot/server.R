@@ -334,7 +334,7 @@ shinyServer(function(input, output) {
         This tool is designed to assist with PCT allocation only. Allocation of a plot to a PCT requires consideration of floristic, environmental and spatial variables, as well as disturbance and condition of the plot.
        </p>
         <p style='text-align:justify;padding:1px 10px 1px 2px;'>
-        This tool was developed by OEH and UNSW with funding from the Australian Research Council (ARC) grant number xxxx.
+        This tool was developed by OEH and UNSW with funding from the Australian Research Council (ARC) grant number LP150100972.
     </p>"
     
   })
