@@ -29,7 +29,25 @@ ui<-  htmlTemplate("main.html",
                                   fluidPage(
                                     
                                     tags$img(src="EasternNSWStudyRegionMap_wIBRA50.jpg",alt="Eastern NSW Study Region Map with IBRA",style="float:left"),
-                                    htmlOutput("info_main_text"),
+                                    HTML( "<p style='text-align:justify;padding:10px 10px 1px 10px;'>
+                                              This Plot to PCT matching tool is intended to assist in the assignment of standard 400m2 full floristic survey plots to Plant Community Types (PCT) for the east coast and tablelands of NSW.
+                                          </p>
+                                          <p style='text-align:justify;padding:1px 10px 1px 2px;'>
+                                          This tool functions for plots located within the east coast and tablelands region. Qualitative PCTs or PCTs occurring outside the study region cannot be identified using this tool.
+                                          </p>
+                                          <p style='text-align:justify;padding:1px 10px 1px 2px;'>
+                                          Information and data on all NSW PCTs is stored in the BioNet Vegetation Classification database. This tool draws on information stored in BioNet.
+                                          </p>
+                                          <p style='text-align:justify;padding:1px 10px 1px 2px;'>
+                                          Data imported into this tool is assumed to have been exported from the BioNet Flora Survey database in the correct format. If you haven’t yet done so, please enter plot data into BioNet FS and then follow the user guide to export data in the format ready for this tool.
+                                          </p>
+                                          <p style='text-align:justify;padding:1px 10px 1px 2px;'>
+                                          This tool is designed to assist with PCT allocation only. Allocation of a plot to a PCT requires consideration of floristic, environmental and spatial variables, as well as disturbance and condition of the plot.
+                                          </p>
+                                          <p style='text-align:justify;padding:1px 10px 1px 2px;'>
+                                          This tool was developed by OEH and UNSW with funding from the Australian Research Council (ARC) grant number LP150100972.
+                                          </p>"),
+                                   
                                     tags$hr(),
                                     fluidRow(
                                       
