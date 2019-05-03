@@ -4,6 +4,16 @@
 #
 
 
+# data loads - sources to ensure they're in -------------------------------
+
+char_spp_list <- readRDS("data/char_species_list.rds")
+centroids <- readRDS("data/species_centroids.rds")
+env_thresh <- readRDS("data/env_thresholds.rds")
+
+# a master list of what not to include in floristic data
+non_floristic <- c("X","Latitude","Longitude","Elevation","RainfallAnn","TempAnn")
+
+
 
 # utils -------------------------------------------------------------------
 
