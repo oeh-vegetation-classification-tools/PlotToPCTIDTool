@@ -261,62 +261,21 @@ ui<-  htmlTemplate("main.html",
                                       
                                       
                                       conditionalPanel(condition="input.tabselected==3",  HTML("<table style='border:none;'>
-                                                                                                <tr>
+                                                                                               <tr>
                                                                                                <td style='vertical-align:top;width:50%'>
                                                                                                <p style='text-align:justify;padding:5px;'>
-                                                                                               The table presents the PCTs returned by BOTH Centroid match and Characteristic species match analyses for each plot. 
-                                                                                               The PCTs are ordered by the distance to centroid. The PCTs closest to the left have the stronger floristic relationship to the plot.
-                                                                                              </p>
-                                                                                               </td>
-                                                                                               <td style='padding:5px;'>
-                                                                                               <table style='border:solid #A6A6A6 1.0pt;padding:5px;'>
-                                                                                               <tr>
-                                                                                               <td colspan='2' valign='top' style='border:solid #A6A6A6 1.0pt;background:#e6e6e6;padding:5px;'>
-                                                                                               <p align=center style='text-align:center;'>Key to combined matches</p>
+                                                                                               This table shows how the top centroid matches fit within the environemtnal envelopes for existing plots of that PCT. 
+                                                                                               Note that this is supposed ot be a guide etc. etc., and not a definitive key to type matches.
+                                                                                               Use the search bar on the upper right to filter table to speicfic sites or PCT.
+                                                                                               (POTENTIALLY IN FUTURE) use the selection options to see combinations of sites and groups of interest
+                                                                                               </p>
                                                                                                </td>
                                                                                                </tr>
                                                                                                <tr>
-                                                                                               <td valign='top' style='width:50%;border:solid #A6A6A6 1.0pt;background:#7FFF00;padding:5px;'>
-                                                                                               <p>Centroid &gt; x AND Combined &gt; y </p>
-                                                                                               </td>
-                                                                                               <td valign='top' style='border:solid #A6A6A6 1.0pt;padding:5px;'>
-                                                                                               <p>Strong match</p>
-                                                                                               </td>
-                                                                                               </tr>
-                                                                                               <tr>
-                                                                                               <td valign=top style='border:solid #A6A6A6 1.0pt;background:#8FBC8F;padding:5px;'>
-                                                                                               <p></p>
-                                                                                               </td>
-                                                                                               <td valign=top style='border:solid #A6A6A6 1.0pt;padding:5px;'>
-                                                                                               <p>Moderate match</p>
-                                                                                               </td>
-                                                                                               </tr>
-                                                                                               <tr>
-                                                                                               <td valign=top style='border:solid #A6A6A6 1.0pt;padding:5px;'>
-                                                                                               <p></p>
-                                                                                               </td>
-                                                                                               <td valign=top style='border:solid #A6A6A6 1.0pt;padding:5px;'>
-                                                                                               <p>Weak match</p>
-                                                                                               </td>
-                                                                                               </tr>
-                                                                                               <tr>
-                                                                                               <td valign=top style='border:solid red 1.0pt;padding:5px;'></td>
-                                                                                               <td valign=top style='border-top:solid red 1.0pt;border-left:
-                                                                                               none;border-bottom:solid #A6A6A6 1.0pt;border-right:solid #A6A6A6 1.0pt;padding:5px;'>
-                                                                                               <p>Plot is outside of environmental domain
-                                                                                               for this PCT</p>
-                                                                                               </td>
-                                                                                               </tr>
-                                                                                               <tr>
-                                                                                               <td valign=top style='border:solid #BFBFBF 1.0pt;
-                                                                                               border-top:none;background:#757575;padding:5px;'></td>
-                                                                                               <td valign=top style='border-top:none;border-left:
-                                                                                               none;border-bottom:solid #A6A6A6 1.0pt;border-right:solid #A6A6A6 1.0pt;padding:5px;'>
-                                                                                               <p>Matched PCT cannot be reliably assigned on
-                                                                                               floristic variables alone</p>
-                                                                                               </td>
-                                                                                               </tr>
-                                                                                               </table>
+                                                                                               <td style='vertical-align:top;width:50%'>
+                                                                                               <p style='text-align:justify;padding:5px;'>
+                                                                                               'Below'/'Within'/'Above' = Below/Within/Above environmental threshold, 
+                                                                                               </p>
                                                                                                </td>
                                                                                                </tr>
                                                                                                </table>
@@ -337,9 +296,9 @@ ui<-  htmlTemplate("main.html",
                                                fluidRow(
                                                  column(12, DT::dataTableOutput("char_table"))
                                                )),
-                                      tabPanel("Combined matches", value=3,
+                                      tabPanel("Environemtnal thresholds", value=3,
                                                fluidRow(
-                                                 column(12, DT::dataTableOutput("combined_table"))
+                                                 column(12, DT::dataTableOutput("env_thresholds"))
                                                )),
                                       tabPanel("Download matches", value=4,
                                                fluidRow(
