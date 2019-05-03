@@ -26,16 +26,6 @@ source("functions.R")
 
 shinyServer(function(input, output) {
 
-  # LOAD REQUIRED DATA ------------------------------------------------------
-  # this will include data needed for centroid calculations too
-  # read char species list
-  char_spp_list <- readRDS("data/char_species_list.rds")
-  centroids <- readRDS("data/species_centroids.rds")
-  env_thresh <- readRDS("data/env_thresholds.rds")
-  
-  # a master list of what not to include in floristic data
-  non_floristic <- c("X","Latitude","Longitude","Elevation","RainfallAnn","TempAnn")
-  
   # # RUN EXAMPLE ON SERVER DATA ----------------------------------------------
   
   ## Here i originally had the idea to have the example analysis as just a click-button
@@ -214,7 +204,7 @@ shinyServer(function(input, output) {
   
   #/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   #dataChecksInfo
-   dataChecksInfo <-reactive({
+  dataChecksInfo <-reactive({
     
     
     if (!is.null(check_infile())) {
@@ -415,7 +405,7 @@ shinyServer(function(input, output) {
       progress <- shiny::Progress$new(style = "notification")
       progress$set(message = "Checking env. thresholds", value = 0.5)
       on.exit(progress$close())
-      threshold_results <- check_env_thresholds(style_matches()$cent_groups, env_thresh, env_data)
+      threshold_results <- check_env_thresholds(style_matches()$cent_groups, env_thresh, match_data$matches$env_data)
       #### do the data table styling here i guess with either drop down or filtering options etc.
       return(list(env_thresholds = threshold_results))
     } else {
@@ -445,7 +435,8 @@ shinyServer(function(input, output) {
   download_matches <- reactive({
     topn <- input$topn
     return(list(char = get_topn(match_data$matches$char_matches, topn, T),
-                cent = get_topn(match_data$matches$cent_matches, topn, F)))
+                cent = get_topn(match_data$matches$cent_matches, topn, F),
+                env = check_env_thresholds(style_matches()$cent_groups, env_thresh, match_data$matches$env_data)))
   })
   
   output$download_char_matches <- downloadHandler(
@@ -462,6 +453,14 @@ shinyServer(function(input, output) {
     },
     content = function(file) {
       write.csv(download_matches()$cent, file, row.names = F)
+    }
+  )
+  output$download_env_matches <- downloadHandler(
+    filename = function() {
+      paste(gsub(".csv","",input$file1$name), "_env-thresholds", ".csv", sep = "")
+    },
+    content = function(file) {
+      write.csv(download_matches()$env, file, row.names = F)
     }
   )
   

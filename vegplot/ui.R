@@ -304,11 +304,11 @@ ui<-  htmlTemplate("main.html",
                                                fluidRow(
                                                  # download all of the match data
                                                  tags$div(downloadButton("download_char_matches", "Download char. spp. matches"),
-                                                 tags$hr(),
-                                                 downloadButton("download_cent_matches", "Download centroid matches"),style="padding:20px")
-                                                 
-                                               
-                                                
+                                                          tags$hr(),
+                                                          downloadButton("download_cent_matches", "Download centroid matches"),
+                                                          tags$hr(),
+                                                          downloadButton("download_env_matches", "Download environmental thresholding"),
+                                                          style="padding:20px")
                                                ))
                                       , id = "tabselected")
                                     , width = "auto")
