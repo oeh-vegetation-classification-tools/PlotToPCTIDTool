@@ -13,6 +13,8 @@
 
 library(shiny)
 library(dplyr)
+library(tidyr)
+library(purrr)
 library(DT)
 library(vegan)
 library(parallel)
@@ -29,7 +31,10 @@ shinyServer(function(input, output) {
   # read char species list
   char_spp_list <- readRDS("data/char_species_list.rds")
   centroids <- readRDS("data/species_centroids.rds")
+  env_thresh <- readRDS("data/env_thresholds.rds")
   
+  # a master list of what not to include in floristic data
+  non_floristic <- c("X","Latitude","Longitude","Elevation","RainfallAnn","TempAnn")
   
   # # RUN EXAMPLE ON SERVER DATA ----------------------------------------------
   
@@ -104,43 +109,47 @@ shinyServer(function(input, output) {
     infile_df <- read.csv(inFile$datapath,
                           header = T,
                           stringsAsFactors = F)
+    names(infile_df)[1] <- "sites"
+    env_present <- all(non_floristic %in% names(infile_df))
+    floristics <- select(infile_df, -sites, -one_of(non_floristic))
     out_list <- list(sites = infile_df[,1],
-                     floristics = infile_df[,-1],
-                     missing_species = names(infile_df[,-1])[!names(infile_df[,-1]) %in% colnames(centroids)])
+                     floristics = floristics,
+                     missing_species = names(floristics)[!names(floristics) %in% colnames(centroids)],
+                     env_present = env_present)
                      #infile_df = infile_df)
     return(out_list)
   })
   
   
   #/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  # put together the file stats, once file is uploaded
-  # (to start, no file is uploaded - print a promt to do so)
-  output$num_sites <- renderText({
-    if (!is.null(check_infile())) {
-      paste0("You uploaded a file with ", length(check_infile()$sites), " sites.")
-    } else {
-      "You have not uploaded any data yet (you can download the example data to test drive)."
-    }
-  })
-  
-  #num species htmlout
-  output$num_species <- renderUI({
-    if (!is.null(check_infile())) {
-      if (length(check_infile()$missing_species) == 0) {
-        HTML(paste0("There are ", ncol(check_infile()$floristics),
-                    " species: all species have been matched in the database.",
-                    "<br> <b>N.B.</b> Up to 200 sites should be <1 minute processing."))
-      } else {
-        HTML(paste0("There are ", ncol(check_infile()$floristics),
-                    " species, <b><mark> and ",length(check_infile()$missing_species),
-                    " could not be matched: ", paste(check_infile()$missing_species, collapse = ", "), 
-                    ", so were ignored in analysis.</mark></b>",
-                    "<br> <b>N.B.</b> Up to 200 sites should be <1 minute processing."))
-      }
-    } else {
-      "Use the upload data box on the left to get started."
-    }
-  })
+  # # put together the file stats, once file is uploaded
+  # # (to start, no file is uploaded - print a promt to do so)
+  # output$num_sites <- renderText({
+  #   if (!is.null(check_infile())) {
+  #     paste0("You uploaded a file with ", length(check_infile()$sites), " sites.")
+  #   } else {
+  #     "You have not uploaded any data yet (you can download the example data to test drive)."
+  #   }
+  # })
+  # 
+  # #num species htmlout
+  # output$num_species <- renderUI({
+  #   if (!is.null(check_infile())) {
+  #     if (length(check_infile()$missing_species) == 0) {
+  #       HTML(paste0("There are ", ncol(check_infile()$floristics),
+  #                   " species: all species have been matched in the database.",
+  #                   "<br> <b>N.B.</b> Up to 200 sites should be <1 minute processing."))
+  #     } else {
+  #       HTML(paste0("There are ", ncol(check_infile()$floristics),
+  #                   " species, <b><mark> and ",length(check_infile()$missing_species),
+  #                   " could not be matched: ", paste(check_infile()$missing_species, collapse = ", "), 
+  #                   ", so were ignored in analysis.</mark></b>",
+  #                   "<br> <b>N.B.</b> Up to 200 sites should be <1 minute processing."))
+  #     }
+  #   } else {
+  #     "Use the upload data box on the left to get started."
+  #   }
+  # })
   
   
   
@@ -158,7 +167,13 @@ shinyServer(function(input, output) {
       #numplots<- is.null(numplots) ? numplots : 0
 
       # place holder at the moment. TODO: needs to be recalculated based on additional data from matrix file.
-      numplotsWithEnvAndSpatialData <- length(check_infile()$sites)
+      # mitch: if we want to handle incomplete environemtnal data, that will have to be done further down the track
+              # TODO: include qa/qc of incoming environemtnal data, for the meantime, assume it's complete 
+      if (check_infile()$env_present) {
+        numplotsWithEnvAndSpatialData <- "Yes"
+      } else {
+        numplotsWithEnvAndSpatialData <- "No"
+      }
 
       numspecies <- ncol(check_infile()$floristics)
       #numspecies<- is.null(numspecies) ? numspecies : 0
@@ -177,7 +192,7 @@ shinyServer(function(input, output) {
                     <td>", numspecies ,"</td>
                     </tr>
                     <tr>
-                    <td>Number of plots with environmental and spatial data included</td>
+                    <td>Was environmental and spatial data detected?</td>
                     <td>", numplotsWithEnvAndSpatialData ,"</td>
                     </tr>
                     </table></p>")
@@ -279,23 +294,33 @@ shinyServer(function(input, output) {
     infile_df <- read.csv(inFile$datapath,
              header = T,
              stringsAsFactors = F)
+    names(infile_df)[1] <- "sites"
+    
+    if (check_infile()$env_present) {
+      env_data <- select(infile_df, sites, one_of(non_floristic), -X)
+      floristics <- select(infile_df, -sites, -one_of(non_floristic))
+    } else {
+      env_data <- NULL
+      floristics <- select(infile_df, -sites, -one_of(non_floristic))
+    }
+    
     progress$set(message = "Matching species", value = 0.25)
     # do the char species / centroid calculations
     #infile_df <- check_infile()$infile_df
-    char_matches <- calculate_matches(infile_df[,-1], infile_df[,1], char_spp_list)
+    char_matches <- calculate_matches(floristics, infile_df[,1], char_spp_list)
     progress$set(message = "Matching centroids", value = 0.35)
-    cent_matches <- calculate_centroids(infile_df[,-1], infile_df[,1], centroids)
+    cent_matches <- calculate_centroids(floristics, infile_df[,1], centroids)
     # make ordination plot
     progress$set(message = "Making plots", value = 0.85)
-    ord_sites <- make_sites_ord(infile_df)
+    ord_sites <- make_sites_ord(select(infile_df, -one_of(non_floristic)))
     # add data to the reactive output
     match_data$matches <- list(char_matches = char_matches,
                                cent_matches = cent_matches,
                                ord_sites = list(ord = ord_sites, sites = infile_df[,1]),
                                mc_cores = attr(cent_matches, "mc_cores"),
-                               compute_time = round(as.numeric(difftime(Sys.time(), tic, units = "secs"))))
-    
-    
+                               compute_time = round(as.numeric(difftime(Sys.time(), tic, units = "secs"))),
+                               env_data = env_data)
+    #match_data$env_data <- list(env_data = env_data)
     progress$set(message = "Compiling matches", value = 0.95)
   })
   
@@ -376,11 +401,26 @@ shinyServer(function(input, output) {
              as.data.frame(t(top_char_matches), stringsAsFactors = F),
              MoreArgs = list(topn = topn), SIMPLIFY = F)
       )))
+    cent_groups <- top_cent_matches[c(1,grep("group", names(top_cent_matches)))]
     rownames(combined_matches) <- NULL
     names(combined_matches) <- c("Site", 1:topn)
     return(list(char = style_matches_char(reorder_data(top_char_matches)),
                 cent = style_matches_cent(reorder_data(top_cent_matches)),
-                combined = combined_matches))
+                combined = combined_matches,
+                cent_groups = cent_groups))
+  })
+  
+  style_env_thresholds <- reactive({
+    if (!is.null(match_data$matches$env_data)) {
+      progress <- shiny::Progress$new(style = "notification")
+      progress$set(message = "Checking env. thresholds", value = 0.5)
+      on.exit(progress$close())
+      threshold_results <- check_env_thresholds(style_matches()$cent_groups, env_thresh, env_data)
+      #### do the data table styling here i guess with either drop down or filtering options etc.
+      return(list(env_thresholds = threshold_results))
+    } else {
+      return(NULL)
+    }
   })
   
   
@@ -389,14 +429,15 @@ shinyServer(function(input, output) {
     if (!is.null(match_data$matches)) style_matches()$char
   })
   output$cent_table <- renderDataTable({
-    
-     if (!is.null(match_data$matches)) style_matches()$cent
+    if (!is.null(match_data$matches)) style_matches()$cent
   })
   output$combined_table <- renderDataTable({
     if (!is.null(match_data$matches)) style_matches()$combined
   })
-
   
+  output$env_thresholds <- renderDataTable({
+    if (!is.null(match_data$matches$env_data)) style_env_thresholds()$env_thresholds
+  })
   
   
   #/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -423,6 +464,8 @@ shinyServer(function(input, output) {
       write.csv(download_matches()$cent, file, row.names = F)
     }
   )
+  
+  ### <-- need to add in download for envrionmental thresholds
   
   getDataCheckReport <- reactive({
     return (isolate(dataChecksInfo()$results))
