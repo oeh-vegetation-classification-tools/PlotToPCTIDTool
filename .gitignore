@@ -47,3 +47,4 @@ vegplot_code-dev/data/May2018_New_CA_yes_2359_LocationList.csv
 vegplot_code-dev/data/4735_East_NewCA_2359.txt
 vegplot_code-dev/logs/
 vegplot_code-dev/group_chars_per_RCP.rds
+vegplot_internal_tools/raw_data/eg_cents.csv
