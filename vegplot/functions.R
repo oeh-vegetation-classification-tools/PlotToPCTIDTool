@@ -147,9 +147,55 @@ style_matches_char <- function(table) {
 style_matches_cent <- function(table) {
   DT::datatable(table) %>%
     formatStyle(grep("match", names(table)), 
-                backgroundColor = styleInterval(cuts = c(0.65,0.7), 
+                backgroundColor = styleInterval(cuts = c(0.65,0.695), 
                                                 values = c("chartreuse","darkseagreen","white"))
     )
+}
+
+## function to find threshold status for an individual site + group combo
+check_site_thresholds <- function(group, site, env_thresh, env_data) {
+  out <- data.frame(Elevation = "N/A", Rainfall = "N/A", Temperature = "N/A")
+  if (!group %in% env_thresh$gp) return(out)
+  
+  group_thresh <- filter(env_thresh, gp == group)
+  site_env <- filter(env_data, sites == site)
+  
+  if (site_env[1,"Elevation"] < group_thresh[1,"T1_elev"]) {
+    out$Elevation <- "Below"
+  } else if (site_env[1,"Elevation"] > group_thresh[1,"T2_elev"]) {
+    out$Elevation <- "Above"
+  } else {
+    out$Elevation <- "Within"
+  }
+  
+  if (site_env[1,"RainfallAnn"] < group_thresh[1,"T1_rainann"]) {
+    out$Rainfall <- "Below"
+  } else if (site_env[1,"RainfallAnn"] > group_thresh[1,"T2_rainann"]) {
+    out$Rainfall <- "Above"
+  } else {
+    out$Rainfall <- "Within"
+  }
+  
+  if (site_env[1,"TempAnn"] < group_thresh[1,"T1_tempann"]) {
+    out$Temperature <- "Below"
+  } else if (site_env[1,"TempAnn"] > group_thresh[1,"T2_tempann"]) {
+    out$Temperature <- "Above"
+  } else {
+    out$Temperature <- "Within"
+  }
+  
+  out
+}
+
+
+## function to determine environmetnal threshold status
+check_env_thresholds <- function(cent_groups, env_thresholds, env_data) {
+  cent_groups_long <- gather(cent_groups, "match", "group", grep("group", names(cent_groups)))
+  data.frame(cent_groups_long,
+             bind_rows(
+               map2(.x = cent_groups_long$group, .y = cent_groups_long$Site_Name,
+                    .f = check_site_thresholds, env_thresh = env_thresh, env_data = env_data)
+               ))
 }
 
 
