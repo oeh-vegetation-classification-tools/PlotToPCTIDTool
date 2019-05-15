@@ -645,80 +645,7 @@ shinyServer(function(input, output) {
   
   #/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   
-  observe({
-
-    if (!is.null(match_data$matches)){
-      
-    if (!is.null(input$cent_table_cell_clicked$col))
-    {
-          ar<-array(style_matches()$cent)
-          
-          if (length(ar[[1]]$data)>=input$cent_table_cell_clicked$col){
-          
-          columnName <-colnames(ar[[1]]$data[input$cent_table_cell_clicked$col])
-    
-          if (!columnName==""){
-    
-          if (substr(columnName,1,nchar(columnName)-1)=="group"){
-            shinyjs::show("PCTSubmit")
-          } else {
-            shinyjs::hide("PCTSubmit")
-          }
-        }else{
-    
-          shinyjs::hide("PCTSubmit")
-        }
-          
-          }else{
-            
-            shinyjs::hide("PCTSubmit")
-          }
-          
-    }else{
-
-      shinyjs::hide("PCTSubmit")
-    }
-    
-    
-    
-    if (!is.null(input$char_table_cell_clicked$col))
-    {
-      ar<-array(style_matches()$char)
-      
-      if (length(ar[[1]]$data)>=input$cent_table_cell_clicked$col){
-      
-      columnName <-colnames(ar[[1]]$data[input$char_table_cell_clicked$col])
-      
-      if (!columnName==""){
-        
-          if (substr(columnName,1,nchar(columnName)-1)=="group"){
-            shinyjs::show("PCTSubmit2")
-          } else {
-            shinyjs::hide("PCTSubmit2")
-          }
-        }else{
-          
-          shinyjs::hide("PCTSubmit2")
-        }
-      }else{
-        
-        shinyjs::hide("PCTSubmit")
-      }
-      
-      
-    }else{
-      
-      shinyjs::hide("PCTSubmit2")
-    }
-      
-    }else{
-      
-      shinyjs::hide("PCTSubmit")
-      shinyjs::hide("PCTSubmit2")
-    }
-
-  })
-  
+ 
   #/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   
   output$PCTName <- renderUI({
@@ -731,18 +658,22 @@ shinyServer(function(input, output) {
       if (!columnName==""){
         
         if (substr(columnName,1,nchar(columnName)-1)=="group"){
-      
+          shinyjs::show("PCTSubmit")
         pctname<-getPCTName(input$cent_table_cell_clicked$value)
         h4(paste0("PCT Name ",pctname))
         
-      }else{ h4("")}
+        }else{ h4("")
+          shinyjs::hide("PCTSubmit")
+          }
     }else{
       
       h4("")
+      shinyjs::hide("PCTSubmit")
     }
     }else{
       
       h4("")
+      shinyjs::hide("PCTSubmit")
     }
     
   })
@@ -757,18 +688,22 @@ shinyServer(function(input, output) {
       if (!columnName==""){
         
         if (substr(columnName,1,nchar(columnName)-1)=="group"){
-          
+          shinyjs::show("PCTSubmit2")
           pctname<-getPCTName(input$char_table_cell_clicked$value)
           h4(paste0("PCT Name ",pctname))
           
-        }else{ h4("")}
+        }else{ h4("")
+          shinyjs::hide("PCTSubmit2")
+          }
       }else{
         
         h4("")
+        shinyjs::hide("PCTSubmit2")
       }
     }else{
       
       h4("")
+      shinyjs::hide("PCTSubmit2")
     }
     
   })
@@ -776,8 +711,9 @@ shinyServer(function(input, output) {
   #/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   
   ClickedCentroidPCT <- eventReactive(input$cent_table_cell_clicked,{
-   
-    if (!is.null(input$cent_table_cell_clicked$col))
+    
+    
+   if (!is.null(input$cent_table_cell_clicked$col))
     {
       ar<-array(style_matches()$cent)
       columnName <-colnames(ar[[1]]$data[input$cent_table_cell_clicked$col])
@@ -820,6 +756,8 @@ shinyServer(function(input, output) {
   #/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   
   ClickedCharSppPCT <- eventReactive(input$char_table_cell_clicked,{
+    
+  
     
     if (!is.null(input$char_table_cell_clicked$col))
     {
