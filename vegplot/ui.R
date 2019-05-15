@@ -23,12 +23,15 @@ ui<-  htmlTemplate("main.html",
                    
               
                     mainView= mainPanel(
+                      
+                      shinyjs::useShinyjs(),
+                      
                        tabsetPanel(
                          
                          tabPanel("Information",
                                   fluidPage(
                                     
-                                    tags$img(src="EasternNSWStudyRegionMap_wIBRA50.jpg",alt="Eastern NSW Study Region Map with IBRA",style="float:left"),
+                                    tags$img(src="PlotToPCTIDToolIntroPage_StudyRegionMap.jpg",alt="Eastern NSW Study Region Map with IBRA",style="float:left"),
                                     HTML( "<p style='text-align:justify;padding:10px 10px 1px 10px;'>
                                               This Plot to PCT matching tool is intended to assist in the assignment of standard 400m2 full floristic survey plots to Plant Community Types (PCT) for the east coast and tablelands of NSW.
                                           </p>
@@ -46,19 +49,23 @@ ui<-  htmlTemplate("main.html",
                                           </p>
                                           <p style='text-align:justify;padding:1px 10px 1px 2px;'>
                                           This tool was developed by OEH and UNSW with funding from the Australian Research Council (ARC) grant number LP150100972.
-                                          </p>"),
+                                          </p>
+                                          <p style='text-align:justify;padding:1px 10px 1px 2px;'>
+                                          This tool is currently populated with plot to draft PCT assignments as at 22 March 2019. Plot assignments to draft PCTs are managed by the NSW Vegetation Classification Team.
+                                          </p>
+                                          "),
                                    
                                     tags$hr(),
                                     fluidRow(
                                       
                                       # button to launch the userguide
-                                     actionButton(inputId='lnkUserGuide', label="User Guide", 
+                                     actionButton(inputId='lnkUserGuide', label="View Plot to PCT ID Tool User Guide", 
                                                     icon = icon("fas fa-external-link-alt"), 
                                                     onclick ="window.open('http://google.com', '_blank')"),
                                       
                                       
                                       # button to view paper methodology page (pdf)
-                                     actionButton(inputId='linkPaperMethodology', label="View to paper on methodology", 
+                                     actionButton(inputId='linkPaperMethodology', label="View Eastern NSW Classification Methodology", 
                                                   icon = icon("fas fa-external-link-alt"), 
                                                   onclick ="window.open('http://google.com', '_blank')"),
                                       
@@ -86,17 +93,17 @@ ui<-  htmlTemplate("main.html",
                                    
                                    sidebarPanel(
                                       # Input floristic file - can modify down the track to choose/process different data types, header, species match ups etc.
-                                      fileInput('file1', label='Input File: comma separated .csv, first column site names, remaining columns floristic data with PATN label column names',
-                                                accept=c('text/csv', 
-                                                         'text/comma-separated-values,text/plain', 
-                                                         '.csv'),buttonLabel="Browse..."),
+                                      fileInput('file1', label='Input File: text file . txt, first column site names, next columns floristic cover abundance data with PATN label scientific name headings, blank column, environmental data if known with headings Latitude, Longitude, Elevation, RainfallAnn, TempAnn. 
+                                                                Please note that this tool can accept data with or without environmental data, but will have reduced functionality of the latter is imported. One file type or the other can be imported, not a mix of both',
+                                                accept=c('text/plain','text/csv', 
+                                                         '.txt','.csv'),buttonLabel="Browse..."),
                                       actionButton("goMatch", "Analyse data")
                                         ) ,
                              
                                       htmlOutput("uploadInformation", style="padding:20px"),
                                       htmlOutput("dataChecks", style="padding:20px"),
                                       
-                                      shinyjs::useShinyjs(),
+                                    
                                       # button to download the data check report
                                       tags$div(downloadButton("linkDownloadDataCheckReport", "Download data check report"),style="padding:20px"),
                                    
@@ -170,24 +177,7 @@ ui<-  htmlTemplate("main.html",
                                                                                                               <p>Weak match, outside threshold</p>
                                                                                                               </td>
                                                                                                               </tr>
-                                                                                                              <tr>
-                                                                                                              <td valign=top style='border:solid red 1.0pt;padding:5px;'></td>
-                                                                                                              <td valign=top style='border-top:solid red 1.0pt;border-left:
-                                                                                                              none;border-bottom:solid #A6A6A6 1.0pt;border-right:solid #A6A6A6 1.0pt;padding:5px;'>
-                                                                                                              <p>Plot is outside of environmental domain
-                                                                                                              for this PCT</p>
-                                                                                                              </td>
-                                                                                                              </tr>
-                                                                                                              <tr>
-                                                                                                              <td valign=top style='border:solid #BFBFBF 1.0pt;
-                                                                                                              border-top:none;background:#757575;padding:5px;'></td>
-                                                                                                              <td valign=top style='border-top:none;border-left:
-                                                                                                              none;border-bottom:solid #A6A6A6 1.0pt;border-right:solid #A6A6A6 1.0pt;padding:5px;'>
-                                                                                                              <p>Matched PCT cannot be reliably assigned on
-                                                                                                              floristic variables alone</p>
-                                                                                                              </td>
-                                                                                                              </tr>
-                                                                                                              </table>
+                                                                                                               </table>
                                                                                                               </td>
                                                                                                               </tr>
                                                                                                               </table>")),
@@ -236,23 +226,7 @@ ui<-  htmlTemplate("main.html",
                                                                                                <p>Weak match</p>
                                                                                                </td>
                                                                                                </tr>
-                                                                                               <tr>
-                                                                                               <td valign=top style='border:solid red 1.0pt;padding:5px;'></td>
-                                                                                               <td valign=top style='border-top:solid red 1.0pt;border-left:
-                                                                                               none;border-bottom:solid #A6A6A6 1.0pt;border-right:solid #A6A6A6 1.0pt;padding:5px;'>
-                                                                                               <p>Plot is outside of environmental domain
-                                                                                               for this PCT</p>
-                                                                                               </td>
-                                                                                               </tr>
-                                                                                               <tr>
-                                                                                               <td valign=top style='border:solid #BFBFBF 1.0pt;
-                                                                                               border-top:none;background:#757575;padding:5px;'></td>
-                                                                                               <td valign=top style='border-top:none;border-left:
-                                                                                               none;border-bottom:solid #A6A6A6 1.0pt;border-right:solid #A6A6A6 1.0pt;padding:5px;'>
-                                                                                               <p>Matched PCT cannot be reliably assigned on
-                                                                                               floristic variables alone</p>
-                                                                                               </td>
-                                                                                               </tr>
+                                                                                               
                                                                                                </table>
                                                                                                </td>
                                                                                                </tr>
@@ -264,18 +238,45 @@ ui<-  htmlTemplate("main.html",
                                                                                                <tr>
                                                                                                <td style='vertical-align:top;width:50%'>
                                                                                                <p style='text-align:justify;padding:5px;'>
-                                                                                               This table shows how the top centroid matches fit within the environemtnal envelopes for existing plots of that PCT. 
-                                                                                               Note that this is supposed ot be a guide etc. etc., and not a definitive key to type matches.
-                                                                                               Use the search bar on the upper right to filter table to speicfic sites or PCT.
-                                                                                               (POTENTIALLY IN FUTURE) use the selection options to see combinations of sites and groups of interest
+                                                                                                  This analysis shows how the plot fits within the known environmental envelopes (Elevation, Average annual rainfall, Average annual temperature) for matched PCTs. 
+                                                                                                  This is a guide only, not a definitive analysis. If plots are outside the known environmental thresholds they need to be more closely examined to assess whether they can still be assigned to the matched PCT. 
+                                                                                                  You can Use the search bar on the upper right to filter table to specific sites or vegetation types
                                                                                                </p>
                                                                                                </td>
-                                                                                               </tr>
-                                                                                               <tr>
-                                                                                               <td style='vertical-align:top;width:50%'>
-                                                                                               <p style='text-align:justify;padding:5px;'>
-                                                                                               'Below'/'Within'/'Above' = Below/Within/Above environmental threshold, 
-                                                                                               </p>
+                                                                                             
+                                                                                                <td style='padding:5px;'>
+                                                                                                  <table style='border:solid #A6A6A6 1.0pt;padding:5px;'>
+                                                                                                     <tr>
+                                                                                                     <td colspan='2' valign='top' style='border:solid #A6A6A6 1.0pt;background:#e6e6e6;padding:5px;'>
+                                                                                                     <p align=center style='text-align:center;'>Key to environmental thresholds check</p>
+                                                                                                     </td>
+                                                                                                     </tr>
+                                                                                                     <tr>
+                                                                                                     <td valign='top' style='width:50%;border:solid #A6A6A6 1.0pt;background:orange;padding:5px;'>
+                                                                                                     <p>Below</p>
+                                                                                                     </td>
+                                                                                                     <td valign='top' style='border:solid #A6A6A6 1.0pt;padding:5px;'>
+                                                                                                     <p>Plot is below the known environmental variable envelope for the PCT</p>
+                                                                                                     </td>
+                                                                                                     </tr>
+                                                                                                     <tr>
+                                                                                                     <td valign=top style='border:solid #A6A6A6 1.0pt;background:green;padding:5px;'>
+                                                                                                     <p>Within</p>
+                                                                                                     </td>
+                                                                                                     <td valign=top style='border:solid #A6A6A6 1.0pt;padding:5px;'>
+                                                                                                     <p>Plot is within the known environmental variable envelope for the PCT</p>
+                                                                                                     </td>
+                                                                                                     </tr>
+                                                                                                     <tr>
+                                                                                                     <td valign=top style='border:solid #A6A6A6 1.0pt;background:orange;padding:5px;'>
+                                                                                                     <p>Above</p>
+                                                                                                     </td>
+                                                                                                     <td valign=top style='border:solid #A6A6A6 1.0pt;padding:5px;'>
+                                                                                                     <p>Plot is above the known environmental variable envelope for the PCT</p>
+                                                                                                     </td>
+                                                                                                     </tr>
+                                                                                               
+                                                                                               </table>
                                                                                                </td>
                                                                                                </tr>
                                                                                                </table>
@@ -290,25 +291,35 @@ ui<-  htmlTemplate("main.html",
                                       
                                       tabPanel("Centroid matches", value=1,
                                                fluidRow(
+                                                 uiOutput("PCTName"),
+                                                 tags$p(),
+                                                 actionButton("PCTSubmit","View PCT Profile"),
+                                                 tags$p(),
                                                  column(12, DT::dataTableOutput("cent_table"))
                                                )),
                                       tabPanel("Char. spp. matches", value=2,
                                                fluidRow(
+                                                 uiOutput("PCTName2"),
+                                                 tags$p(),
+                                                 actionButton("PCTSubmit2","View PCT Profile"),
+                                                 tags$p(),
                                                  column(12, DT::dataTableOutput("char_table"))
                                                )),
-                                      tabPanel("Environemtnal thresholds", value=3,
+                                      tabPanel("Environmental thresholds", value=3,
                                                fluidRow(
                                                  column(12, DT::dataTableOutput("env_thresholds"))
                                                )),
                                       tabPanel("Download matches", value=4,
                                                fluidRow(
                                                  # download all of the match data
-                                                 tags$div(downloadButton("download_char_matches", "Download char. spp. matches"),
+                                                 tags$div(downloadButton("download_cent_matches", "Download centroid matches"),
                                                           tags$hr(),
-                                                          downloadButton("download_cent_matches", "Download centroid matches"),
+                                                          downloadButton("download_char_matches", "Download char. spp. matches"),
                                                           tags$hr(),
                                                           downloadButton("download_env_matches", "Download environmental thresholding"),
-                                                          style="padding:20px")
+                                                           tags$hr(),
+                                                           downloadButton("PCTProfileData", "Download matched PCT information in tabular form"),
+                                                           style="padding:20px")
                                                ))
                                       , id = "tabselected")
                                     , width = "auto")
@@ -321,8 +332,11 @@ ui<-  htmlTemplate("main.html",
                                   )),
                         
                          tabPanel("Map view",
-                                        box(google_mapOutput(outputId = "map", width = "100%"), width = "100%", height="100%")
+                                  fluidPage(
+                                        box(google_mapOutput(outputId = "map", width = "100%"), width = "100%", height="100%"),
+                                        tags$p("Plots are displayed on the map only where they are: stored in BioNet Flora Survey AND listed as publicly available from BioNet Flora Survey AND allocated to a PCT by the NSW Vegetation Classification team; OR uploaded to this Plot to PCT ID tool during the current session.")
                                   )
+                         )
                        )
                      , width = "auto")
              

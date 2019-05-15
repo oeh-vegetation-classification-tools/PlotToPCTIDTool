@@ -19,6 +19,11 @@ library(DT)
 library(vegan)
 library(parallel)
 library(googleway)
+library(shinydashboard)
+library('sf')
+library('sp')
+
+
 
 source("functions.R")
 
@@ -76,6 +81,9 @@ shinyServer(function(input, output) {
       paste("example_floristic_data.csv")
     },
     content = function(file) {
+      
+      library(data.table)
+      
       write.csv(get_example_data(), file, row.names = F)
     }
   )
@@ -88,6 +96,10 @@ shinyServer(function(input, output) {
       shinyjs::show("linkDownloadDataCheckReport")
     }
   })
+  
+
+  
+  
   
   #/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   # NORMAL APP FUNCTION - USER SUPPLIED DATA --------------------------------
@@ -155,15 +167,27 @@ shinyServer(function(input, output) {
       
       numplots <- get_numplots(length(check_infile()$sites))
       #numplots<- is.null(numplots) ? numplots : 0
-
+      
+      
+      
+      numplotsWithEnvData<-0
+      numplotsWithSpatialData<-0
+      
       # place holder at the moment. TODO: needs to be recalculated based on additional data from matrix file.
       # mitch: if we want to handle incomplete environemtnal data, that will have to be done further down the track
               # TODO: include qa/qc of incoming environemtnal data, for the meantime, assume it's complete 
+      inFile <- input$file1
+      infile_df <- read.csv(inFile$datapath,
+                            header = T,
+                            stringsAsFactors = F)
+      names(infile_df)[1] <- "sites"
+      
       if (check_infile()$env_present) {
-        numplotsWithEnvAndSpatialData <- "Yes"
-      } else {
-        numplotsWithEnvAndSpatialData <- "No"
-      }
+        env_data <- select(infile_df, sites, one_of(non_floristic), -X)
+        numplotsWithEnvData <-nrow(data.frame(table(env_data$Latitude)))
+        numplotsWithSpatialData<-nrow(data.frame(table(env_data$Elevation)))
+        
+      } 
 
       numspecies <- ncol(check_infile()$floristics)
       #numspecies<- is.null(numspecies) ? numspecies : 0
@@ -182,8 +206,12 @@ shinyServer(function(input, output) {
                     <td>", numspecies ,"</td>
                     </tr>
                     <tr>
-                    <td>Was environmental and spatial data detected?</td>
-                    <td>", numplotsWithEnvAndSpatialData ,"</td>
+                    <td>Number of plots (rows) with environmental data detected?</td>
+                    <td>", numplotsWithEnvData ,"</td>
+                    </tr>
+                    <tr>
+                    <td>Number of plots (rows) with spatial data detected?</td>
+                    <td>", numplotsWithSpatialData ,"</td>
                     </tr>
                     </table></p>")
         
@@ -230,7 +258,43 @@ shinyServer(function(input, output) {
       # numplotsOutsideStudy = TotalPlots - PlotsInStudyRegion
       numplotsOutsideStudy <-NULL
       numplotsOutsideStudyHTML <-""
-
+      
+      
+      
+      inFile <- input$file1
+      infile_df <- read.csv(inFile$datapath,
+                            header = T,
+                            stringsAsFactors = F)
+      names(infile_df)[1] <- "sites"
+      
+      if (check_infile()$env_present) {
+        
+        env_data <- select(infile_df, sites, one_of(non_floristic), -X)
+        
+        polygonSF <- read_sf(dsn = "spatial/EasternNSW_PrimaryStudyArea_Merged.shp")
+        
+        st_crs(polygonSF)=4326
+        
+        
+        dat <- data.frame(Longitude =env_data$Longitude ,
+                          Latitude =env_data$Latitude,
+                          names = env_data$sites)                  
+        
+        
+        coordinates(dat) <- ~ Longitude + Latitude
+        
+        pointsSF <- st_as_sf(x = dat, coords = c("Longitude", "Latitude"), crs = st_crs(polygonSF))
+        
+        st_crs(pointsSF)=4326
+        
+        pointsSF <- st_transform(pointsSF, crs = st_crs(polygonSF))
+        
+        numplotsOutsideStudy<-nrow(data.frame(table(st_difference(pointsSF, polygonSF))))
+        
+      } 
+      
+      
+      
       if (is.null(numplotsOutsideStudy)){
         numplotsOutsideStudyHTML <- HTML(paste0("N/A. Spatial data not imported"))
       }else{
@@ -368,10 +432,7 @@ shinyServer(function(input, output) {
       type to see more details about that type 
       (incl. floristics and environmental characteristics).
       Switch between the characteristic species and centroid
-      based matches. The combined matches tab shows the 
-      types that were matched in both (ordered by distance to
-      centroid). The tabs above show more info about the data,
-      along with plots.</p>"
+      based matches. The environmental thresholds tab shows the whether the plot location is within known environment thresholds for matched vegetation types.</p>"
     } else {
       if (!is.null(check_infile())) {"<br> Press the analyse button to start!"}
     }
@@ -407,27 +468,46 @@ shinyServer(function(input, output) {
       on.exit(progress$close())
       threshold_results <- check_env_thresholds(style_matches()$cent_groups, env_thresh, match_data$matches$env_data)
       #### do the data table styling here i guess with either drop down or filtering options etc.
-      return(list(env_thresholds = threshold_results))
+      return(list(env_thresholds = style_matches_thresholds(threshold_results[order(threshold_results$Site_Name),])))
     } else {
       return(NULL)
     }
   })
   
   
+  
+  
+ 
+  
   #/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  output$char_table <- renderDataTable({
-    if (!is.null(match_data$matches)) style_matches()$char
-  })
+  output$char_table <- renderDataTable({ if (!is.null(match_data$matches)) datatable(array(style_matches()$char)[[1]]$data, selection=list(mode="single",target="cell")) %>%
+      formatStyle(grep("match", names(array(style_matches()$char)[[1]]$data)), 
+                  backgroundColor = styleInterval(cuts = c(51,76), 
+                                                  values = c("white","darkseagreen","chartreuse"))
+      ) })
+  
   output$cent_table <- renderDataTable({
-    if (!is.null(match_data$matches)) style_matches()$cent
+    if (!is.null(match_data$matches)) datatable(array(style_matches()$cent)[[1]]$data, selection=list(mode="single",target="cell")) %>%
+      formatStyle(grep("match", names(array(style_matches()$cent)[[1]]$data)), 
+                  backgroundColor = styleInterval(cuts = c(0.65,0.695), 
+                                                  values = c("chartreuse","darkseagreen","white"))
+      )
   })
-  output$combined_table <- renderDataTable({
-    if (!is.null(match_data$matches)) style_matches()$combined
-  })
+  # output$combined_table <- renderDataTable({
+  #   if (!is.null(match_data$matches)) style_matches()$combined
+  # })
   
   output$env_thresholds <- renderDataTable({
-    if (!is.null(match_data$matches$env_data)) style_env_thresholds()$env_thresholds
+    if (!is.null(match_data$matches$env_data)) 
+      DT::datatable(array(style_env_thresholds()$env_thresholds)[[1]]$data) %>%
+      formatStyle(c("Rainfall","Elevation","Temperature"), 
+                  backgroundColor = styleEqual(levels = c("Above","Below","Within"), 
+                                               values = c("orange","orange","green"),default = "white"))
   })
+  
+  
+  
+  
   
   
   #/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -444,7 +524,19 @@ shinyServer(function(input, output) {
       paste(gsub(".csv","",input$file1$name), "_char-matches", ".csv", sep = "")
     },
     content = function(file) {
-      write.csv(download_matches()$char, file, row.names = F)
+      
+      library(data.table)
+      myvar <- Sys.Date()
+      out_string <- paste0("Exported from NSW Plot to PCT ID Tool on",myvar,". Plot to PCT assignment version 22 March 2019\n", "=================\n")
+      cat(out_string, file = file, sep = '\n')
+      
+      fwrite(x = download_matches()$char,
+             file= file,
+             sep = ',',
+             col.names=T,
+             append=T)
+      
+      #write.csv(download_matches()$char, file, row.names = F)
     }
   )
   output$download_cent_matches <- downloadHandler(
@@ -452,7 +544,19 @@ shinyServer(function(input, output) {
       paste(gsub(".csv","",input$file1$name), "_cent-matches", ".csv", sep = "")
     },
     content = function(file) {
-      write.csv(download_matches()$cent, file, row.names = F)
+      
+      library(data.table)
+      myvar <- Sys.Date()
+      out_string <- paste0("Exported from NSW Plot to PCT ID Tool on",myvar,". Plot to PCT assignment version 22 March 2019\n", "=================\n")
+      cat(out_string, file = file, sep = '\n')
+      
+      fwrite(x = download_matches()$cent,
+             file= file,
+             sep = ',',
+             col.names=T,
+             append=T)
+      
+      #write.csv(download_matches()$cent, file, row.names = F)
     }
   )
   output$download_env_matches <- downloadHandler(
@@ -460,9 +564,51 @@ shinyServer(function(input, output) {
       paste(gsub(".csv","",input$file1$name), "_env-thresholds", ".csv", sep = "")
     },
     content = function(file) {
-      write.csv(download_matches()$env, file, row.names = F)
+      
+      # 
+      library(data.table)
+      myvar <- Sys.Date()
+      out_string <- paste0("Exported from NSW Plot to PCT ID Tool on",myvar,". Plot to PCT assignment version 22 March 2019\n", "=================\n")
+      cat(out_string, file = file, sep = '\n')
+      
+      fwrite(x = download_matches()$env,
+             file= file,
+             sep = ',',
+             col.names=T,
+             append=T)
+      
+      #write.csv(download_matches()$env, file, row.names = F)
     }
   )
+  
+  
+  get_PCTProfile_data <- reactive({
+    readRDS("data/GAP-EAST_plots.rds")
+  })
+  
+  output$PCTProfileData <- downloadHandler(
+    filename = function() {
+      paste("PCTProfile_data", ".csv", sep="")
+    },
+    content = function(file) {
+      # 
+      library(data.table)
+      myvar <- Sys.Date()
+      out_string <- paste0("Exported from NSW Plot to PCT ID Tool on",myvar,". Plot to PCT assignment version 22 March 2019\n", "=================\n")
+      cat(out_string, file = file, sep = '\n')
+    
+      fwrite(x = get_PCTProfile_data(),
+             file= file,
+             sep = ',',
+             col.names=T,
+             append=T)
+      
+      
+     # write.csv(get_PCTProfile_data(), file, row.names = F)
+    },
+    contentType="text/csv"
+  )
+  
   
   ### <-- need to add in download for envrionmental thresholds
   
@@ -493,6 +639,263 @@ shinyServer(function(input, output) {
     }
   })
   
+  
+  
+  #/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  
+  observe({
+
+    if (!is.null(match_data$matches)){
+      
+    if (!is.null(input$cent_table_cell_clicked$col))
+    {
+          ar<-array(style_matches()$cent)
+          
+          if (length(ar[[1]]$data)>=input$cent_table_cell_clicked$col){
+          
+          columnName <-colnames(ar[[1]]$data[input$cent_table_cell_clicked$col])
+    
+          if (!columnName==""){
+    
+          if (substr(columnName,1,nchar(columnName)-1)=="group"){
+            shinyjs::show("PCTSubmit")
+          } else {
+            shinyjs::hide("PCTSubmit")
+          }
+        }else{
+    
+          shinyjs::hide("PCTSubmit")
+        }
+          
+          }else{
+            
+            shinyjs::hide("PCTSubmit")
+          }
+          
+    }else{
+
+      shinyjs::hide("PCTSubmit")
+    }
+    
+    
+    
+    if (!is.null(input$char_table_cell_clicked$col))
+    {
+      ar<-array(style_matches()$char)
+      
+      if (length(ar[[1]]$data)>=input$cent_table_cell_clicked$col){
+      
+      columnName <-colnames(ar[[1]]$data[input$char_table_cell_clicked$col])
+      
+      if (!columnName==""){
+        
+          if (substr(columnName,1,nchar(columnName)-1)=="group"){
+            shinyjs::show("PCTSubmit2")
+          } else {
+            shinyjs::hide("PCTSubmit2")
+          }
+        }else{
+          
+          shinyjs::hide("PCTSubmit2")
+        }
+      }else{
+        
+        shinyjs::hide("PCTSubmit")
+      }
+      
+      
+    }else{
+      
+      shinyjs::hide("PCTSubmit2")
+    }
+      
+    }else{
+      
+      shinyjs::hide("PCTSubmit")
+      shinyjs::hide("PCTSubmit2")
+    }
+
+  })
+  
+  #/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  
+  output$PCTName <- renderUI({
+    
+    if (!is.null(input$cent_table_cell_clicked$col))
+    {
+      ar<-array(style_matches()$cent)
+      columnName <-colnames(ar[[1]]$data[input$cent_table_cell_clicked$col])
+      
+      if (!columnName==""){
+        
+        if (substr(columnName,1,nchar(columnName)-1)=="group"){
+      
+        pctname<-getPCTName(input$cent_table_cell_clicked$value)
+        h4(paste0("PCT Name ",pctname))
+        
+      }else{ h4("")}
+    }else{
+      
+      h4("")
+    }
+    }else{
+      
+      h4("")
+    }
+    
+  })
+  
+  output$PCTName2 <- renderUI({
+    
+    if (!is.null(input$char_table_cell_clicked$col))
+    {
+      ar<-array(style_matches()$char)
+      columnName <-colnames(ar[[1]]$data[input$char_table_cell_clicked$col])
+      
+      if (!columnName==""){
+        
+        if (substr(columnName,1,nchar(columnName)-1)=="group"){
+          
+          pctname<-getPCTName(input$char_table_cell_clicked$value)
+          h4(paste0("PCT Name ",pctname))
+          
+        }else{ h4("")}
+      }else{
+        
+        h4("")
+      }
+    }else{
+      
+      h4("")
+    }
+    
+  })
+  
+  #/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  
+  ClickedCentroidPCT <- eventReactive(input$cent_table_cell_clicked,{
+   
+    if (!is.null(input$cent_table_cell_clicked$col))
+    {
+      ar<-array(style_matches()$cent)
+      columnName <-colnames(ar[[1]]$data[input$cent_table_cell_clicked$col])
+      
+      if (!columnName==""){
+        
+        if (substr(columnName,1,nchar(columnName)-1)=="group"){
+        
+        pctprofile<-getPCTProfile(input$cent_table_cell_clicked$value)
+        HTML(paste0(pctprofile))
+        
+      }else{ "" }
+    }else{
+      
+      ""
+    }
+    }
+    
+  })
+  
+ 
+  observeEvent(input$PCTSubmit,{
+    # if (!is.null(input$cent_table_cell_clicked$col))
+    # {
+    #   ar<-array(style_matches()$cent)
+    #   columnName <-colnames(ar[[1]]$data[input$cent_table_cell_clicked$col])
+    #   
+    #   if (!columnName==""){
+    #     
+    #     if (substr(columnName,1,nchar(columnName)-1)=="group"){
+          showModal(modalDialog(title="PCT Profile",fluidPage(h2("PCT Profile"),br(),ClickedCentroidPCT()),size="l"))
+    #   }
+    #   }
+    # }
+    
+  })
+  
+
+  
+  #/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  
+  ClickedCharSppPCT <- eventReactive(input$char_table_cell_clicked,{
+    
+    if (!is.null(input$char_table_cell_clicked$col))
+    {
+      ar<-array(style_matches()$char)
+      columnName <-colnames(ar[[1]]$data[input$char_table_cell_clicked$col])
+      
+      if (!columnName==""){
+        
+        if (substr(columnName,1,nchar(columnName)-1)=="group"){
+          
+          pctprofile<-getPCTProfile(input$char_table_cell_clicked$value)
+          HTML(paste0(pctprofile))
+          
+        }else{""}
+      }else{
+        
+        ""
+      }
+    }
+    
+  })
+  
+  
+  
+  #output$selected2 <- renderText({paste0("PCT Name: ",ClickedCharSppPCT())})
+  observeEvent(input$PCTSubmit2,{
+    # if (!is.null(input$char_table_cell_clicked$col))
+    # {
+    #   ar<-array(style_matches()$char)
+    #   columnName <-colnames(ar[[1]]$data[input$char_table_cell_clicked$col])
+    #   
+    #   if (!columnName==""){
+    #     
+    #     if (substr(columnName,1,nchar(columnName)-1)=="group"){
+          showModal(modalDialog(title="PCT Profile data", fluidPage(h2("PCT Profile"),br(),ClickedCharSppPCT()),size = "l"))
+    #     }
+    #   }
+    # }
+    
+  })
+  
+  #/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  
+  
+  observe({
+    
+    library(zoo)
+    
+    fp<- file.path(getwd(), "data")
+    normalizePath(fp)
+    fi<-file.info(list.files(path=fp,pattern="pctdatadb.sqlite$", full.names=TRUE))
+    nhours<-as.numeric(difftime(Sys.time(),fi$ctime , units="hours"))
+    
+    if ((nhours>=720)||(length(nhours)==0)){
+      
+      #redo csv data
+      library("jsonlite")
+      fjs <- fromJSON("https://biodiversity.my.opendatasoft.com/api/odata/testdata?apikey=e37a9d51f1cf91617f70085f3c0be6882dd589b497742ce2df604dde")
+      
+      
+      library(DBI)
+      library(datamart)
+      # Initialize a temporary in memory database and copy a data.frame into it
+      con <- dbConnect(RSQLite::SQLite(), dbname="data/pctdatadb.sqlite")
+      dbWriteTable(con, "pctdata", fjs$value, overwrite=TRUE)
+     
+      # clean up
+      dbDisconnect(con)
+      
+    }
+    
+    
+   
+    
+    
+  })
+  
+  #/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   
   
   map_key <- 'AIzaSyCiWLYufriPNDL7DIiWKyeYeKYVSDCPoZ0'
