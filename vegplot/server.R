@@ -20,10 +20,16 @@ library(vegan)
 library(parallel)
 library(googleway)
 library(shinydashboard)
-library('sf')
-library('sp')
 
 
+library(data.table)
+library(zoo)
+library("jsonlite")
+library(DBI)
+library(datamart)
+
+require(sf)
+require(sp)
 
 source("functions.R")
 
@@ -82,7 +88,7 @@ shinyServer(function(input, output) {
     },
     content = function(file) {
       
-      library(data.table)
+      
       
       write.csv(get_example_data(), file, row.names = F)
     }
@@ -468,7 +474,7 @@ shinyServer(function(input, output) {
       on.exit(progress$close())
       threshold_results <- check_env_thresholds(style_matches()$cent_groups, env_thresh, match_data$matches$env_data)
       #### do the data table styling here i guess with either drop down or filtering options etc.
-      return(list(env_thresholds = style_matches_thresholds(threshold_results[order(threshold_results$Site_Name),])))
+      return(list(env_thresholds = threshold_results[order(threshold_results$Site_Name),]))
     } else {
       return(NULL)
     }
@@ -498,16 +504,12 @@ shinyServer(function(input, output) {
   # })
   
   output$env_thresholds <- renderDataTable({
-    if (!is.null(match_data$matches$env_data)) 
-      DT::datatable(array(style_env_thresholds()$env_thresholds)[[1]]$data) %>%
-      formatStyle(c("Rainfall","Elevation","Temperature"), 
-                  backgroundColor = styleEqual(levels = c("Above","Below","Within"), 
-                                               values = c("orange","orange","green"),default = "white"))
+    if (!is.null(match_data$matches$env_data)) style_matches_thresholds(style_env_thresholds()$env_thresholds)
   })
   
   
   
-  
+   
   
   
   #/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -525,7 +527,7 @@ shinyServer(function(input, output) {
     },
     content = function(file) {
       
-      library(data.table)
+   
       myvar <- Sys.Date()
       out_string <- paste0("Exported from NSW Plot to PCT ID Tool on",myvar,". Plot to PCT assignment version 22 March 2019\n", "=================\n")
       cat(out_string, file = file, sep = '\n')
@@ -545,7 +547,7 @@ shinyServer(function(input, output) {
     },
     content = function(file) {
       
-      library(data.table)
+   
       myvar <- Sys.Date()
       out_string <- paste0("Exported from NSW Plot to PCT ID Tool on",myvar,". Plot to PCT assignment version 22 March 2019\n", "=================\n")
       cat(out_string, file = file, sep = '\n')
@@ -566,7 +568,7 @@ shinyServer(function(input, output) {
     content = function(file) {
       
       # 
-      library(data.table)
+     
       myvar <- Sys.Date()
       out_string <- paste0("Exported from NSW Plot to PCT ID Tool on",myvar,". Plot to PCT assignment version 22 March 2019\n", "=================\n")
       cat(out_string, file = file, sep = '\n')
@@ -592,7 +594,7 @@ shinyServer(function(input, output) {
     },
     content = function(file) {
       # 
-      library(data.table)
+   
       myvar <- Sys.Date()
       out_string <- paste0("Exported from NSW Plot to PCT ID Tool on",myvar,". Plot to PCT assignment version 22 March 2019\n", "=================\n")
       cat(out_string, file = file, sep = '\n')
@@ -864,7 +866,7 @@ shinyServer(function(input, output) {
   
   observe({
     
-    library(zoo)
+  
     
     fp<- file.path(getwd(), "data")
     normalizePath(fp)
@@ -874,12 +876,11 @@ shinyServer(function(input, output) {
     if ((nhours>=720)||(length(nhours)==0)){
       
       #redo csv data
-      library("jsonlite")
+      
       fjs <- fromJSON("https://biodiversity.my.opendatasoft.com/api/odata/testdata?apikey=e37a9d51f1cf91617f70085f3c0be6882dd589b497742ce2df604dde")
       
       
-      library(DBI)
-      library(datamart)
+      
       # Initialize a temporary in memory database and copy a data.frame into it
       con <- dbConnect(RSQLite::SQLite(), dbname="data/pctdatadb.sqlite")
       dbWriteTable(con, "pctdata", fjs$value, overwrite=TRUE)

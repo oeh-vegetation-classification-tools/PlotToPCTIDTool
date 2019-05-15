@@ -148,7 +148,7 @@ match_topn <- function(cent, char, topn) {
 style_matches_char <- function(table) {
   DT::datatable(table) %>%
     formatStyle(grep("match", names(table)), 
-              backgroundColor = styleInterval(cuts = c(50,80), 
+              backgroundColor = styleInterval(cuts = c(51,76), 
                                               values = c("white","darkseagreen","chartreuse"))
   )
 }
@@ -159,6 +159,14 @@ style_matches_cent <- function(table) {
     formatStyle(grep("match", names(table)), 
                 backgroundColor = styleInterval(cuts = c(0.65,0.695), 
                                                 values = c("chartreuse","darkseagreen","white"))
+    )
+}
+
+style_matches_thresholds <- function(table) {
+  DT::datatable(table) %>%
+    formatStyle(c("Rainfall","Elevation","Temperature"), 
+                backgroundColor = styleEqual(levels = c("Above","Below","Within"), 
+                                             values = c("orange","orange","green"),default = "white")
     )
 }
 
@@ -260,3 +268,57 @@ reorder_data<-function(matchedData) {
 make_sites_ord <- function(infile) {
   ord <- metaMDS(infile[,-1], trace = 0)
 }
+
+
+getPCTName<- function(pctid) {
+  # Initialize a temporary in memory database and copy a data.frame into it
+  con <- dbConnect(RSQLite::SQLite(), dbname="data/pctdatadb.sqlite")
+  
+  rs <- dbSendQuery(con, "SELECT * FROM pctdata where pctid=55")
+  d1 <- dbFetch(rs)
+  dbHasCompleted(rs)
+  dbClearResult(rs)
+  
+  # clean up
+  dbDisconnect(con)
+  return(d1$pctname)
+}
+
+getPCTProfile<- function(pctid) {
+  # Initialize a temporary in memory database and copy a data.frame into it
+  # con <- dbConnect(RSQLite::SQLite(), dbname="data/pctdatadb.sqlite")
+  # 
+  # rs <- dbSendQuery(con, "SELECT * FROM pctdata where pctid=55")
+  # d1 <- dbFetch(rs)
+  # dbHasCompleted(rs)
+  # dbClearResult(rs)
+  # 
+  # # clean up
+  # dbDisconnect(con)
+  
+  pctprofile<-HTML(paste0("PCTID<br/>"
+                          ,"PCT Name<br/>"
+                          ,"Vegetation description<br/>"
+                          ,"Classification confidence level<br/>"
+                          ,"Number of Primary replicates<br/>"
+                          ,"Number of Secondary replicates<br/>"
+                          ,"Vegetation Formation<br/>"
+                          ,"Vegetation Class<br/>"
+                          ,"IBRA Subregion(s)<br/>"
+                          ,"Elevation max<br/>"
+                          ,"Elevation min<br/>"
+                          ,"Elevation median<br/>"
+                          ,"Rainfall max<br/>"
+                          ,"Rainfall min<br/>"
+                          ,"Rainfall median<br/>"
+                          ,"Temperature max<br/>"
+                          ,"Temperature min<br/>"
+                          ,"Temperature median<br/>"
+                          ,"TEC list<br/>"
+                          ,"TEC Act<br/>"
+                          ,"Median species richness<br/>")
+  )
+  
+  return(pctprofile)
+}
+
