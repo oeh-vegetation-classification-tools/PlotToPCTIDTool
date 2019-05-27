@@ -11,31 +11,42 @@
 #       > library(rsconnect)
 #       > deployApp()
 
-library(shiny)
+
 library(dplyr)
 library(tidyr)
 library(purrr)
 library(DT)
 library(vegan)
 library(parallel)
-library(googleway)
-library(shinydashboard)
+
 
 
 library(data.table)
 library(zoo)
 library("jsonlite")
 library(DBI)
+library(RSQLite)
 library(datamart)
 
-require(sf)
-require(sp)
+
+library(rgdal)
+library(sp)
+library(maps)
+library("OData")
+
+library(leaflet)
+library(RColorBrewer)
+
+library(sqldf)
+library(loggit)
+
+setLogFile("www/applog.json")
 
 source("functions.R")
 
 # Define server logic 
 
-shinyServer(function(input, output) {
+shinyServer(function(input, output,session) {
 
   # # RUN EXAMPLE ON SERVER DATA ----------------------------------------------
   
@@ -78,6 +89,10 @@ shinyServer(function(input, output) {
   
   #/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   
+ 
+  loggit("INFO","session started", log_detail="session has started", event = "session start",sessionid=isolate(session$token), echo = FALSE)
+  
+ 
   get_example_data <- reactive({
     readRDS("data/GAP-EAST_plots.rds")
   })
@@ -87,10 +102,7 @@ shinyServer(function(input, output) {
       paste("example_floristic_data.csv")
     },
     content = function(file) {
-      
-      
-      
-      write.csv(get_example_data(), file, row.names = F)
+          write.csv(get_example_data(), file, row.names = F)
     }
   )
   
@@ -221,7 +233,16 @@ shinyServer(function(input, output) {
                     </tr>
                     </table></p>")
         
-      }
+        
+        txtResult<-paste0("Number of plots (rows):", numplots ,", Number of species (columns):", numspecies ,", Number of plots (rows) with environmental data detected:", numplotsWithEnvData ,"
+                   , Number of plots (rows) with spatial data detected:", numplotsWithSpatialData)
+        
+        loggit("INFO","uploadresults", log_detail=txtResult,numplots=numplots, numspecies=numspecies, numplotsWithEnvData=numplotsWithEnvData,numplotsWithSpatialData=numplotsWithSpatialData, event = "upload", sessionid=isolate(session$token), echo = FALSE)
+        
+        
+    }
+    
+    
       
   
     return(list(uploadresults=HTMLResult))
@@ -277,25 +298,30 @@ shinyServer(function(input, output) {
         
         env_data <- select(infile_df, sites, one_of(non_floristic), -X)
         
-        polygonSF <- read_sf(dsn = "spatial/EasternNSW_PrimaryStudyArea_Merged.shp")
-        
-        st_crs(polygonSF)=4326
-        
+       
+        wa.map <- readOGR("spatial/EasternNSW_PrimaryStudyArea_Merged.shp", layer="EasternNSW_PrimaryStudyArea_Merged")
+        sodo <- wa.map[0]
+        proj4string(sodo)<-CRS("+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs +towgs84=0,0,0")
         
         dat <- data.frame(Longitude =env_data$Longitude ,
                           Latitude =env_data$Latitude,
                           names = env_data$sites)                  
         
+        p<-dat
+        coordinates(p) <- ~ Longitude + Latitude
+        proj4string(p) <- proj4string(sodo)
         
-        coordinates(dat) <- ~ Longitude + Latitude
-        
-        pointsSF <- st_as_sf(x = dat, coords = c("Longitude", "Latitude"), crs = st_crs(polygonSF))
-        
-        st_crs(pointsSF)=4326
-        
-        pointsSF <- st_transform(pointsSF, crs = st_crs(polygonSF))
-        
-        numplotsOutsideStudy<-nrow(data.frame(table(st_difference(pointsSF, polygonSF))))
+        x<-p[sodo,]
+        #plot(sodo)
+        #plot(x, col="red" , add=TRUE, lwd=4)
+        common <- setdiff(dat$names, x@data$names)  
+        #pts<-SpatialPoints(cbind(dat$Longitude,dat$Latitude))
+        #plot(pts, col="blue", add=TRUE)
+        if (length(common)>0){
+          numplotsOutsideStudy<-toString(common) 
+        }else{
+        numplotsOutsideStudy<-length(common)
+        }
         
       } 
       
@@ -309,6 +335,9 @@ shinyServer(function(input, output) {
       }
 
     }
+    
+    txtResult<-paste0("Species names not found:", missingSpeciesList ,", Plots outside study region:", numplotsOutsideStudyHTML)
+    loggit("INFO","uploadresults", log_detail=txtResult, missingSpeciesList=missingSpeciesList, numplotsOutsideStudy=numplotsOutsideStudy, event = "upload", sessionid=isolate(session$token), echo = FALSE)
 
         return(list(results=paste0("<p style='padding:10px'><h4>Data checks:</h4>
                                     <table border='1px' style='width:100%; padding:5px;'>
@@ -399,32 +428,6 @@ shinyServer(function(input, output) {
   
   
   #/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  # info on main screen
-  # output$info_main_text <- renderText({
-  #   
-  #     # Text to show once analysis is done
-  #     "<p style='text-align:justify;padding:10px 10px 1px 10px;'>
-  #       This Plot to PCT matching tool is intended to assist in the assignment of standard 400m2 full floristic survey plots to Plant Community Types (PCT) for the east coast and tablelands of NSW.
-  #      </p>
-  #       <p style='text-align:justify;padding:1px 10px 1px 2px;'>
-  #       This tool functions for plots located within the east coast and tablelands region. Qualitative PCTs or PCTs occurring outside the study region cannot be identified using this tool.
-  #       </p>
-  #       <p style='text-align:justify;padding:1px 10px 1px 2px;'>
-  #       Information and data on all NSW PCTs is stored in the BioNet Vegetation Classification database. This tool draws on information stored in BioNet.
-  #       </p>
-  #       <p style='text-align:justify;padding:1px 10px 1px 2px;'>
-  #       Data imported into this tool is assumed to have been exported from the BioNet Flora Survey database in the correct format. If you haven’t yet done so, please enter plot data into BioNet FS and then follow the user guide to export data in the format ready for this tool.
-  #       </p>
-  #       <p style='text-align:justify;padding:1px 10px 1px 2px;'>
-  #       This tool is designed to assist with PCT allocation only. Allocation of a plot to a PCT requires consideration of floristic, environmental and spatial variables, as well as disturbance and condition of the plot.
-  #      </p>
-  #       <p style='text-align:justify;padding:1px 10px 1px 2px;'>
-  #       This tool was developed by OEH and UNSW with funding from the Australian Research Council (ARC) grant number LP150100972.
-  #   </p>"
-  #   
-  # })
-  # 
-  
   
   
   # info on analysis
@@ -439,6 +442,7 @@ shinyServer(function(input, output) {
       (incl. floristics and environmental characteristics).
       Switch between the characteristic species and centroid
       based matches. The environmental thresholds tab shows the whether the plot location is within known environment thresholds for matched vegetation types.</p>"
+      
     } else {
       if (!is.null(check_infile())) {"<br> Press the analyse button to start!"}
     }
@@ -538,9 +542,11 @@ shinyServer(function(input, output) {
              col.names=T,
              append=T)
       
-      #write.csv(download_matches()$char, file, row.names = F)
-    }
-  )
+      loggit("INFO","download char_matches", log_detail="download char_matches", event = "download", sessionid=isolate(session$token), echo = FALSE) 
+      
+    })
+  
+  
   output$download_cent_matches <- downloadHandler(
     filename = function() {
       paste(gsub(".csv","",input$file1$name), "_cent-matches", ".csv", sep = "")
@@ -558,17 +564,21 @@ shinyServer(function(input, output) {
              col.names=T,
              append=T)
       
+      
+      loggit("INFO","download centroid_matches", log_detail="download centroid_matches", event = "download", sessionid=isolate(session$token), echo = FALSE) 
+      
       #write.csv(download_matches()$cent, file, row.names = F)
     }
+    
   )
+  
+  
   output$download_env_matches <- downloadHandler(
     filename = function() {
       paste(gsub(".csv","",input$file1$name), "_env-thresholds", ".csv", sep = "")
     },
     content = function(file) {
       
-      # 
-     
       myvar <- Sys.Date()
       out_string <- paste0("Exported from NSW Plot to PCT ID Tool on",myvar,". Plot to PCT assignment version 22 March 2019\n", "=================\n")
       cat(out_string, file = file, sep = '\n')
@@ -580,7 +590,11 @@ shinyServer(function(input, output) {
              append=T)
       
       #write.csv(download_matches()$env, file, row.names = F)
+      
+      loggit("INFO","link to download_env_matches", log_detail="link to download_env_matches", event = "download",  sessionid=isolate(session$token), echo = FALSE)  
+      
     }
+    
   )
   
   
@@ -605,10 +619,12 @@ shinyServer(function(input, output) {
              col.names=T,
              append=T)
       
+      loggit("INFO","download PCTProfile_data", log_detail="download PCTProfile_data", event = "download",  sessionid=isolate(session$token), echo = FALSE)
       
      # write.csv(get_PCTProfile_data(), file, row.names = F)
     },
     contentType="text/csv"
+   
   )
   
   
@@ -625,6 +641,7 @@ shinyServer(function(input, output) {
     content = function(file) {
       write.csv(getDataCheckReport(), file, row.names = F)
     }
+   
   )
   
 
@@ -660,7 +677,7 @@ shinyServer(function(input, output) {
         if (substr(columnName,1,nchar(columnName)-1)=="group"){
           shinyjs::show("PCTSubmit")
         pctname<-getPCTName(input$cent_table_cell_clicked$value)
-        h4(paste0("PCT Name ",pctname))
+        h4(paste0(" PCT Name ",pctname))
         
         }else{ h4("")
           shinyjs::hide("PCTSubmit")
@@ -690,7 +707,7 @@ shinyServer(function(input, output) {
         if (substr(columnName,1,nchar(columnName)-1)=="group"){
           shinyjs::show("PCTSubmit2")
           pctname<-getPCTName(input$char_table_cell_clicked$value)
-          h4(paste0("PCT Name ",pctname))
+          h4(paste0(" PCT Name ",pctname))
           
         }else{ h4("")
           shinyjs::hide("PCTSubmit2")
@@ -744,7 +761,7 @@ shinyServer(function(input, output) {
     #   if (!columnName==""){
     #     
     #     if (substr(columnName,1,nchar(columnName)-1)=="group"){
-          showModal(modalDialog(title="PCT Profile",fluidPage(h2("PCT Profile"),br(),ClickedCentroidPCT()),size="l"))
+          showModal(modalDialog(title="PCT Profile",fluidPage(br(),ClickedCentroidPCT()),size="l"))
     #   }
     #   }
     # }
@@ -792,7 +809,7 @@ shinyServer(function(input, output) {
     #   if (!columnName==""){
     #     
     #     if (substr(columnName,1,nchar(columnName)-1)=="group"){
-          showModal(modalDialog(title="PCT Profile data", fluidPage(h2("PCT Profile"),br(),ClickedCharSppPCT()),size = "l"))
+          showModal(modalDialog(title="PCT Profile data", fluidPage(br(),ClickedCharSppPCT()),size = "l"))
     #     }
     #   }
     # }
@@ -802,29 +819,80 @@ shinyServer(function(input, output) {
   #/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   
   
-  observe({
-    
+
   
+  
+  observe({
     
     fp<- file.path(getwd(), "data")
     normalizePath(fp)
     fi<-file.info(list.files(path=fp,pattern="pctdatadb.sqlite$", full.names=TRUE))
     nhours<-as.numeric(difftime(Sys.time(),fi$ctime , units="hours"))
     
-    if ((nhours>=720)||(length(nhours)==0)){
-      
-      #redo csv data
-      
-      fjs <- fromJSON("https://biodiversity.my.opendatasoft.com/api/odata/testdata?apikey=e37a9d51f1cf91617f70085f3c0be6882dd589b497742ce2df604dde")
+    if ((nhours>=4320)||(length(nhours)==0)){
       
       
+      ## PCT Data updates -------------------------------------------------------------------------------------------
+      pctdata<-retrieveData("https://biodiversity.my.opendatasoft.com/api/odata/pctdata?apikey=e37a9d51f1cf91617f70085f3c0be6882dd589b497742ce2df604dde")
       
+      nextlink<-pctdata[["@odata.nextLink"]]
+      
+      n<-as.integer(length(pctdata$value))
       # Initialize a temporary in memory database and copy a data.frame into it
       con <- dbConnect(RSQLite::SQLite(), dbname="data/pctdatadb.sqlite")
-      dbWriteTable(con, "pctdata", fjs$value, overwrite=TRUE)
-     
+      dbExecute(con,"DELETE FROM pctdata")
+      for (i in 1:n){
+        
+        fjs_df<-as.data.frame(pctdata$value[i], stringsAsFactors = F)
+        dbWriteTable(con, "pctdata",fjs_df, overwrite=F, append=T)
+        
+      }
       # clean up
       dbDisconnect(con)
+      
+      while(!is.null(nextlink))
+      {
+        pctdata2<-retrieveData(nextlink)
+        nextlink<-pctdata2[["@odata.nextLink"]]
+        n2<-as.integer(length(pctdata2$value))
+        # Initialize a temporary in memory database and copy a data.frame into it
+        con <- dbConnect(RSQLite::SQLite(), dbname="data/pctdatadb.sqlite")
+        
+        for (i2 in 1:n2){
+          
+          fjs_df<-as.data.frame(pctdata$value[i2], stringsAsFactors = F)
+          dbWriteTable(con, "pctdata",fjs_df, overwrite=F, append=T)
+          
+        }
+        # clean up
+        dbDisconnect(con)
+      }
+      
+      ## FSurvey data updates -------------------------------------------------------
+     
+      fjs <- fromJSON("https://biodiversity.my.opendatasoft.com/api/odata/fsdata?apikey=e37a9d51f1cf91617f70085f3c0be6882dd589b497742ce2df604dde")
+      
+      nextlink<-fjs[["@odata.nextLink"]]
+      
+      fjs_df<-as.data.frame(fjs$value)
+      
+      while(!is.null(nextlink))
+      {
+        
+        fsj2<-fromJSON(nextlink)
+        nextlink<-fsj2[["@odata.nextLink"]]
+        fjs2_df<-as.data.frame(fsj2$value)
+        fjs_df<-rbind(fjs_df,fjs2_df)
+        
+      }
+      con <- dbConnect(RSQLite::SQLite(), dbname="data/pctdatadb.sqlite")
+      dbExecute(con,"DELETE FROM fsdata")
+      dbWriteTable(con, "fsdata", fjs_df)
+      # clean up
+      dbDisconnect(con)
+      
+      ## End FS data ---------------------------------------------------------------------
+      
       
     }
     
@@ -833,23 +901,179 @@ shinyServer(function(input, output) {
     
     
   })
+
   
-  #/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  
-  
-  map_key <- 'AIzaSyCiWLYufriPNDL7DIiWKyeYeKYVSDCPoZ0'
-  
-  output$map <- renderGoogle_map({
-    
-    ## different colour palettes
-    lstPalette <- list(fill_colour = colorRampPalette(c("red","blue")),
-                       stroke_colour = viridisLite::plasma)
-    
-    google_map(key = map_key, data = tram_stops) %>%
-      add_circles(lat = "stop_lat", lon = "stop_lon", fill_colour = "stop_name",
-                  stroke_weight = 0.3, stroke_colour = "stop_name", palette = lstPalette, info_window ="stop_id")
-    
+  # Reactive expression for the data subsetted to what the user selected
+  filteredData <- reactive({
+    if (!is.null(match_data$matches)) {
+      if (check_infile()$env_present) {
+        return(match_data$matches$env_data)
+      }
+    }
   })
+  
+  
+  output$map <- renderLeaflet({
+    # Use leaflet() here, and only include aspects of the map that
+    # won't need to change dynamically (at least, not unless the
+    # entire map is being torn down and recreated).
+    
+    pctplotsdata<-pctplots$data
+
+    colfunc <- colorRampPalette(c("AliceBlue", "AntiqueWhite",  "Aquamarine", "Azure", "Beige", "Bisque", "Black", "BlanchedAlmond",
+                                  "Blue", "BlueViolet", "Brown", "BurlyWood", "CadetBlue", "Chartreuse", "Chocolate", "Coral", "CornflowerBlue",
+                                  "Cornsilk",  "Cyan", "DarkBlue", "DarkCyan", "DarkGoldenRod", "DarkGray", "DarkGrey", "DarkGreen",
+                                  "DarkKhaki", "DarkMagenta", "DarkOliveGreen", "DarkOrange", "DarkOrchid", "DarkRed", "DarkSalmon", "DarkSeaGreen",
+                                  "DarkSlateBlue", "DarkSlateGray", "DarkSlateGrey", "DarkTurquoise", "DarkViolet", "DeepPink", "DeepSkyBlue", "DimGray",
+                                  "DimGrey", "DodgerBlue", "FireBrick", "FloralWhite", "ForestGreen",  "Gainsboro", "GhostWhite", "Gold",
+                                  "GoldenRod", "Gray", "Grey", "Green", "GreenYellow", "HoneyDew", "HotPink", "IndianRed",  "Ivory", "Khaki",
+                                  "Lavender", "LavenderBlush", "LawnGreen", "LemonChiffon", "LightBlue", "LightCoral", "LightCyan", "LightGoldenRodYellow",
+                                  "LightGray", "LightGrey", "LightGreen", "LightPink", "LightSalmon", "LightSeaGreen", "LightSkyBlue", "LightSlateGray",
+                                  "LightSlateGrey", "LightSteelBlue", "LightYellow",  "LimeGreen", "Linen", "Magenta", "Maroon", "MediumAquaMarine",
+                                  "MediumBlue", "MediumOrchid", "MediumPurple", "MediumSeaGreen", "MediumSlateBlue", "MediumSpringGreen", "MediumTurquoise",
+                                  "MediumVioletRed", "MidnightBlue", "MintCream", "MistyRose", "Moccasin", "NavajoWhite", "Navy", "OldLace",  "OliveDrab",
+                                  "Orange", "OrangeRed", "Orchid", "PaleGoldenRod", "PaleGreen", "PaleTurquoise", "PaleVioletRed", "PapayaWhip", "PeachPuff",
+                                  "Peru", "Pink", "Plum", "PowderBlue", "Purple", "RosyBrown", "RoyalBlue", "SaddleBrown", "Salmon",
+                                  "SandyBrown", "SeaGreen", "SeaShell", "Sienna",  "SkyBlue", "SlateBlue", "SlateGray", "SlateGrey", "Snow",
+                                  "SpringGreen", "SteelBlue", "Tan", "Thistle", "Tomato", "Turquoise", "Violet", "Wheat", "White", "WhiteSmoke", "Yellow", "YellowGreen"))
+    
+    colfuncMatched <- colorRampPalette(c("AliceBlue", "AntiqueWhite",  "Aquamarine", "Azure", "Beige", "Bisque", "Black", "BlanchedAlmond",
+                                         "Blue", "BlueViolet", "Brown", "BurlyWood", "CadetBlue", "Chartreuse", "Chocolate", "Coral", "CornflowerBlue",
+                                         "Cornsilk",  "Cyan", "DarkBlue", "DarkCyan", "DarkGoldenRod", "DarkGray", "DarkGrey", "DarkGreen",
+                                         "DarkKhaki", "DarkMagenta", "DarkOliveGreen", "DarkOrange", "DarkOrchid", "DarkRed", "DarkSalmon", "DarkSeaGreen",
+                                         "DarkSlateBlue", "DarkSlateGray", "DarkSlateGrey", "DarkTurquoise", "DarkViolet", "DeepPink", "DeepSkyBlue", "DimGray",
+                                         "DimGrey", "DodgerBlue", "FireBrick", "FloralWhite", "ForestGreen",  "Gainsboro", "GhostWhite", "Gold",
+                                         "GoldenRod", "Gray", "Grey", "Green", "GreenYellow", "HoneyDew", "HotPink", "IndianRed",  "Ivory", "Khaki",
+                                         "Lavender", "LavenderBlush", "LawnGreen", "LemonChiffon", "LightBlue", "LightCoral", "LightCyan", "LightGoldenRodYellow"))
+    
+    
+    
+    
+    colfuncUnmatched <- colorRampPalette(c("LightGray", "LightGrey", "LightGreen", "LightPink", "LightSalmon", "LightSeaGreen", "LightSkyBlue", "LightSlateGray",
+                                           "LightSlateGrey", "LightSteelBlue", "LightYellow",  "LimeGreen", "Linen", "Magenta", "Maroon", "MediumAquaMarine",
+                                           "MediumBlue", "MediumOrchid", "MediumPurple", "MediumSeaGreen", "MediumSlateBlue", "MediumSpringGreen", "MediumTurquoise",
+                                           "MediumVioletRed", "MidnightBlue", "MintCream", "MistyRose", "Moccasin", "NavajoWhite", "Navy", "OldLace",  "OliveDrab",
+                                           "Orange", "OrangeRed", "Orchid", "PaleGoldenRod", "PaleGreen", "PaleTurquoise", "PaleVioletRed", "PapayaWhip", "PeachPuff",
+                                           "Peru", "Pink", "Plum", "PowderBlue", "Purple", "RosyBrown", "RoyalBlue", "SaddleBrown", "Salmon",
+                                           "SandyBrown", "SeaGreen", "SeaShell", "Sienna",  "SkyBlue", "SlateBlue", "SlateGray", "SlateGrey", "Snow",
+                                           "SpringGreen", "SteelBlue", "Tan", "Thistle", "Tomato", "Turquoise", "Violet", "Wheat", "White", "WhiteSmoke", "Yellow", "YellowGreen"))
+    
+    
+    
+    
+    categories<-pctplotsdata$pctid
+    RdYlBu <- colorFactor(colfunc(3000), domain = categories)
+   
+
+    if ((!is.null(match_data$matches))&&(check_infile()$env_present)) {
+      
+      
+      dt<-style_matches()$cent$x$data %>% select(starts_with("group"))
+      allplots<-sqldf("select replace(pctid,'.','_') pctid from pctplotsdata")
+      
+      SQLString<-""
+      for (i in 1:length(dt)){
+        
+        if (i==length(dt)){
+          SQLString<-paste0(SQLString,"select group",i," as pctid from dt")
+        }else{
+          SQLString<-paste0(SQLString,"select group",i," as pctid from dt union ")
+        } 
+      }
+      
+      matchedplots<-sqldf(SQLString)
+      unmatchedplots<-setdiff(allplots, matchedplots)
+      
+      matchedplots<- sqldf("SELECT * from pctplotsdata where replace(pctid,'.','_') in (SELECT pctid FROM matchedplots)")
+      unmatchedplots<- sqldf("SELECT * from pctplotsdata where replace(pctid,'.','_') in (SELECT pctid FROM unmatchedplots)")
+      
+      MatchedCol <-colorFactor(colfuncMatched(3000), domain = matchedplots$pctid)
+      UnMatchedCol <-colorFactor(colfuncUnmatched(3000), domain = unmatchedplots$pctid)
+      
+      
+      leaflet(data=filteredData() )%>% addTiles() %>%
+        addProviderTiles(providers$Esri.WorldTopoMap)%>%
+        fitBounds(~min(filteredData()$Longitude), ~min(filteredData()$Latitude), ~max(filteredData()$Longitude), ~max(filteredData()$Latitude)) %>%
+        clearShapes() %>%
+        clearMarkers()%>%
+        addMarkers(lat = ~filteredData()$Latitude,lng = ~filteredData()$Longitude,layerId = ~filteredData()$sites,
+                   popup = ~paste("<b>Site no:</b>",filteredData()$sites,"<br/><b>Lat:</b>",filteredData()$Latitude," <b>Long:</b>",filteredData()$Longitude)) %>%
+        
+        addCircles(radius= 100, lat = ~matchedplots$lat, lng = ~matchedplots$long, layerId = ~matchedplots$siteno, color =~MatchedCol(matchedplots$pctid), fillColor =~MatchedCol(matchedplots$pctid),opacity = 1,   fillOpacity = 0.7,
+                   data = matchedplots, popup = ~paste("<b>Survey name:</b>", matchedplots$surveyname  ,"<br/><b>Site no:</b>",matchedplots$siteno,"<br/><b>Lat:</b>",matchedplots$lat," <b>Long:</b>",matchedplots$long,"<br/><b>PCT:</b>", matchedplots$pctname, "<br/><b>PCT id:</b>", matchedplots$pctid,"<br/><b>PCT assignment category:</b>",matchedplots$pctassignmentcategory ))%>%
+      
+      addCircles(radius= 50, lat = ~unmatchedplots$lat, lng = ~unmatchedplots$long, layerId = ~unmatchedplots$siteno, color = ~UnMatchedCol(unmatchedplots$pctid),  fillOpacity = 0.5, group = "Unmatched plots",
+                 data = unmatchedplots, popup = ~paste("<b>Survey name:</b>", unmatchedplots$surveyname  ,"<br/><b>Site no:</b>",unmatchedplots$siteno,"<br/><b>Lat:</b>",unmatchedplots$lat," <b>Long:</b>",unmatchedplots$long,"<br/><b>PCT:</b>", unmatchedplots$pctname, "<br/><b>PCT id:</b>", unmatchedplots$pctid,"<br/><b>PCT assignment category:</b>",unmatchedplots$pctassignmentcategory))%>%
+                     hideGroup("Unmatched plots")%>%
+            addLayersControl(
+              overlayGroups = c("Unmatched plots"),
+              options = layersControlOptions(collapsed = FALSE)
+            )
+                  
+    }else{
+      leaflet(data=pctplotsdata)%>% 
+        addProviderTiles(providers$Esri.WorldTopoMap)%>%
+        clearShapes() %>%
+        clearMarkers()%>%
+        setView(lat =-33.819775 , lng =150.994018 , zoom = 11) %>%
+        addCircles(radius= 100, lat = ~pctplotsdata$lat, lng = ~pctplotsdata$long, layerId = ~pctplotsdata$siteno, color = ~RdYlBu(pctplotsdata$pctid),fillColor =~RdYlBu(pctplotsdata$pctid),   fillOpacity = 0.7,opacity = 1,
+                   data = pctplotsdata, popup = ~paste("<b>Survey name:</b>", pctplotsdata$surveyname  ,"<br/><b>Site no:</b>",pctplotsdata$siteno,"<br/><b>Lat:</b>",pctplotsdata$lat,"<b>Long:</b>",pctplotsdata$long,"<br/><b>PCT:</b>", pctplotsdata$pctname, "<br/><b>PCT id:</b>", pctplotsdata$pctid,"<br/><b>PCT assignment category:</b>",pctplotsdata$pctassignmentcategory))
+      
+    }
+  })
+
+  
+  pctplots <- reactiveValues(data = NULL)
+  observe({
+
+
+    # Initialize a temporary in memory database and copy a data.frame into it
+    con <- dbConnect(RSQLite::SQLite(), dbname="data/pctdatadb.sqlite")
+    
+    SQLQuery<-paste0("SELECT * FROM fsdata WHERE lat is not NULL ORDER BY pctid")
+    
+    if ((!is.null(match_data$matches))&&(check_infile()$env_present)) {
+
+      SQLQuery<-paste0("SELECT * FROM fsdata WHERE (lat>=",min(filteredData()$Latitude)-0.1,
+                                    " AND lat<=",max(filteredData()$Latitude)+0.1,")
+                                    AND (long>=",min(filteredData()$Longitude)-0.1," AND long<=",max(filteredData()$Longitude)+0.1,")  ORDER BY pctid")
+    }
+    
+  
+    rs <- dbSendQuery(con, SQLQuery)
+    pctplots$data <- dbFetch(rs)
+    dbHasCompleted(rs)
+    dbClearResult(rs)
+    # clean up
+    dbDisconnect(con)
+
+  })
+
+  
+  
+  
+  observeEvent(input$lnkUserGuide, {
+    loggit("INFO","download user guide", log_detail="download user guide", event = "download",  sessionid=isolate(session$token), echo = FALSE)
+  })
+  
+  observeEvent(input$linkPaperMethodology, {
+    loggit("INFO","download method paper", log_detail="download method paper", event = "download",  sessionid=isolate(session$token), echo = FALSE)  
+  })
+  observeEvent(input$linkVISFloraSurveyPublic, {
+    loggit("INFO","link to VIS Flora Survey", log_detail="link to VIS Flora Survey", event = "link",  sessionid=isolate(session$token), echo = FALSE)  
+  })
+  observeEvent(input$linkVegClassfnPublic, {
+    loggit("INFO","link to Vegetation Classification", log_detail="link to Vegetation Classification",  sessionid=isolate(session$token), event = "link", echo = FALSE)  
+  })
+  observeEvent(input$linkDownloadSampleData, {
+    loggit("INFO","download download sample csv", log_detail="link to download sample csv", event = "download",  sessionid=isolate(session$token), echo = FALSE)  
+  })
+  
+
+  
+  session$onSessionEnded(function(){    loggit("INFO", "session has ended",log_detail="session has ended", sessionid=isolate(session$token), echo = FALSE)   })
+
+
   
   
 })

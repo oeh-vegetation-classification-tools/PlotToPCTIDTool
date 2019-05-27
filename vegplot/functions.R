@@ -274,7 +274,7 @@ getPCTName<- function(pctid) {
   # Initialize a temporary in memory database and copy a data.frame into it
   con <- dbConnect(RSQLite::SQLite(), dbname="data/pctdatadb.sqlite")
   
-  rs <- dbSendQuery(con, "SELECT * FROM pctdata where pctid=55")
+  rs <- dbSendQuery(con, paste0("SELECT pctname FROM fsdata where replace(pctid,'.','_')='",pctid,"' limit 1"))
   d1 <- dbFetch(rs)
   dbHasCompleted(rs)
   dbClearResult(rs)
@@ -286,37 +286,37 @@ getPCTName<- function(pctid) {
 
 getPCTProfile<- function(pctid) {
   # Initialize a temporary in memory database and copy a data.frame into it
-  # con <- dbConnect(RSQLite::SQLite(), dbname="data/pctdatadb.sqlite")
-  # 
-  # rs <- dbSendQuery(con, "SELECT * FROM pctdata where pctid=55")
-  # d1 <- dbFetch(rs)
-  # dbHasCompleted(rs)
-  # dbClearResult(rs)
-  # 
-  # # clean up
-  # dbDisconnect(con)
+  con <- dbConnect(RSQLite::SQLite(), dbname="data/pctdatadb.sqlite")
+
+  rs <- dbSendQuery(con, paste0("SELECT pctname FROM fsdata where replace(pctid,'.','_')='",pctid,"' limit 1"))
+  d1 <- dbFetch(rs)
+  dbHasCompleted(rs)
+  dbClearResult(rs)
+
+  # clean up
+  dbDisconnect(con)
   
-  pctprofile<-HTML(paste0("PCTID<br/>"
-                          ,"PCT Name<br/>"
-                          ,"Vegetation description<br/>"
-                          ,"Classification confidence level<br/>"
-                          ,"Number of Primary replicates<br/>"
-                          ,"Number of Secondary replicates<br/>"
-                          ,"Vegetation Formation<br/>"
-                          ,"Vegetation Class<br/>"
-                          ,"IBRA Subregion(s)<br/>"
-                          ,"Elevation max<br/>"
-                          ,"Elevation min<br/>"
-                          ,"Elevation median<br/>"
-                          ,"Rainfall max<br/>"
-                          ,"Rainfall min<br/>"
-                          ,"Rainfall median<br/>"
-                          ,"Temperature max<br/>"
-                          ,"Temperature min<br/>"
-                          ,"Temperature median<br/>"
-                          ,"TEC list<br/>"
-                          ,"TEC Act<br/>"
-                          ,"Median species richness<br/>")
+  pctprofile<-HTML(paste0("PCTID:",pctid,"<br/>"
+                          ,"PCT Name:",d1$pctname,"<br/>"
+                          ,"Vegetation description:<br/>"
+                          ,"Classification confidence level:<br/>"
+                          ,"Number of Primary replicates:<br/>"
+                          ,"Number of Secondary replicates:<br/>"
+                          ,"Vegetation Formation:<br/>"
+                          ,"Vegetation Class:<br/>"
+                          ,"IBRA Subregion(s):<br/>"
+                          ,"Elevation max:<br/>"
+                          ,"Elevation min:<br/>"
+                          ,"Elevation median:<br/>"
+                          ,"Rainfall max:<br/>"
+                          ,"Rainfall min:<br/>"
+                          ,"Rainfall median:<br/>"
+                          ,"Temperature max:<br/>"
+                          ,"Temperature min:<br/>"
+                          ,"Temperature median:<br/>"
+                          ,"TEC list:<br/>"
+                          ,"TEC Act:<br/>"
+                          ,"Median species richness:<br/>")
   )
   
   return(pctprofile)
