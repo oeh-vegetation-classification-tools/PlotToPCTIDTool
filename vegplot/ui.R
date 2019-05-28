@@ -210,26 +210,26 @@ ui<-  htmlTemplate("main.html",
                                                                                                </tr>
                                                                                                <tr>
                                                                                                <td valign='top' style='width:50%;border:solid #A6A6A6 1.0pt;background:#7FFF00;padding:5px;'>
-                                                                                               <p>76-100</p>
+                                                                                               <p>60-100</p>
                                                                                                </td>
                                                                                                <td valign='top' style='border:solid #A6A6A6 1.0pt;padding:5px;'>
-                                                                                               <p>Strong match</p>
+                                                                                               <p>Good match to PCT</p>
                                                                                                </td>
                                                                                                </tr>
                                                                                                <tr>
                                                                                                <td valign=top style='border:solid #A6A6A6 1.0pt;background:#8FBC8F;padding:5px;'>
-                                                                                               <p>51-75</p>
+                                                                                               <p>25-59</p>
                                                                                                </td>
                                                                                                <td valign=top style='border:solid #A6A6A6 1.0pt;padding:5px;'>
-                                                                                               <p>Moderate match</p>
+                                                                                               <p>Plausible match to PCT</p>
                                                                                                </td>
                                                                                                </tr>
                                                                                                <tr>
                                                                                                <td valign=top style='border:solid #A6A6A6 1.0pt;padding:5px;'>
-                                                                                               <p>0-50</p>
+                                                                                               <p>0-24</p>
                                                                                                </td>
                                                                                                <td valign=top style='border:solid #A6A6A6 1.0pt;padding:5px;'>
-                                                                                               <p>Weak match</p>
+                                                                                               <p>Unlikely match to PCT</p>
                                                                                                </td>
                                                                                                </tr>
                                                                                                
@@ -258,15 +258,15 @@ ui<-  htmlTemplate("main.html",
                                                                                                      </td>
                                                                                                      </tr>
                                                                                                      <tr>
-                                                                                                     <td valign='top' style='width:50%;border:solid #A6A6A6 1.0pt;background:orange;padding:5px;'>
-                                                                                                     <p>Below</p>
+                                                                                                     <td valign='top' style='width:50%;border:solid #A6A6A6 1.0pt;background:#7FFF00;padding:5px;'>
+                                                                                                     <p>Typical</p>
                                                                                                      </td>
                                                                                                      <td valign='top' style='border:solid #A6A6A6 1.0pt;padding:5px;'>
-                                                                                                     <p>Plot is below the known environmental variable envelope for the PCT</p>
+                                                                                                     <p>Plot is within the typical environmental variable envelope for the PCT</p>
                                                                                                      </td>
                                                                                                      </tr>
                                                                                                      <tr>
-                                                                                                     <td valign=top style='border:solid #A6A6A6 1.0pt;background:green;padding:5px;'>
+                                                                                                     <td valign=top style='border:solid #A6A6A6 1.0pt;background:#8FBC8F;padding:5px;'>
                                                                                                      <p>Within</p>
                                                                                                      </td>
                                                                                                      <td valign=top style='border:solid #A6A6A6 1.0pt;padding:5px;'>
@@ -274,11 +274,11 @@ ui<-  htmlTemplate("main.html",
                                                                                                      </td>
                                                                                                      </tr>
                                                                                                      <tr>
-                                                                                                     <td valign=top style='border:solid #A6A6A6 1.0pt;background:orange;padding:5px;'>
-                                                                                                     <p>Above</p>
+                                                                                                     <td valign=top style='border:solid #A6A6A6 1.0pt;padding:5px;'>
+                                                                                                     <p>Outside</p>
                                                                                                      </td>
                                                                                                      <td valign=top style='border:solid #A6A6A6 1.0pt;padding:5px;'>
-                                                                                                     <p>Plot is above the known environmental variable envelope for the PCT</p>
+                                                                                                     <p>Plot is outside the known environmental variable envelope for the PCT</p>
                                                                                                      </td>
                                                                                                      </tr>
                                                                                                

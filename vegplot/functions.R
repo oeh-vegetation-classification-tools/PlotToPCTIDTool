@@ -148,7 +148,7 @@ match_topn <- function(cent, char, topn) {
 style_matches_char <- function(table) {
   DT::datatable(table) %>%
     formatStyle(grep("match", names(table)), 
-              backgroundColor = styleInterval(cuts = c(51,76), 
+              backgroundColor = styleInterval(cuts = c(25,60), 
                                               values = c("white","darkseagreen","chartreuse"))
   )
 }
@@ -165,41 +165,53 @@ style_matches_cent <- function(table) {
 style_matches_thresholds <- function(table) {
   DT::datatable(table) %>%
     formatStyle(c("Rainfall","Elevation","Temperature"), 
-                backgroundColor = styleEqual(levels = c("Above","Below","Within"), 
-                                             values = c("orange","orange","green"),default = "white")
+                backgroundColor = styleEqual(levels = c("Outside","Within","Typical"), 
+                                             values = c("white","darkseagreen","chartreuse"),default = "white")
     )
 }
 
 ## function to find threshold status for an individual site + group combo
-check_site_thresholds <- function(group, site, env_thresh, env_data) {
+check_site_thresholds <- function(groupi, site, env_thresh, env_data) {
   out <- data.frame(Elevation = "N/A", Rainfall = "N/A", Temperature = "N/A")
-  if (!group %in% env_thresh$gp) return(out)
+  if (!groupi %in% env_thresh$group) return(out)
   
-  group_thresh <- filter(env_thresh, gp == group)
+  group_thresh <- filter(env_thresh, group == groupi)
   site_env <- filter(env_data, sites == site)
   
-  if (site_env[1,"Elevation"] < group_thresh[1,"T1_elev"]) {
-    out$Elevation <- "Below"
-  } else if (site_env[1,"Elevation"] > group_thresh[1,"T2_elev"]) {
-    out$Elevation <- "Above"
-  } else {
+  if (site_env[1,"Elevation"] < group_thresh[1,"Elevation_Min"]) {
+    out$Elevation <- "Outside"
+  } else if (site_env[1,"Elevation"] > group_thresh[1,"Elevation_Max"]) {
+    out$Elevation <- "Outside"
+  } else if (site_env[1,"Elevation"] > group_thresh[1,"Elevation_Min"] && site_env[1,"Elevation"] < group_thresh[1,"T1_elev"]) {
     out$Elevation <- "Within"
+  } else if (site_env[1,"Elevation"] > group_thresh[1,"T2_elev"] && site_env[1,"Elevation"] < group_thresh[1,"Elevation_Max"]) {
+    out$Elevation <- "Within"
+  } else {
+    out$Elevation <- "Typical"
   }
   
-  if (site_env[1,"RainfallAnn"] < group_thresh[1,"T1_rainann"]) {
-    out$Rainfall <- "Below"
-  } else if (site_env[1,"RainfallAnn"] > group_thresh[1,"T2_rainann"]) {
-    out$Rainfall <- "Above"
-  } else {
+  if (site_env[1,"RainfallAnn"] < group_thresh[1,"RainfallAnn_Min"]) {
+    out$Rainfall <- "Outside"
+  } else if (site_env[1,"RainfallAnn"] > group_thresh[1,"RainfallAnn_Max"]) {
+    out$Rainfall <- "Outside"
+  } else if (site_env[1,"RainfallAnn"] > group_thresh[1,"RainfallAnn_Min"] && site_env[1,"RainfallAnn"] < group_thresh[1,"T1_rainann"]) {
     out$Rainfall <- "Within"
+  } else if (site_env[1,"RainfallAnn"] > group_thresh[1,"T2_rainann"] && site_env[1,"RainfallAnn"] < group_thresh[1,"RainfallAnn_Max"]) {
+    out$Rainfall <- "Within"
+  } else {
+    out$Rainfall <- "Typical"
   }
   
-  if (site_env[1,"TempAnn"] < group_thresh[1,"T1_tempann"]) {
-    out$Temperature <- "Below"
-  } else if (site_env[1,"TempAnn"] > group_thresh[1,"T2_tempann"]) {
-    out$Temperature <- "Above"
-  } else {
+  if (site_env[1,"TempAnn"] < group_thresh[1,"TempAnn_Min"]) {
+    out$Temperature <- "Outside"
+  } else if (site_env[1,"TempAnn"] > group_thresh[1,"TempAnn_Max"]) {
+    out$Temperature <- "Outside"
+  } else if (site_env[1,"TempAnn"] > group_thresh[1,"TempAnn_Min"] && site_env[1,"TempAnn"] < group_thresh[1,"T1_tempann"]) {
     out$Temperature <- "Within"
+  } else if (site_env[1,"TempAnn"] > group_thresh[1,"T2_tempann"] && site_env[1,"TempAnn"] < group_thresh[1,"TempAnn_Max"]) {
+    out$Temperature <- "Within"
+  } else {
+    out$Temperature <- "Typical"
   }
   
   out

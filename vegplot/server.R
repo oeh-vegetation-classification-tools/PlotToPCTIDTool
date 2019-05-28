@@ -492,7 +492,7 @@ shinyServer(function(input, output,session) {
   #/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   output$char_table <- renderDataTable({ if (!is.null(match_data$matches)) datatable(array(style_matches()$char)[[1]]$data, selection=list(mode="single",target="cell")) %>%
       formatStyle(grep("match", names(array(style_matches()$char)[[1]]$data)), 
-                  backgroundColor = styleInterval(cuts = c(51,76), 
+                  backgroundColor = styleInterval(cuts = c(25,60), 
                                                   values = c("white","darkseagreen","chartreuse"))
       ) })
   
