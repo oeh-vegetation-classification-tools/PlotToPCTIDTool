@@ -301,7 +301,16 @@ getPCTProfile<- function(pctid) {
   dbHasCompleted(rs)
   dbClearResult(rs)
   
-  rs <- dbSendQuery(con, paste0("SELECT Scientific_name, Group_score_median, Group_frequency, GrowthFormGroup FROM pctspeciesgrowthforms where PCT_ID='",pctid,"'"))
+  rs <- dbSendQuery(con, paste0("SELECT Scientific_name, Group_score_median, Group_frequency, GrowthFormGroup,
+                        CASE GrowthFormGroup 
+                                 WHEN 'Tree (TG)' THEN 1 
+                                 WHEN 'Shrub (SG)' THEN 2
+                                 WHEN 'Fern (EG)' THEN 3
+                                 WHEN 'Grass & grasslike (GG)' THEN 4
+                                 WHEN 'Forb (FG)' THEN 5           
+                                 ELSE 6
+                             END GGroupOrder
+                         FROM pctspeciesgrowthforms where PCT_ID='",pctid,"' order by GGroupOrder asc, Group_frequency desc"))
   d2 <- dbFetch(rs)
   dbHasCompleted(rs)
   dbClearResult(rs)

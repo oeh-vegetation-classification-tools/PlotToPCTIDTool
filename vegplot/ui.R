@@ -200,10 +200,10 @@ ui<-  htmlTemplate("main.html",
                                                       <p style='text-align:justify;padding:5px;'>
                                                         Centroid matching uses cover-abundance scores to determine how floristically related your site(s) is to eastern NSW quantitative PCTs. Each PCT is defined by a specific group of existing classified sites; the centroid of each group is a collection of features that defines the floristics of the PCT. The analysis calculates the ecological ‘distance’ between the new site(s) and PCT centroids - this is called the ‘distance to centroid’. The table presents the PCTs to which your site(s) are most closely related. The smaller the number listed in the ‘Distance to Centroid’ columns, the stronger the floristic relationship. 
                                                         A 'distance to centroid' threshold has been set at 0.695. If your site is outside the distance to centroid threshold for any PCT it may: have fewer native plant species than is typical; have inconsistent cover abundance scores; or represent an unclassified assemblage.
-                                                        You can use the search bar on the upper right to filter to specific sites or vegetation types.
+                                                        You can use the search bar on the upper right to filter to specific sites or vegetation types. <br/>Click on the PCT ID code in the table to display the PCT Name then view a profile or map of the PCT.
                                                       </p>
                                                       </td>
-                                                      <td style='padding:5px;'>
+                                                      <td style='padding:5px;vertical-align:top;'>
                                                       <table style='border:solid #7f7f7f 1.0pt;padding:5px;'>
                                                       <tr>
                                                       <td colspan='2' valign='top' style='color:#5c5c5c; border:solid #7f7f7f 1.0pt;background:#e6e6e6;padding:5px;'>
@@ -261,7 +261,7 @@ ui<-  htmlTemplate("main.html",
                                                       </p>
                                                       </td>
                                                       
-                                                      <td style='padding:5px;'>
+                                                      <td style='padding:5px;vertical-align:top;'>
                                                       <table style='border:solid #7f7f7f 1.0pt;padding:5px;'>
                                                       <tr>
                                                       <td colspan='2' valign='top' style='border:solid #7f7f7f 1.0pt;background:#e6e6e6;padding:5px;'>
@@ -353,12 +353,13 @@ ui<-  htmlTemplate("main.html",
                                              <tr>
                                              <td style='vertical-align:top;width:50%'>
                                               <p style='text-align:justify;padding:5px;'>
-                                               It is recommended that you first evaluate your data using the Centroid matches tab. The characteristic species matching method provides an alternative if you are obtaining weak results using centroid matching.
-                                                Characteristic species have been calculated for each PCT by modelling the occurrence of each flora species across all PCTs. The characteristic species matching analysis calculates the percentage of characteristic species for each PCT that are present in your site(s). The table presents the PCTs which have the highest percentage species match with your site(s). The larger the number listed in the ‘% Char_Spp’ columns, the stronger the floristic relationship. 
-                                                Characteristic species matching only factors in whether species are present or absent at your site, disregarding the relative cover or abundance.
-                                             </p>
+                                                It is recommended that you first evaluate your data using the Centroid matches tab. The Characteristic Species matching method provides an alternative if you are obtaining weak results using Centroid matching. <br/>
+                                                The Characteristic Species matching method is still under development.<br/>
+                                                Characteristic species have been calculated for each PCT by modelling the occurrence of each flora species across all PCTs. The Characteristic Species matching analysis calculates the percentage of characteristic species for each PCT that are present in your site(s). The table presents the PCTs which have the highest percentage species match with your site(s). The larger the number listed in the ‘% Char_Spp’ columns, the stronger the floristic relationship. The Characteristic Species matching method only factors in whether species are present or absent at your site, disregarding the relative cover or abundance.<br/>
+                                                You can use the search bar on the upper right to filter to specific sites or vegetation types. Click on the PCT ID code in the table to display the PCT Name then view a profile or map of the PCT.<br/>
+                                              </p>
                                              </td>
-                                             <td style='padding:5px;'>
+                                             <td style='padding:5px; vertical-align:top;padding-left:30px;'>
                                              <table style='border:solid #7f7f7f 1.0pt;padding:5px;'>
                                              <tr>
                                              <td colspan='2' valign='top' style='border:solid #7f7f7f 1.0pt;background:#e6e6e6;padding:5px;'>
@@ -403,7 +404,7 @@ ui<-  htmlTemplate("main.html",
                                         
                                          htmlOutput("PCTName2",inline = T, style="padding:1px; font-weight:bolder;font-size:18px;color:#567621;"),
                                         actionButton("PCTSubmit2","View PCT Profile"),
-                                        
+                                        actionButton("ViewPCTMap2","View PCT sites"),
                                         HTML(" </td>
                                              </tr>
                                              </table>
