@@ -19944,5 +19944,765 @@
     "log_msg": "session has ended",
     "log_detail": "session has ended",
     "sessionid": "23e2ea9e7068d52a12be667f7b9c4a32"
+  },
+  {
+    "timestamp": "2019-06-22 18:36:17",
+    "log_lvl": "INFO",
+    "log_msg": "session started",
+    "log_detail": "session has started",
+    "event": "session start",
+    "sessionid": "b9ca4151bf234d35a8bbe1d025b298ac"
+  },
+  {
+    "timestamp": "2019-06-22 18:36:20",
+    "log_lvl": "INFO",
+    "log_msg": "uploadresults",
+    "log_detail": "Number of plots (rows):6, Number of species (columns):94, Number of plots (rows) with environmental data detected:6\n                   , Number of plots (rows) with spatial data detected:6",
+    "event": "upload",
+    "sessionid": "b9ca4151bf234d35a8bbe1d025b298ac",
+    "Numplots": 6,
+    "Numspecies": 94,
+    "NumplotsWithEnvData": 6,
+    "NumplotsWithSpatialData": 6
+  },
+  {
+    "timestamp": "2019-06-22 18:36:20",
+    "log_lvl": "INFO",
+    "log_msg": "uploadresults",
+    "log_detail": "Species names not found in eastern NSW PCT standardised taxonomy:There are 94 species, <b><mark> and 7 could not be matched: bapalpal, Cassglag, Goodbelb, Gooddimd, Leptpolp, Philsalo, Pimelinl, so were ignored in analysis.<\/mark><\/b>, Sites outside eastern NSW study region:0",
+    "event": "upload",
+    "sessionid": "b9ca4151bf234d35a8bbe1d025b298ac",
+    "MissingSpeciesList": "There are 94 species, <b><mark> and 7 could not be matched: bapalpal, Cassglag, Goodbelb, Gooddimd, Leptpolp, Philsalo, Pimelinl, so were ignored in analysis.<\/mark><\/b>",
+    "NumplotsOutsideStudy": "0"
+  },
+  {
+    "timestamp": "2019-06-22 18:36:49",
+    "log_lvl": "INFO",
+    "log_msg": "session has ended",
+    "log_detail": "session has ended",
+    "sessionid": "b9ca4151bf234d35a8bbe1d025b298ac"
+  },
+  {
+    "timestamp": "2019-06-22 18:38:34",
+    "log_lvl": "INFO",
+    "log_msg": "session started",
+    "log_detail": "session has started",
+    "event": "session start",
+    "sessionid": "400426f4d584a9a857732d31616fdb0c"
+  },
+  {
+    "timestamp": "2019-06-22 18:38:49",
+    "log_lvl": "INFO",
+    "log_msg": "session has ended",
+    "log_detail": "session has ended",
+    "sessionid": "400426f4d584a9a857732d31616fdb0c"
+  },
+  {
+    "timestamp": "2019-06-22 18:40:06",
+    "log_lvl": "INFO",
+    "log_msg": "session started",
+    "log_detail": "session has started",
+    "event": "session start",
+    "sessionid": "3842104e92886c44286cb53bdc4fd635"
+  },
+  {
+    "timestamp": "2019-06-22 18:40:20",
+    "log_lvl": "INFO",
+    "log_msg": "session has ended",
+    "log_detail": "session has ended",
+    "sessionid": "3842104e92886c44286cb53bdc4fd635"
+  },
+  {
+    "timestamp": "2019-06-22 18:40:35",
+    "log_lvl": "INFO",
+    "log_msg": "session started",
+    "log_detail": "session has started",
+    "event": "session start",
+    "sessionid": "2ddc3d7b9404ec05251816e2248d0337"
+  },
+  {
+    "timestamp": "2019-06-22 18:40:48",
+    "log_lvl": "INFO",
+    "log_msg": "session has ended",
+    "log_detail": "session has ended",
+    "sessionid": "2ddc3d7b9404ec05251816e2248d0337"
+  },
+  {
+    "timestamp": "2019-06-22 18:58:08",
+    "log_lvl": "INFO",
+    "log_msg": "session started",
+    "log_detail": "session has started",
+    "event": "session start",
+    "sessionid": "cf10d50d4d1e8f5be43f082a43191b02"
+  },
+  {
+    "timestamp": "2019-06-22 18:58:13",
+    "log_lvl": "INFO",
+    "log_msg": "uploadresults",
+    "log_detail": "Number of plots (rows):6, Number of species (columns):94, Number of plots (rows) with environmental data detected:6\n                   , Number of plots (rows) with spatial data detected:6",
+    "event": "upload",
+    "sessionid": "cf10d50d4d1e8f5be43f082a43191b02",
+    "Numplots": 6,
+    "Numspecies": 94,
+    "NumplotsWithEnvData": 6,
+    "NumplotsWithSpatialData": 6
+  },
+  {
+    "timestamp": "2019-06-22 18:58:13",
+    "log_lvl": "INFO",
+    "log_msg": "uploadresults",
+    "log_detail": "Species names not found in eastern NSW PCT standardised taxonomy:There are 94 species, <b><mark> and 7 could not be matched: bapalpal, Cassglag, Goodbelb, Gooddimd, Leptpolp, Philsalo, Pimelinl, so were ignored in analysis.<\/mark><\/b>, Sites outside eastern NSW study region:0",
+    "event": "upload",
+    "sessionid": "cf10d50d4d1e8f5be43f082a43191b02",
+    "MissingSpeciesList": "There are 94 species, <b><mark> and 7 could not be matched: bapalpal, Cassglag, Goodbelb, Gooddimd, Leptpolp, Philsalo, Pimelinl, so were ignored in analysis.<\/mark><\/b>",
+    "NumplotsOutsideStudy": "0"
+  },
+  {
+    "timestamp": "2019-06-22 18:59:58",
+    "log_lvl": "INFO",
+    "log_msg": "session has ended",
+    "log_detail": "session has ended",
+    "sessionid": "cf10d50d4d1e8f5be43f082a43191b02"
+  },
+  {
+    "timestamp": "2019-06-22 19:04:23",
+    "log_lvl": "INFO",
+    "log_msg": "session started",
+    "log_detail": "session has started",
+    "event": "session start",
+    "sessionid": "244ed34464de770d969d1ec4cbe0e89b"
+  },
+  {
+    "timestamp": "2019-06-22 19:04:27",
+    "log_lvl": "INFO",
+    "log_msg": "uploadresults",
+    "log_detail": "Number of plots (rows):6, Number of species (columns):94, Number of plots (rows) with environmental data detected:6\n                   , Number of plots (rows) with spatial data detected:6",
+    "event": "upload",
+    "sessionid": "244ed34464de770d969d1ec4cbe0e89b",
+    "Numplots": 6,
+    "Numspecies": 94,
+    "NumplotsWithEnvData": 6,
+    "NumplotsWithSpatialData": 6
+  },
+  {
+    "timestamp": "2019-06-22 19:04:28",
+    "log_lvl": "INFO",
+    "log_msg": "uploadresults",
+    "log_detail": "Species names not found in eastern NSW PCT standardised taxonomy:There are 94 species, <b><mark> and 7 could not be matched: bapalpal, Cassglag, Goodbelb, Gooddimd, Leptpolp, Philsalo, Pimelinl, so were ignored in analysis.<\/mark><\/b>, Sites outside eastern NSW study region:0",
+    "event": "upload",
+    "sessionid": "244ed34464de770d969d1ec4cbe0e89b",
+    "MissingSpeciesList": "There are 94 species, <b><mark> and 7 could not be matched: bapalpal, Cassglag, Goodbelb, Gooddimd, Leptpolp, Philsalo, Pimelinl, so were ignored in analysis.<\/mark><\/b>",
+    "NumplotsOutsideStudy": "0"
+  },
+  {
+    "timestamp": "2019-06-22 19:04:39",
+    "log_lvl": "INFO",
+    "log_msg": "download PCTSppGFData",
+    "log_detail": "download PCTSppGFData",
+    "event": "download",
+    "sessionid": "244ed34464de770d969d1ec4cbe0e89b"
+  },
+  {
+    "timestamp": "2019-06-22 19:05:34",
+    "log_lvl": "INFO",
+    "log_msg": "session has ended",
+    "log_detail": "session has ended",
+    "sessionid": "244ed34464de770d969d1ec4cbe0e89b"
+  },
+  {
+    "timestamp": "2019-06-22 19:09:00",
+    "log_lvl": "INFO",
+    "log_msg": "session started",
+    "log_detail": "session has started",
+    "event": "session start",
+    "sessionid": "b00ddcf242d0d4bd6ca9804d41f947d4"
+  },
+  {
+    "timestamp": "2019-06-22 19:09:04",
+    "log_lvl": "INFO",
+    "log_msg": "uploadresults",
+    "log_detail": "Number of plots (rows):6, Number of species (columns):94, Number of plots (rows) with environmental data detected:6\n                   , Number of plots (rows) with spatial data detected:6",
+    "event": "upload",
+    "sessionid": "b00ddcf242d0d4bd6ca9804d41f947d4",
+    "Numplots": 6,
+    "Numspecies": 94,
+    "NumplotsWithEnvData": 6,
+    "NumplotsWithSpatialData": 6
+  },
+  {
+    "timestamp": "2019-06-22 19:09:05",
+    "log_lvl": "INFO",
+    "log_msg": "uploadresults",
+    "log_detail": "Species names not found in eastern NSW PCT standardised taxonomy:There are 94 species, <b><mark> and 7 could not be matched: bapalpal, Cassglag, Goodbelb, Gooddimd, Leptpolp, Philsalo, Pimelinl, so were ignored in analysis.<\/mark><\/b>, Sites outside eastern NSW study region:0",
+    "event": "upload",
+    "sessionid": "b00ddcf242d0d4bd6ca9804d41f947d4",
+    "MissingSpeciesList": "There are 94 species, <b><mark> and 7 could not be matched: bapalpal, Cassglag, Goodbelb, Gooddimd, Leptpolp, Philsalo, Pimelinl, so were ignored in analysis.<\/mark><\/b>",
+    "NumplotsOutsideStudy": "0"
+  },
+  {
+    "timestamp": "2019-06-22 19:16:32",
+    "log_lvl": "INFO",
+    "log_msg": "session has ended",
+    "log_detail": "session has ended",
+    "sessionid": "b00ddcf242d0d4bd6ca9804d41f947d4"
+  },
+  {
+    "timestamp": "2019-06-22 19:16:33",
+    "log_lvl": "INFO",
+    "log_msg": "session started",
+    "log_detail": "session has started",
+    "event": "session start",
+    "sessionid": "d4bf85685cfd72f5778035f7e3618f34"
+  },
+  {
+    "timestamp": "2019-06-22 19:16:37",
+    "log_lvl": "INFO",
+    "log_msg": "uploadresults",
+    "log_detail": "Number of plots (rows):6, Number of species (columns):94, Number of plots (rows) with environmental data detected:6\n                   , Number of plots (rows) with spatial data detected:6",
+    "event": "upload",
+    "sessionid": "d4bf85685cfd72f5778035f7e3618f34",
+    "Numplots": 6,
+    "Numspecies": 94,
+    "NumplotsWithEnvData": 6,
+    "NumplotsWithSpatialData": 6
+  },
+  {
+    "timestamp": "2019-06-22 19:16:38",
+    "log_lvl": "INFO",
+    "log_msg": "uploadresults",
+    "log_detail": "Species names not found in eastern NSW PCT standardised taxonomy:There are 94 species, <b><mark> and 7 could not be matched: bapalpal, Cassglag, Goodbelb, Gooddimd, Leptpolp, Philsalo, Pimelinl, so were ignored in analysis.<\/mark><\/b>, Sites outside eastern NSW study region:0",
+    "event": "upload",
+    "sessionid": "d4bf85685cfd72f5778035f7e3618f34",
+    "MissingSpeciesList": "There are 94 species, <b><mark> and 7 could not be matched: bapalpal, Cassglag, Goodbelb, Gooddimd, Leptpolp, Philsalo, Pimelinl, so were ignored in analysis.<\/mark><\/b>",
+    "NumplotsOutsideStudy": "0"
+  },
+  {
+    "timestamp": "2019-06-22 19:17:02",
+    "log_lvl": "INFO",
+    "log_msg": "session has ended",
+    "log_detail": "session has ended",
+    "sessionid": "d4bf85685cfd72f5778035f7e3618f34"
+  },
+  {
+    "timestamp": "2019-06-22 19:17:39",
+    "log_lvl": "INFO",
+    "log_msg": "session started",
+    "log_detail": "session has started",
+    "event": "session start",
+    "sessionid": "4474b53b40ae1099d831f902bdd726a3"
+  },
+  {
+    "timestamp": "2019-06-22 19:17:43",
+    "log_lvl": "INFO",
+    "log_msg": "uploadresults",
+    "log_detail": "Number of plots (rows):6, Number of species (columns):94, Number of plots (rows) with environmental data detected:6\n                   , Number of plots (rows) with spatial data detected:6",
+    "event": "upload",
+    "sessionid": "4474b53b40ae1099d831f902bdd726a3",
+    "Numplots": 6,
+    "Numspecies": 94,
+    "NumplotsWithEnvData": 6,
+    "NumplotsWithSpatialData": 6
+  },
+  {
+    "timestamp": "2019-06-22 19:17:43",
+    "log_lvl": "INFO",
+    "log_msg": "uploadresults",
+    "log_detail": "Species names not found in eastern NSW PCT standardised taxonomy:There are 94 species, <b><mark> and 7 could not be matched: bapalpal, Cassglag, Goodbelb, Gooddimd, Leptpolp, Philsalo, Pimelinl, so were ignored in analysis.<\/mark><\/b>, Sites outside eastern NSW study region:0",
+    "event": "upload",
+    "sessionid": "4474b53b40ae1099d831f902bdd726a3",
+    "MissingSpeciesList": "There are 94 species, <b><mark> and 7 could not be matched: bapalpal, Cassglag, Goodbelb, Gooddimd, Leptpolp, Philsalo, Pimelinl, so were ignored in analysis.<\/mark><\/b>",
+    "NumplotsOutsideStudy": "0"
+  },
+  {
+    "timestamp": "2019-06-22 19:20:51",
+    "log_lvl": "INFO",
+    "log_msg": "session has ended",
+    "log_detail": "session has ended",
+    "sessionid": "4474b53b40ae1099d831f902bdd726a3"
+  },
+  {
+    "timestamp": "2019-06-22 19:20:52",
+    "log_lvl": "INFO",
+    "log_msg": "session started",
+    "log_detail": "session has started",
+    "event": "session start",
+    "sessionid": "e4cd992b3ae3bfddf2949aa0ee6a622b"
+  },
+  {
+    "timestamp": "2019-06-22 19:20:57",
+    "log_lvl": "INFO",
+    "log_msg": "uploadresults",
+    "log_detail": "Number of plots (rows):6, Number of species (columns):94, Number of plots (rows) with environmental data detected:6\n                   , Number of plots (rows) with spatial data detected:6",
+    "event": "upload",
+    "sessionid": "e4cd992b3ae3bfddf2949aa0ee6a622b",
+    "Numplots": 6,
+    "Numspecies": 94,
+    "NumplotsWithEnvData": 6,
+    "NumplotsWithSpatialData": 6
+  },
+  {
+    "timestamp": "2019-06-22 19:20:57",
+    "log_lvl": "INFO",
+    "log_msg": "uploadresults",
+    "log_detail": "Species names not found in eastern NSW PCT standardised taxonomy:There are 94 species, <b><mark> and 7 could not be matched: bapalpal, Cassglag, Goodbelb, Gooddimd, Leptpolp, Philsalo, Pimelinl, so were ignored in analysis.<\/mark><\/b>, Sites outside eastern NSW study region:0",
+    "event": "upload",
+    "sessionid": "e4cd992b3ae3bfddf2949aa0ee6a622b",
+    "MissingSpeciesList": "There are 94 species, <b><mark> and 7 could not be matched: bapalpal, Cassglag, Goodbelb, Gooddimd, Leptpolp, Philsalo, Pimelinl, so were ignored in analysis.<\/mark><\/b>",
+    "NumplotsOutsideStudy": "0"
+  },
+  {
+    "timestamp": "2019-06-22 19:24:25",
+    "log_lvl": "INFO",
+    "log_msg": "session has ended",
+    "log_detail": "session has ended",
+    "sessionid": "e4cd992b3ae3bfddf2949aa0ee6a622b"
+  },
+  {
+    "timestamp": "2019-06-22 19:24:27",
+    "log_lvl": "INFO",
+    "log_msg": "session started",
+    "log_detail": "session has started",
+    "event": "session start",
+    "sessionid": "20048b3c8822211cbee5349d144e2402"
+  },
+  {
+    "timestamp": "2019-06-22 19:24:30",
+    "log_lvl": "INFO",
+    "log_msg": "uploadresults",
+    "log_detail": "Number of plots (rows):6, Number of species (columns):94, Number of plots (rows) with environmental data detected:6\n                   , Number of plots (rows) with spatial data detected:6",
+    "event": "upload",
+    "sessionid": "20048b3c8822211cbee5349d144e2402",
+    "Numplots": 6,
+    "Numspecies": 94,
+    "NumplotsWithEnvData": 6,
+    "NumplotsWithSpatialData": 6
+  },
+  {
+    "timestamp": "2019-06-22 19:24:31",
+    "log_lvl": "INFO",
+    "log_msg": "uploadresults",
+    "log_detail": "Species names not found in eastern NSW PCT standardised taxonomy:There are 94 species, <b><mark> and 7 could not be matched: bapalpal, Cassglag, Goodbelb, Gooddimd, Leptpolp, Philsalo, Pimelinl, so were ignored in analysis.<\/mark><\/b>, Sites outside eastern NSW study region:0",
+    "event": "upload",
+    "sessionid": "20048b3c8822211cbee5349d144e2402",
+    "MissingSpeciesList": "There are 94 species, <b><mark> and 7 could not be matched: bapalpal, Cassglag, Goodbelb, Gooddimd, Leptpolp, Philsalo, Pimelinl, so were ignored in analysis.<\/mark><\/b>",
+    "NumplotsOutsideStudy": "0"
+  },
+  {
+    "timestamp": "2019-06-22 19:24:38",
+    "log_lvl": "INFO",
+    "log_msg": "download char_matches",
+    "log_detail": "download char_matches",
+    "event": "download",
+    "sessionid": "20048b3c8822211cbee5349d144e2402"
+  },
+  {
+    "timestamp": "2019-06-22 19:25:25",
+    "log_lvl": "INFO",
+    "log_msg": "download char_matches",
+    "log_detail": "download char_matches",
+    "event": "download",
+    "sessionid": "20048b3c8822211cbee5349d144e2402"
+  },
+  {
+    "timestamp": "2019-06-22 19:27:34",
+    "log_lvl": "INFO",
+    "log_msg": "session has ended",
+    "log_detail": "session has ended",
+    "sessionid": "20048b3c8822211cbee5349d144e2402"
+  },
+  {
+    "timestamp": "2019-06-22 19:27:34",
+    "log_lvl": "INFO",
+    "log_msg": "session started",
+    "log_detail": "session has started",
+    "event": "session start",
+    "sessionid": "0ad745cd26399d61a961624b1d5d87c7"
+  },
+  {
+    "timestamp": "2019-06-22 19:27:43",
+    "log_lvl": "INFO",
+    "log_msg": "uploadresults",
+    "log_detail": "Number of plots (rows):6, Number of species (columns):94, Number of plots (rows) with environmental data detected:6\n                   , Number of plots (rows) with spatial data detected:6",
+    "event": "upload",
+    "sessionid": "0ad745cd26399d61a961624b1d5d87c7",
+    "Numplots": 6,
+    "Numspecies": 94,
+    "NumplotsWithEnvData": 6,
+    "NumplotsWithSpatialData": 6
+  },
+  {
+    "timestamp": "2019-06-22 19:27:43",
+    "log_lvl": "INFO",
+    "log_msg": "uploadresults",
+    "log_detail": "Species names not found in eastern NSW PCT standardised taxonomy:There are 94 species, <b><mark> and 7 could not be matched: bapalpal, Cassglag, Goodbelb, Gooddimd, Leptpolp, Philsalo, Pimelinl, so were ignored in analysis.<\/mark><\/b>, Sites outside eastern NSW study region:0",
+    "event": "upload",
+    "sessionid": "0ad745cd26399d61a961624b1d5d87c7",
+    "MissingSpeciesList": "There are 94 species, <b><mark> and 7 could not be matched: bapalpal, Cassglag, Goodbelb, Gooddimd, Leptpolp, Philsalo, Pimelinl, so were ignored in analysis.<\/mark><\/b>",
+    "NumplotsOutsideStudy": "0"
+  },
+  {
+    "timestamp": "2019-06-22 19:28:06",
+    "log_lvl": "INFO",
+    "log_msg": "session has ended",
+    "log_detail": "session has ended",
+    "sessionid": "0ad745cd26399d61a961624b1d5d87c7"
+  },
+  {
+    "timestamp": "2019-06-22 19:28:33",
+    "log_lvl": "INFO",
+    "log_msg": "session started",
+    "log_detail": "session has started",
+    "event": "session start",
+    "sessionid": "e96e7615928c4d32b21838efc8465cf5"
+  },
+  {
+    "timestamp": "2019-06-22 19:28:37",
+    "log_lvl": "INFO",
+    "log_msg": "uploadresults",
+    "log_detail": "Number of plots (rows):6, Number of species (columns):94, Number of plots (rows) with environmental data detected:6\n                   , Number of plots (rows) with spatial data detected:6",
+    "event": "upload",
+    "sessionid": "e96e7615928c4d32b21838efc8465cf5",
+    "Numplots": 6,
+    "Numspecies": 94,
+    "NumplotsWithEnvData": 6,
+    "NumplotsWithSpatialData": 6
+  },
+  {
+    "timestamp": "2019-06-22 19:28:37",
+    "log_lvl": "INFO",
+    "log_msg": "uploadresults",
+    "log_detail": "Species names not found in eastern NSW PCT standardised taxonomy:There are 94 species, <b><mark> and 7 could not be matched: bapalpal, Cassglag, Goodbelb, Gooddimd, Leptpolp, Philsalo, Pimelinl, so were ignored in analysis.<\/mark><\/b>, Sites outside eastern NSW study region:0",
+    "event": "upload",
+    "sessionid": "e96e7615928c4d32b21838efc8465cf5",
+    "MissingSpeciesList": "There are 94 species, <b><mark> and 7 could not be matched: bapalpal, Cassglag, Goodbelb, Gooddimd, Leptpolp, Philsalo, Pimelinl, so were ignored in analysis.<\/mark><\/b>",
+    "NumplotsOutsideStudy": "0"
+  },
+  {
+    "timestamp": "2019-06-22 19:36:09",
+    "log_lvl": "INFO",
+    "log_msg": "session has ended",
+    "log_detail": "session has ended",
+    "sessionid": "e96e7615928c4d32b21838efc8465cf5"
+  },
+  {
+    "timestamp": "2019-06-22 19:36:09",
+    "log_lvl": "INFO",
+    "log_msg": "session started",
+    "log_detail": "session has started",
+    "event": "session start",
+    "sessionid": "d0fbce84adc2c5a68cd463148344fb89"
+  },
+  {
+    "timestamp": "2019-06-22 19:36:16",
+    "log_lvl": "INFO",
+    "log_msg": "uploadresults",
+    "log_detail": "Number of plots (rows):6, Number of species (columns):94, Number of plots (rows) with environmental data detected:6\n                   , Number of plots (rows) with spatial data detected:6",
+    "event": "upload",
+    "sessionid": "d0fbce84adc2c5a68cd463148344fb89",
+    "Numplots": 6,
+    "Numspecies": 94,
+    "NumplotsWithEnvData": 6,
+    "NumplotsWithSpatialData": 6
+  },
+  {
+    "timestamp": "2019-06-22 19:36:16",
+    "log_lvl": "INFO",
+    "log_msg": "uploadresults",
+    "log_detail": "Species names not found in eastern NSW PCT standardised taxonomy:There are 94 species, <b><mark> and 7 could not be matched: bapalpal, Cassglag, Goodbelb, Gooddimd, Leptpolp, Philsalo, Pimelinl, so were ignored in analysis.<\/mark><\/b>, Sites outside eastern NSW study region:0",
+    "event": "upload",
+    "sessionid": "d0fbce84adc2c5a68cd463148344fb89",
+    "MissingSpeciesList": "There are 94 species, <b><mark> and 7 could not be matched: bapalpal, Cassglag, Goodbelb, Gooddimd, Leptpolp, Philsalo, Pimelinl, so were ignored in analysis.<\/mark><\/b>",
+    "NumplotsOutsideStudy": "0"
+  },
+  {
+    "timestamp": "2019-06-22 19:37:33",
+    "log_lvl": "INFO",
+    "log_msg": "session has ended",
+    "log_detail": "session has ended",
+    "sessionid": "d0fbce84adc2c5a68cd463148344fb89"
+  },
+  {
+    "timestamp": "2019-06-22 19:43:23",
+    "log_lvl": "INFO",
+    "log_msg": "session started",
+    "log_detail": "session has started",
+    "event": "session start",
+    "sessionid": "c23a3a2ea48698638a5612926fd1ae95"
+  },
+  {
+    "timestamp": "2019-06-22 19:43:28",
+    "log_lvl": "INFO",
+    "log_msg": "uploadresults",
+    "log_detail": "Number of plots (rows):6, Number of species (columns):94, Number of plots (rows) with environmental data detected:6\n                   , Number of plots (rows) with spatial data detected:6",
+    "event": "upload",
+    "sessionid": "c23a3a2ea48698638a5612926fd1ae95",
+    "Numplots": 6,
+    "Numspecies": 94,
+    "NumplotsWithEnvData": 6,
+    "NumplotsWithSpatialData": 6
+  },
+  {
+    "timestamp": "2019-06-22 19:43:29",
+    "log_lvl": "INFO",
+    "log_msg": "uploadresults",
+    "log_detail": "Species names not found in eastern NSW PCT standardised taxonomy:There are 94 species, <b><mark> and 7 could not be matched: bapalpal, Cassglag, Goodbelb, Gooddimd, Leptpolp, Philsalo, Pimelinl, so were ignored in analysis.<\/mark><\/b>, Sites outside eastern NSW study region:0",
+    "event": "upload",
+    "sessionid": "c23a3a2ea48698638a5612926fd1ae95",
+    "MissingSpeciesList": "There are 94 species, <b><mark> and 7 could not be matched: bapalpal, Cassglag, Goodbelb, Gooddimd, Leptpolp, Philsalo, Pimelinl, so were ignored in analysis.<\/mark><\/b>",
+    "NumplotsOutsideStudy": "0"
+  },
+  {
+    "timestamp": "2019-06-22 19:44:56",
+    "log_lvl": "INFO",
+    "log_msg": "uploadresults",
+    "log_detail": "Number of plots (rows):72, Number of species (columns):334, Number of plots (rows) with environmental data detected:0\n                   , Number of plots (rows) with spatial data detected:0",
+    "event": "upload",
+    "sessionid": "c23a3a2ea48698638a5612926fd1ae95",
+    "Numplots": 72,
+    "Numspecies": 334,
+    "NumplotsWithEnvData": 0,
+    "NumplotsWithSpatialData": 0
+  },
+  {
+    "timestamp": "2019-06-22 19:44:56",
+    "log_lvl": "INFO",
+    "log_msg": "uploadresults",
+    "log_detail": "Species names not found in eastern NSW PCT standardised taxonomy:There are 334 species, <b><mark> and 1 could not be matched: Morijasm, so were ignored in analysis.<\/mark><\/b>, Sites outside eastern NSW study region:N/A. Spatial data not imported",
+    "event": "upload",
+    "sessionid": "c23a3a2ea48698638a5612926fd1ae95",
+    "MissingSpeciesList": "There are 334 species, <b><mark> and 1 could not be matched: Morijasm, so were ignored in analysis.<\/mark><\/b>",
+    "NumplotsOutsideStudy": "N/A. Spatial data not imported"
+  },
+  {
+    "timestamp": "2019-06-22 19:46:10",
+    "log_lvl": "INFO",
+    "log_msg": "session has ended",
+    "log_detail": "session has ended",
+    "sessionid": "c23a3a2ea48698638a5612926fd1ae95"
+  },
+  {
+    "timestamp": "2019-06-22 19:50:25",
+    "log_lvl": "INFO",
+    "log_msg": "session started",
+    "log_detail": "session has started",
+    "event": "session start",
+    "sessionid": "d0a14c362c5564424f7d49ca7305c692"
+  },
+  {
+    "timestamp": "2019-06-22 19:51:13",
+    "log_lvl": "INFO",
+    "log_msg": "session has ended",
+    "log_detail": "session has ended",
+    "sessionid": "d0a14c362c5564424f7d49ca7305c692"
+  },
+  {
+    "timestamp": "2019-06-22 19:51:13",
+    "log_lvl": "INFO",
+    "log_msg": "session started",
+    "log_detail": "session has started",
+    "event": "session start",
+    "sessionid": "38263c7e0aa27f2c4766fde26f6886a3"
+  },
+  {
+    "timestamp": "2019-06-22 19:55:27",
+    "log_lvl": "INFO",
+    "log_msg": "session has ended",
+    "log_detail": "session has ended",
+    "sessionid": "38263c7e0aa27f2c4766fde26f6886a3"
+  },
+  {
+    "timestamp": "2019-06-22 19:55:27",
+    "log_lvl": "INFO",
+    "log_msg": "session started",
+    "log_detail": "session has started",
+    "event": "session start",
+    "sessionid": "9aab758c4370c47925a5adc2f209a7a9"
+  },
+  {
+    "timestamp": "2019-06-22 19:55:59",
+    "log_lvl": "INFO",
+    "log_msg": "session has ended",
+    "log_detail": "session has ended",
+    "sessionid": "9aab758c4370c47925a5adc2f209a7a9"
+  },
+  {
+    "timestamp": "2019-06-22 19:55:59",
+    "log_lvl": "INFO",
+    "log_msg": "session started",
+    "log_detail": "session has started",
+    "event": "session start",
+    "sessionid": "ebee586747e7cdf7c11da1d5908c5a82"
+  },
+  {
+    "timestamp": "2019-06-22 19:56:29",
+    "log_lvl": "INFO",
+    "log_msg": "session has ended",
+    "log_detail": "session has ended",
+    "sessionid": "ebee586747e7cdf7c11da1d5908c5a82"
+  },
+  {
+    "timestamp": "2019-06-22 19:56:29",
+    "log_lvl": "INFO",
+    "log_msg": "session started",
+    "log_detail": "session has started",
+    "event": "session start",
+    "sessionid": "f14bec26c4af62a1aa9c3766ca04133f"
+  },
+  {
+    "timestamp": "2019-06-22 19:57:10",
+    "log_lvl": "INFO",
+    "log_msg": "session has ended",
+    "log_detail": "session has ended",
+    "sessionid": "f14bec26c4af62a1aa9c3766ca04133f"
+  },
+  {
+    "timestamp": "2019-06-22 19:57:11",
+    "log_lvl": "INFO",
+    "log_msg": "session started",
+    "log_detail": "session has started",
+    "event": "session start",
+    "sessionid": "1726a7197b778a168d9b4adbe90a3d75"
+  },
+  {
+    "timestamp": "2019-06-22 19:57:17",
+    "log_lvl": "INFO",
+    "log_msg": "session has ended",
+    "log_detail": "session has ended",
+    "sessionid": "1726a7197b778a168d9b4adbe90a3d75"
+  },
+  {
+    "timestamp": "2019-06-22 19:57:17",
+    "log_lvl": "INFO",
+    "log_msg": "session started",
+    "log_detail": "session has started",
+    "event": "session start",
+    "sessionid": "260439c4c59b6778df3a0fbcb7ac4adc"
+  },
+  {
+    "timestamp": "2019-06-22 19:57:47",
+    "log_lvl": "INFO",
+    "log_msg": "session has ended",
+    "log_detail": "session has ended",
+    "sessionid": "260439c4c59b6778df3a0fbcb7ac4adc"
+  },
+  {
+    "timestamp": "2019-06-22 19:57:47",
+    "log_lvl": "INFO",
+    "log_msg": "session started",
+    "log_detail": "session has started",
+    "event": "session start",
+    "sessionid": "78d4661bf197405eeef5e5b9e4905c5a"
+  },
+  {
+    "timestamp": "2019-06-22 19:58:16",
+    "log_lvl": "INFO",
+    "log_msg": "session has ended",
+    "log_detail": "session has ended",
+    "sessionid": "78d4661bf197405eeef5e5b9e4905c5a"
+  },
+  {
+    "timestamp": "2019-06-22 20:12:03",
+    "log_lvl": "INFO",
+    "log_msg": "session started",
+    "log_detail": "session has started",
+    "event": "session start",
+    "sessionid": "ca3092433bca47856d9bcf46762bb6ca"
+  },
+  {
+    "timestamp": "2019-06-22 20:12:17",
+    "log_lvl": "INFO",
+    "log_msg": "session has ended",
+    "log_detail": "session has ended",
+    "sessionid": "ca3092433bca47856d9bcf46762bb6ca"
+  },
+  {
+    "timestamp": "2019-06-22 23:30:14",
+    "log_lvl": "INFO",
+    "log_msg": "session started",
+    "log_detail": "session has started",
+    "event": "session start",
+    "sessionid": "a3c29de140b30dd2fdfbc29a03d1d344"
+  },
+  {
+    "timestamp": "2019-06-22 23:30:32",
+    "log_lvl": "INFO",
+    "log_msg": "session has ended",
+    "log_detail": "session has ended",
+    "sessionid": "a3c29de140b30dd2fdfbc29a03d1d344"
+  },
+  {
+    "timestamp": "2019-06-22 23:31:34",
+    "log_lvl": "INFO",
+    "log_msg": "session started",
+    "log_detail": "session has started",
+    "event": "session start",
+    "sessionid": "87a0281b6d0db5b126544273b838fbf5"
+  },
+  {
+    "timestamp": "2019-06-22 23:32:00",
+    "log_lvl": "INFO",
+    "log_msg": "session has ended",
+    "log_detail": "session has ended",
+    "sessionid": "87a0281b6d0db5b126544273b838fbf5"
+  },
+  {
+    "timestamp": "2019-06-22 23:33:12",
+    "log_lvl": "INFO",
+    "log_msg": "session started",
+    "log_detail": "session has started",
+    "event": "session start",
+    "sessionid": "e6b1bd1708a7fd613cc9ac53e31afa59"
+  },
+  {
+    "timestamp": "2019-06-22 23:33:40",
+    "log_lvl": "INFO",
+    "log_msg": "session has ended",
+    "log_detail": "session has ended",
+    "sessionid": "e6b1bd1708a7fd613cc9ac53e31afa59"
+  },
+  {
+    "timestamp": "2019-06-22 23:35:02",
+    "log_lvl": "INFO",
+    "log_msg": "session started",
+    "log_detail": "session has started",
+    "event": "session start",
+    "sessionid": "db2209e662f51e8a455d358ee33b9883"
+  },
+  {
+    "timestamp": "2019-06-22 23:35:12",
+    "log_lvl": "INFO",
+    "log_msg": "session has ended",
+    "log_detail": "session has ended",
+    "sessionid": "db2209e662f51e8a455d358ee33b9883"
+  },
+  {
+    "timestamp": "2019-06-22 23:35:53",
+    "log_lvl": "INFO",
+    "log_msg": "session started",
+    "log_detail": "session has started",
+    "event": "session start",
+    "sessionid": "01be2b9713c510061cda004e62e7d0a9"
+  },
+  {
+    "timestamp": "2019-06-22 23:36:06",
+    "log_lvl": "INFO",
+    "log_msg": "session has ended",
+    "log_detail": "session has ended",
+    "sessionid": "01be2b9713c510061cda004e62e7d0a9"
+  },
+  {
+    "timestamp": "2019-06-22 23:36:44",
+    "log_lvl": "INFO",
+    "log_msg": "session started",
+    "log_detail": "session has started",
+    "event": "session start",
+    "sessionid": "364f338a8f9d7e307f2b50ddd6dc8f74"
+  },
+  {
+    "timestamp": "2019-06-22 23:36:52",
+    "log_lvl": "INFO",
+    "log_msg": "session has ended",
+    "log_detail": "session has ended",
+    "sessionid": "364f338a8f9d7e307f2b50ddd6dc8f74"
   }
 ]

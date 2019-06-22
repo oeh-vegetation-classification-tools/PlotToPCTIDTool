@@ -64,7 +64,7 @@ ui<-  htmlTemplate("main.html",
                                                         
                                                         <div  style='font-weight: bolder;margin:10px 10px 0px 0px;text-align:left;'>
                                                         App last updated: 03/06/2019 (Version: 1.0) &nbsp; PCT data last updated: 22/03/2019 (Version: 1)<br/>
-                                                        <a href='#' data-toggle='popover' style='color:#567621;' title='Disclaimer' 
+                                                        <a href='#' data-toggle='popover' style='color:#567621;text-decoration:underline;' title='Disclaimer' 
                                                         data-placement='bottom' data-content='The Office of Environment and Heritage (OEH) has compiled this publication in good faith, exercising all due care and attention. No representation is made about the accuracy, completeness or suitability of the information in this publication for any particular purpose. OEH shall not be liable for any damage which may occur to any person or organisation taking action or not on the basis of this publication. Users should seek appropriate advice when applying the information to their specific needs. 
                                                         This publication may be subject to revision without notice and users should ensure they are using the latest version'>Disclaimer</a>
                                                         </div>
@@ -133,7 +133,7 @@ ui<-  htmlTemplate("main.html",
                                                  </p><p style='text-align:justify;padding:1px 15px 1px 2px;'>
                                                 If you want to view the functions of this tool with some test data, or check the data input format, 
 
-                                                 ",downloadLink("DownloadSampleData2","download sample data here.", class = ".btn-primary",style="color:#567621;"),"</p> ")),
+                                                 ",downloadLink("DownloadSampleData2","download sample data here.", class = "external",style="color:#567621;"),"</p> ")),
                                            
                                            htmlOutput("uploadInformation", style="padding:20px;display:block; clear: both;"),
                                            htmlOutput("dataChecks", style="padding:20px"),
