@@ -2,52 +2,49 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<title>NSW vegetation plot allocation tool</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Eastern NSW Plot to PCT Assignment Tool</title>
 
 {{ headContent() }}
 
 
  <link rel="stylesheet" href="sitecore-oeh.min.css" type="text/css" />
  <link rel="stylesheet" href="oehstyles.css" type="text/css" />
- <link rel="stylesheet" href="fontawesome/css/all.min.css" type="text/css"/>
-<link rel="stylesheet" href="fontawesome/css/v4-shims.min.css" type="text/css"/>
+ 
 
-
+<script>
+$(document).ready(function(){
+  $('[data-toggle="popover"]').popover(); 
+});
+</script>
 
 </head>
 <body>
 <header class="header-sm topNav">
      <nav class="navbar-inverse collapse navbar-collapse" id="bs-navbar-collapse">
-          <div class="container" style="margin:0">
-              <div class="navbar-header hidden-xs hidden-sm">
-                  <div id="department-logo" class="navbar-brand-logo" style="margin:0px;">
-                      <a href="https://www.environment.nsw.gov.au" class="brand-logo oeh-home"><img class="img-responsive" src="office-of-environment-heritage-inv.png" alt="NSW Government - Office of Environment and Heritage home page"></a>
+          <div style="margin:0;background:#0d0d0d;">
+             
+                  <div id="department-logo" class="navbar-brand-logo" style="margin:0px 10px 0px 0px;float:left;">
+                      <a href="https://www.environment.nsw.gov.au" class="brand-logo oeh-home"><img class="img-responsive" src="WaratahNSWGovtReverse.png" alt="NSW Government - Office of Environment and Heritage home page"></a>
                   </div>
-              </div>
+                 
+                  <div class="row">
+                    <div class="col-lg-6 col-md-4 col-sm-4">
+                      <h2 style="padding:15px;font-weight:bolder;margin:20px 15px 15px 5px;color:#99b964;">Eastern NSW Plot to PCT Assignment Tool</h2>
+                    </div>
+                    	
+   
+        
+                  </div>
           </div>
       </nav>
   </header>
 
-<div id="themeImage">            
-  <img alt="Nature Conservation" title="Nature Conservation" src="DEV63.jpg">
+<div id="themeImage" style="margin:0px 0px 0px 0px;">            
+  <img alt="Nature Conservation" title="Nature Conservation" src="PCTTool_PhotoBanner_resized.jpg">
 </div>   
 
-  <div class="row" style="margin:15px 15px 15px 15px">
-    <div class="col-lg-6 col-md-4 col-sm-4">
-        <h2 style="padding:5px;">NSW Plot to PCT Matching Tool</h2>
-    </div>
-    <div class="col-lg-2 col-md-3 col-sm-2">
-		  &nbsp;
-    </div>
-    <div class="col-lg-4 col-md-5 col-sm-6" style="font-family:Roboto; color:slategrey; font-weight: bolder;">
-	<div class="row text-right">
-	    App last updated: 20/05/2019 (Version: 1.0)
-	</div>
-	<div class="row text-right">
-	    Plot to draft PCT assignments data last updated *: 22/03/2019 (Version: 1)	    
-	</div>
-    </div>
-</div>
+ 
 
 
 {{ mainView }}

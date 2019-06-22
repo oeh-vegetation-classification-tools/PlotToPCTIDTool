@@ -129,7 +129,7 @@ get_topn <- function(matches, topn, decr) {
   matches_top <- data.frame(matches[,1],
                             t(apply(matches[,-1], 1, top_n, topn, decr)),
                             stringsAsFactors = F)
-  names(matches_top) <- c("Site_Name", paste0("match",1:topn), paste0("group",1:topn)) # hacky, but avoids overhead in the top_n function
+  names(matches_top) <- c("Site_No", paste0("Distance_to_Centroid",1:topn), paste0("PCT_Match",1:topn)) # hacky, but avoids overhead in the top_n function
   matches_top
 }
 
@@ -144,74 +144,63 @@ match_topn <- function(cent, char, topn) {
   matched_out
 }
 
+
 ## function to style the output allocation table for characteristic species matches
 style_matches_char <- function(table) {
   DT::datatable(table) %>%
-    formatStyle(grep("match", names(table)), 
+    formatStyle(grep("Distance_to_Centroid", names(table)), 
               backgroundColor = styleInterval(cuts = c(25,60), 
-                                              values = c("white","darkseagreen","chartreuse"))
+                                              values = c("white","#ccd6bc","#99b964"))
   )
 }
 
 ## function to style the output allocation table for distance to centroids
 style_matches_cent <- function(table) {
   DT::datatable(table) %>%
-    formatStyle(grep("match", names(table)), 
-                backgroundColor = styleInterval(cuts = c(0.65,0.695), 
-                                                values = c("chartreuse","darkseagreen","white"))
+    formatStyle(grep("Distance_to_Centroid", names(table)), 
+                backgroundColor = styleInterval(cuts = c(0.695,0.69501), 
+                                                values = c("#99b964","white","white"))
     )
 }
 
 style_matches_thresholds <- function(table) {
   DT::datatable(table) %>%
     formatStyle(c("Rainfall","Elevation","Temperature"), 
-                backgroundColor = styleEqual(levels = c("Outside","Within","Typical"), 
-                                             values = c("white","darkseagreen","chartreuse"),default = "white")
+                backgroundColor = styleEqual(levels = c("Above","Below","Within"), 
+                                             values = c("white","white","#99b964"),default = "white")
     )
 }
 
 ## function to find threshold status for an individual site + group combo
-check_site_thresholds <- function(groupi, site, env_thresh, env_data) {
+check_site_thresholds <- function(group, site, env_thresh, env_data) {
   out <- data.frame(Elevation = "N/A", Rainfall = "N/A", Temperature = "N/A")
-  if (!groupi %in% env_thresh$group) return(out)
+  if (!group %in% env_thresh$gp) return(out)
   
-  group_thresh <- filter(env_thresh, group == groupi)
+  group_thresh <- filter(env_thresh, gp == group)
   site_env <- filter(env_data, sites == site)
   
-  if (site_env[1,"Elevation"] < group_thresh[1,"Elevation_Min"]) {
-    out$Elevation <- "Outside"
-  } else if (site_env[1,"Elevation"] > group_thresh[1,"Elevation_Max"]) {
-    out$Elevation <- "Outside"
-  } else if (site_env[1,"Elevation"] > group_thresh[1,"Elevation_Min"] && site_env[1,"Elevation"] < group_thresh[1,"T1_elev"]) {
-    out$Elevation <- "Within"
-  } else if (site_env[1,"Elevation"] > group_thresh[1,"T2_elev"] && site_env[1,"Elevation"] < group_thresh[1,"Elevation_Max"]) {
-    out$Elevation <- "Within"
+  if (site_env[1,"Elevation"] < group_thresh[1,"T1_elev"]) {
+    out$Elevation <- "Below"
+  } else if (site_env[1,"Elevation"] > group_thresh[1,"T2_elev"]) {
+    out$Elevation <- "Above"
   } else {
-    out$Elevation <- "Typical"
+    out$Elevation <- "Within"
   }
   
-  if (site_env[1,"RainfallAnn"] < group_thresh[1,"RainfallAnn_Min"]) {
-    out$Rainfall <- "Outside"
-  } else if (site_env[1,"RainfallAnn"] > group_thresh[1,"RainfallAnn_Max"]) {
-    out$Rainfall <- "Outside"
-  } else if (site_env[1,"RainfallAnn"] > group_thresh[1,"RainfallAnn_Min"] && site_env[1,"RainfallAnn"] < group_thresh[1,"T1_rainann"]) {
-    out$Rainfall <- "Within"
-  } else if (site_env[1,"RainfallAnn"] > group_thresh[1,"T2_rainann"] && site_env[1,"RainfallAnn"] < group_thresh[1,"RainfallAnn_Max"]) {
-    out$Rainfall <- "Within"
+  if (site_env[1,"RainfallAnn"] < group_thresh[1,"T1_rainann"]) {
+    out$Rainfall <- "Below"
+  } else if (site_env[1,"RainfallAnn"] > group_thresh[1,"T2_rainann"]) {
+    out$Rainfall <- "Above"
   } else {
-    out$Rainfall <- "Typical"
+    out$Rainfall <- "Within"
   }
   
-  if (site_env[1,"TempAnn"] < group_thresh[1,"TempAnn_Min"]) {
-    out$Temperature <- "Outside"
-  } else if (site_env[1,"TempAnn"] > group_thresh[1,"TempAnn_Max"]) {
-    out$Temperature <- "Outside"
-  } else if (site_env[1,"TempAnn"] > group_thresh[1,"TempAnn_Min"] && site_env[1,"TempAnn"] < group_thresh[1,"T1_tempann"]) {
-    out$Temperature <- "Within"
-  } else if (site_env[1,"TempAnn"] > group_thresh[1,"T2_tempann"] && site_env[1,"TempAnn"] < group_thresh[1,"TempAnn_Max"]) {
-    out$Temperature <- "Within"
+  if (site_env[1,"TempAnn"] < group_thresh[1,"T1_tempann"]) {
+    out$Temperature <- "Below"
+  } else if (site_env[1,"TempAnn"] > group_thresh[1,"T2_tempann"]) {
+    out$Temperature <- "Above"
   } else {
-    out$Temperature <- "Typical"
+    out$Temperature <- "Within"
   }
   
   out
@@ -220,10 +209,10 @@ check_site_thresholds <- function(groupi, site, env_thresh, env_data) {
 
 ## function to determine environmetnal threshold status
 check_env_thresholds <- function(cent_groups, env_thresholds, env_data) {
-  cent_groups_long <- gather(cent_groups, "match", "group", grep("group", names(cent_groups)))
+  cent_groups_long <- gather(cent_groups, "Distance_to_Centroid", "PCT_Match", grep("PCT_Match", names(cent_groups)))
   data.frame(cent_groups_long,
              bind_rows(
-               map2(.x = cent_groups_long$group, .y = cent_groups_long$Site_Name,
+               map2(.x = cent_groups_long$PCT_Match, .y = cent_groups_long$Site_No,
                     .f = check_site_thresholds, env_thresh = env_thresh, env_data = env_data)
                ))
 }
@@ -246,13 +235,20 @@ reorder_data<-function(matchedData) {
   m=0
   for(p in columnnames) {
     
-    if (substr(p,1,nchar(p)-1)=="match")
+    if ((substr(p,1,nchar(p)-1)=="Distance_to_Centroid")||(substr(p,1,nchar(p)-2)=="Distance_to_Centroid"))
     {
       n<-n+1
       colNamesMatch[n] <- p     		
     }
     
-    if (substr(p,1,nchar(p)-1)=="group")
+    if ((substr(p,1,nchar(p)-1)=="%_Char_Spp")||(substr(p,1,nchar(p)-2)=="%_Char_Spp"))
+    {
+      n<-n+1
+      colNamesMatch[n] <- p     		
+    }
+    
+    
+    if ((substr(p,1,nchar(p)-1)=="PCT_Match")||(substr(p,1,nchar(p)-2)=="PCT_Match"))
     {
       m<-m+1
       colNamesGroup[m] <- p     		
@@ -263,7 +259,7 @@ reorder_data<-function(matchedData) {
   newColNames<-NULL
   for (i in seq(1,length(colNamesMatch),1)){
     
-    newColNames <- paste0(newColNames,",",colNamesMatch[i],",",colNamesGroup[i])
+    newColNames <- paste0(newColNames,",",colNamesGroup[i],",",colNamesMatch[i])
     
   }
   newColNames <- paste0(columnnames[1],substr(newColNames,1,nchar(newColNames)))
@@ -286,51 +282,107 @@ getPCTName<- function(pctid) {
   # Initialize a temporary in memory database and copy a data.frame into it
   con <- dbConnect(RSQLite::SQLite(), dbname="data/pctdatadb.sqlite")
   
-  rs <- dbSendQuery(con, paste0("SELECT pctname FROM fsdata where replace(pctid,'.','_')='",pctid,"' limit 1"))
+  rs <- dbSendQuery(con, paste0("SELECT pctname FROM pctprofiledata where replace(pctid,'.','_')='",pctid,"' limit 1"))
   d1 <- dbFetch(rs)
   dbHasCompleted(rs)
   dbClearResult(rs)
   
   # clean up
   dbDisconnect(con)
-  return(d1$pctname)
+  return(d1$PCTName)
 }
 
 getPCTProfile<- function(pctid) {
   # Initialize a temporary in memory database and copy a data.frame into it
   con <- dbConnect(RSQLite::SQLite(), dbname="data/pctdatadb.sqlite")
 
-  rs <- dbSendQuery(con, paste0("SELECT pctname FROM fsdata where replace(pctid,'.','_')='",pctid,"' limit 1"))
+  rs <- dbSendQuery(con, paste0("SELECT * FROM pctprofiledata where pctid='",pctid,"' limit 1"))
   d1 <- dbFetch(rs)
   dbHasCompleted(rs)
   dbClearResult(rs)
-
+  
+  rs <- dbSendQuery(con, paste0("SELECT Scientific_name, Group_score_median, Group_frequency, GrowthFormGroup FROM pctspeciesgrowthforms where PCT_ID='",pctid,"'"))
+  d2 <- dbFetch(rs)
+  dbHasCompleted(rs)
+  dbClearResult(rs)
+  
   # clean up
   dbDisconnect(con)
   
-  pctprofile<-HTML(paste0("PCTID:",pctid,"<br/>"
-                          ,"PCT Name:",d1$pctname,"<br/>"
-                          ,"Vegetation description:<br/>"
-                          ,"Classification confidence level:<br/>"
-                          ,"Number of Primary replicates:<br/>"
-                          ,"Number of Secondary replicates:<br/>"
-                          ,"Vegetation Formation:<br/>"
-                          ,"Vegetation Class:<br/>"
-                          ,"IBRA Subregion(s):<br/>"
-                          ,"Elevation max:<br/>"
-                          ,"Elevation min:<br/>"
-                          ,"Elevation median:<br/>"
-                          ,"Rainfall max:<br/>"
-                          ,"Rainfall min:<br/>"
-                          ,"Rainfall median:<br/>"
-                          ,"Temperature max:<br/>"
-                          ,"Temperature min:<br/>"
-                          ,"Temperature median:<br/>"
-                          ,"TEC list:<br/>"
-                          ,"TEC Act:<br/>"
-                          ,"Median species richness:<br/>")
-  )
+ #PCTID, PCTName, Vegetation_description, Classification_confidence_level, Number_of_Primary_replicates, 
+  # Number_of_Secondary_replicates, Vegetation_Formation, Vegetation_Class, IBRA_Subregion, 
+  # Elevation_max, Elevation_min, Elevation_median, Rainfall_max, Rainfall_min, Rainfall_median, 
+  # Temperature_max, Temperature_min, Temperature_median, TEC_list, TEC_Act, Median_species_richness
+  
+    pctprofile01<-paste0("<b>PCT ID:</b>",pctid,"<br/>"
+                            ,"<b>PCT Name:</b>",d1$PCTName,"<br/>"
+                            ,"<b>Classification Confidence Level:</b>",if (is.na(d1$Classification_confidence_level)) "" else d1$Classification_confidence_level,"<br/>"
+                            ,"<b>Number of Primary Replicates:</b>",d1$Number_of_Primary_replicates,"<br/>"
+                            ,"<b>Number of Secondary Replicates:</b>",d1$Number_of_Secondary_replicates,"<br/>"
+                            ,"<b>Vegetation Description:</b>",if (is.na(d1$Vegetation_description)) "" else d1$Vegetation_description,"<br/>"
+                            ,"<b>Vegetation Formation:</b>",d1$Vegetation_Formation,"<br/>"
+                            ,"<b>Vegetation Class:</b>",d1$Vegetation_Class,"<br/>"
+                            ,"<b>IBRA Subregion(s):</b>",d1$IBRA_Subregion,"<br/>"
+                            ,"<b>Elevation Max:</b>",d1$Elevation_max,"<br/>"
+                            ,"<b>Elevation Min:</b>",d1$Elevation_min,"<br/>"
+                            ,"<b>Elevation Median:</b>",d1$Elevation_median,"<br/>"
+                            ,"<b>Rainfall Max:</b>",d1$Rainfall_max,"<br/>"
+                            ,"<b>Rainfall Min:</b>",d1$Rainfall_min,"<br/>"
+                            ,"<b>Rainfall Median:</b>",d1$Rainfall_median,"<br/>"
+                            ,"<b>Temperature Max:</b>",d1$Temperature_max,"<br/>"
+                            ,"<b>Temperature Min:</b>",d1$Temperature_min,"<br/>"
+                            ,"<b>Temperature Median:</b>",d1$Temperature_median,"<br/>"
+                            ,"<b>TEC List:</b>",if (is.na(d1$TEC_list)) "" else d1$TEC_list,"<br/>"
+                            ,"<b>TEC Act:</b>",if (is.na(d1$TEC_Act)) "" else d1$TEC_Act,"<br/>"
+                            ,"<b>Median Native Species Richness:</b>",d1$Median_species_richness,"<br/>"
+                            ,"<div><b>Species by Growth Form:</b>")
+  
+  
+  
+        headings<- paste0("<div style='overflow:scroll;height:300px;'>
+        <table style='border-style:solid; border-width:2px;border-color:black;width;600px;'>
+        	<tr style='width:600px;'>
+        	<td style='vertical-align:top;font-weight:bolder;padding:2px;margin:2px;'>Scientific name</td>
+        	<td style='vertical-align:top;font-weight:bolder;padding:2px;margin:2px;'>Group score median</td>
+        	<td style='vertical-align:top;font-weight:bolder;padding:2px;margin:2px;'>Group frequency</td>
+        	<td style='vertical-align:top;font-weight:bolder;padding:2px;margin:2px;'>Growth Form Group</td>
+        	</tr>")
+        
+        
+        rowdata<-""
+        
+        for (i in 1:nrow(d2)){
+          
+          rowdata<-paste0(rowdata, 
+                          "<tr style='width:600px;'>
+      				<td style='vertical-align:top;padding:2px;margin:2px;'>",d2$Scientific_name[i],"</td>
+      				<td style='vertical-align:top;padding:2px;margin:2px;'>",d2$Group_score_median[i],"</td>
+      				<td style='vertical-align:top;padding:2px;margin:2px;'>",d2$Group_frequency[i],"</td>
+      				<td style='vertical-align:top;padding:2px;margin:2px;'>",d2$GrowthFormGroup[i],"</td>
+      			   </tr>")
+        }
+        rowdata<-paste0(rowdata,"</table></div></div>")
+        
+        pctprofile<-HTML(paste0(pctprofile01,headings,rowdata))
+  
+  
+  
   
   return(pctprofile)
+}
+
+getPCTSites<- function(pctid) {
+  # Initialize a temporary in memory database and copy a data.frame into it
+  con <- dbConnect(RSQLite::SQLite(), dbname="data/pctdatadb.sqlite")
+  
+  rs <- dbSendQuery(con, paste0("SELECT * FROM fsdata where replace(pctid,'.','_')='",pctid,"'"))
+  d1 <- dbFetch(rs)
+  dbHasCompleted(rs)
+  dbClearResult(rs)
+  
+  # clean up
+  dbDisconnect(con)
+  
+  return(d1)
 }
 
