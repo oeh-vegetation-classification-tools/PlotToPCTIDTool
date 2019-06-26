@@ -60,14 +60,7 @@ shinyServer(function(input, output,session) {
   #session$allowReconnect(TRUE)
   
   
-  observe({
-    updateSliderInput(session, "topn2", value = input$topn)
-  })
-  
-  observe({
-    updateSliderInput(session, "topn", value = input$topn2)
-  })
-  
+ 
   #/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   
  
@@ -692,33 +685,7 @@ shinyServer(function(input, output,session) {
   )
   
   
-  # output$download_env_matches <- downloadHandler(
-  #   filename = function() {
-  #     paste(gsub(".csv","",input$file1$name), "_env-thresholds", ".csv", sep = "")
-  #   },
-  #   content = function(file) {
-  #     
-  #     dtfET<-datatable(style_env_thresholds()$env_thresholds)
-  #     
-  #     ETdata<-dtfET$x$data %>% rename(Row_Number = names(dtfET$x$data)[1], PCT_Match=names(dtfET$x$data)[3], PCT_ID=names(dtfET$x$data)[4])
-  #     
-  #     myvar <- Sys.Date()
-  #     out_string <- paste0("Exported from NSW Plot to PCT ID Tool on",myvar,". Plot to PCT assignment version 22 March 2019\n", "=================\n")
-  #     cat(out_string, file = file, sep = '\n')
-  #     
-  #     fwrite(x = ETdata,
-  #            file= file,
-  #            sep = ',',
-  #            col.names=T,
-  #            append=T)
-  #     
-  #     #write.csv(download_matches()$env, file, row.names = F)
-  #     
-  #     loggit("INFO","link to download_env_matches", log_detail="link to download_env_matches", event = "download",  sessionid=isolate(session$token), echo = FALSE)  
-  #     
-  #   }
-  #   
-  # )
+
   
   #/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   get_PCTProfile_data <- reactive({
@@ -875,7 +842,9 @@ shinyServer(function(input, output,session) {
       dbDisconnect(con)
       
       
-      allpctsppgfs<-sqldf("select PCT_ID, Scientific_name, Group_score_median, Group_frequency, GrowthFormGroup from pctdt where PCT_ID in (SELECT pctid FROM matchedpcts) order by PCT_ID, GGroupOrder asc, Group_frequency desc")
+      # PCT_ID, Group_Score_Median, Group_Frequency, Growth_Form_Group.
+      
+      allpctsppgfs<-sqldf("select PCT_ID, Scientific_name, Group_score_median as Group_Score_Median, Group_frequency as Group_Frequency, GrowthFormGroup as Growth_Form_Group from pctdt where PCT_ID in (SELECT pctid FROM matchedpcts) order by PCT_ID, GGroupOrder asc, Group_frequency desc")
       
       
       
@@ -1352,7 +1321,7 @@ shinyServer(function(input, output,session) {
                                      iconColor = "white", library = "glyphicon",
                                      squareMarker =  TRUE)
       
-      groupName<-"Display sites for PCTs that are not one of your top 10 matches, and are within 55km distance of your site(s)"
+      groupName<-"Display sites for PCTs that are<br/>not one of your top 10 matches, and are <br/>within 55km distance of your site(s)"
     
       
       leaflet(data=dtfinal )%>% addTiles(group = "Terrain") %>% 
@@ -1391,16 +1360,7 @@ shinyServer(function(input, output,session) {
             
         }
     
-    #  else{
-    #   leaflet(data=pctplotsdata)%>% 
-    #     addProviderTiles(providers$Esri.WorldTopoMap)%>%
-    #     clearShapes() %>%
-    #     clearMarkers()%>%
-    #     setView(lat =-33.819775 , lng =150.994018 , zoom = 11) %>%
-    #     addCircles(radius= 100, lat = ~pctplotsdata$lat, lng = ~pctplotsdata$long, layerId = ~pctplotsdata$siteno, color = ~RdYlBu(pctplotsdata$pctid),fillColor =~RdYlBu(pctplotsdata$pctid),   fillOpacity = 0.7,opacity = 1,
-    #                data = pctplotsdata, popup = ~paste("<b>Survey name:</b>", pctplotsdata$surveyname  ,"<br/><b>Site no:</b>",pctplotsdata$siteno,"<br/><b>Lat:</b>",pctplotsdata$lat,"<b>Long:</b>",pctplotsdata$long,"<br/><b>PCT:</b>", pctplotsdata$pctname, "<br/><b>PCT id:</b>", pctplotsdata$pctid,"<br/><b>PCT assignment category:</b>",pctplotsdata$pctassignmentcategory))
-    #   
-    # }
+  
     
   })
 
