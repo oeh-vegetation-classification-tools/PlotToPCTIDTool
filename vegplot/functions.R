@@ -351,10 +351,10 @@ getPCTProfile<- function(pctid) {
         headings<- paste0("<div style='overflow:scroll;height:300px;'>
         <table style='border-style:solid; border-width:2px;border-color:black;width;600px;'>
         	<tr style='width:600px;'>
-        	<td style='vertical-align:top;font-weight:bolder;padding:2px;margin:2px;'>Scientific name</td>
-        	<td style='vertical-align:top;font-weight:bolder;padding:2px;margin:2px;'>Group Score Median</td>
+        	<td style='vertical-align:top;font-weight:bolder;padding:2px;margin:2px;'>Scientific Name</td>
+        	<td style='vertical-align:top;font-weight:bolder;padding:2px;margin:2px;'>Median Cover Score</td>
         	<td style='vertical-align:top;font-weight:bolder;padding:2px;margin:2px;'>Group Frequency</td>
-        	<td style='vertical-align:top;font-weight:bolder;padding:2px;margin:2px;'>Growth Form Group</td>
+        	<td style='vertical-align:top;font-weight:bolder;padding:2px;margin:2px;'>Growth Form</td>
         	</tr>")
         
         

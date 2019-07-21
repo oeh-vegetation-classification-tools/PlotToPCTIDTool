@@ -40,6 +40,7 @@ library(RColorBrewer)
 library(sqldf)
 library(loggit)
 library(stringr)
+library(future)
 
 setLogFile("www/applog.json")
 
@@ -140,7 +141,7 @@ shinyServer(function(input, output,session) {
     if (nrow(data.frame(str_split(toString(allfiledata[1]),",")))<=1){
       errmsg <- paste(Sys.time(), ", Error: Uploaded data file is not comma separated. Please check acceptable file formats.")
       message(errmsg)
-      showNotification(errmsg,duration = 20,type = c("error"))
+      showNotification(errmsg,duration = 30,type = c("error"))
       write(paste0(errmsg," file:",inFile$name), paste0(file.path(getwd(), "www"),"/errorlog.txt"), append = TRUE) 
       return(NULL)
     }
@@ -156,7 +157,7 @@ shinyServer(function(input, output,session) {
     if ((env_present==FALSE)&&(xcolmissing==TRUE)){
       errmsg <- paste(Sys.time(), ", Error: data is incorrect format. Check sample data for correct format.")
       message(errmsg)
-      showNotification(errmsg,duration = 20,type = c("error"))
+      showNotification(errmsg,duration = 30,type = c("error"))
       write(paste0(errmsg," file:",inFile$name), paste0(file.path(getwd(), "www"),"/errorlog.txt"), append = TRUE) 
       return(NULL)
     }
@@ -165,7 +166,7 @@ shinyServer(function(input, output,session) {
     if (length(which(is.na(sites_floristics)))>0) {
       errmsg <- paste(Sys.time(), ", Error: Cell(s) ",toString(which(is.na(sites_floristics)))," have no data.")
       message(errmsg)
-      showNotification(errmsg,duration = 20,type = c("error"))
+      showNotification(errmsg,duration = 30,type = c("error"))
       write(paste0(errmsg," file:",inFile$name), paste0(file.path(getwd(), "www"),"/errorlog.txt"), append = TRUE) 
       return(NULL)
     }
@@ -175,7 +176,7 @@ shinyServer(function(input, output,session) {
     if (length(which(t=="character"))>0) {
       errmsg <- paste(Sys.time(), ", Error: Species cells ",toString(which(t=="character"))," have non-numeric data.")
       message(errmsg)
-      showNotification(errmsg,duration = 20,type = c("error"))
+      showNotification(errmsg,duration = 30,type = c("error"))
       write(paste0(errmsg," file:",inFile$name), paste0(file.path(getwd(), "www"),"/errorlog.txt"), append = TRUE) 
       return(NULL)
     }
@@ -185,7 +186,7 @@ shinyServer(function(input, output,session) {
     if (length(which(x$sum==0))>0) {
       errmsg <- paste(Sys.time(), ", Error: Row(s) ",toString(which(x$sum==0))," have no species for their respective sites.")
       message(errmsg)
-      showNotification(errmsg,duration = 20,type = c("error"))
+      showNotification(errmsg,duration = 30,type = c("error"))
       write(paste0(errmsg," file:",inFile$name), paste0(file.path(getwd(), "www"),"/errorlog.txt"), append = TRUE) 
       return(NULL)
     }
@@ -194,7 +195,7 @@ shinyServer(function(input, output,session) {
     if (length(which(between(floristics,7,100)))>0) {
       errmsg <- paste(Sys.time(), ", Error: Cell(s) ",toString(which(between(floristics,7,1000)))," have data with values outside cover-abundance score range (range = 0-6 inclusive)")
       message(errmsg)
-      showNotification(errmsg,duration = 20,type = c("error"))
+      showNotification(errmsg,duration = 30,type = c("error"))
       write(paste0(errmsg," file:",inFile$name), paste0(file.path(getwd(), "www"),"/errorlog.txt"), append = TRUE) 
       return(NULL)
     }
@@ -210,7 +211,7 @@ shinyServer(function(input, output,session) {
     
     }
     , error = function(e) {
-      showNotification(paste0("Error: ",e),duration = 10,type = c("error"))
+      showNotification(paste0("Error: ",e),duration = 30,type = c("error"))
       errmsg <- paste(Sys.time(), ", Error:",e)
       write(errmsg, paste0(file.path(getwd(), "www"),"/errorlog.txt"), append = TRUE) 
       # Choose a return value in case of error
@@ -295,7 +296,7 @@ shinyServer(function(input, output,session) {
     
     }
     , error = function(e) {
-      showNotification(paste0("Error: ",e),duration = 10,type = c("error"))
+      showNotification(paste0("Error: ",e),duration = 30,type = c("error"))
       errmsg <- paste(Sys.time(), ", Error:",e)
       write(errmsg, paste0(file.path(getwd(), "www"),"/errorlog.txt"), append = TRUE) 
       # Choose a return value in case of error
@@ -403,7 +404,7 @@ shinyServer(function(input, output,session) {
     
     }
     , error = function(e) {
-      showNotification(paste0("Error: ",e),duration = 10,type = c("error"))
+      showNotification(paste0("Error: ",e),duration = 30,type = c("error"))
       errmsg <- paste(Sys.time(), ", Error:",e)
       write(errmsg, paste0(file.path(getwd(), "www"),"/errorlog.txt"), append = TRUE) 
       # Choose a return value in case of error
@@ -503,7 +504,7 @@ shinyServer(function(input, output,session) {
     
     }
     , error = function(e) {
-      showNotification(paste0("Error: ",e),duration = 10,type = c("error"))
+      showNotification(paste0("Error: ",e),duration = 30,type = c("error"))
       errmsg <- paste(Sys.time(), ", Error:",e)
       write(errmsg, paste0(file.path(getwd(), "www"),"/errorlog.txt"), append = TRUE) 
       # Choose a return value in case of error
@@ -565,9 +566,17 @@ shinyServer(function(input, output,session) {
   #/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   output$char_table <- renderDataTable({ 
       if (!is.null(match_data$matches)) {
-      ar<-array(style_matches()$char)[[1]]$data %>% rename(Row_Number = names(array(style_matches()$char)[[1]]$data)[1])
+      ar<-array(style_matches()$char)[[1]]$data %>% rename(Row_No = names(array(style_matches()$char)[[1]]$data)[1])
       names(ar) <- gsub("Distance_to_Centroid", "%_Char_Spp", names(ar))
-      datatable(ar, selection=list(mode="single",target="cell"), options=list(columnDefs = list(list(visible=FALSE, targets=c(0))))) %>%
+      datatable(ar, selection=list(mode="single",target="cell"), options=list(columnDefs = list(list(visible=FALSE, targets=c(0)),list(targets=c(1), visible=TRUE, width='20px'))), callback = JS("	
+	table.on('mouseenter', 'td', function(nRow, aData, iDisplayIndex, iDisplayIndexFull) {
+	    	   var idx = table.cell( this ).index().column;
+    		var title = table.column( idx ).header();
+        var pos = title.innerHTML.search('PCT_Match');
+	    	if (pos>=0){
+         table.column( idx ).nodes().to$().css({cursor: 'pointer'});
+	    	}
+	});    ")) %>%
       formatStyle(grep("%_Char_Spp", names(ar)), 
                   backgroundColor = styleInterval(cuts = c(25,60), 
                                                   values = c("white","#ccd6bc","#99b964"))
@@ -578,8 +587,16 @@ shinyServer(function(input, output,session) {
   
   output$cent_table <- renderDataTable({
     if (!is.null(match_data$matches)) {
-      ar<-array(style_matches()$cent)[[1]]$data %>% rename(Row_Number = names(array(style_matches()$cent)[[1]]$data)[1])
-      datatable(ar, selection=list(mode="single",target="cell"), options=list(columnDefs = list(list(visible=FALSE, targets=c(0)))) ) %>%
+      ar<-array(style_matches()$cent)[[1]]$data %>% rename(Row_No = names(array(style_matches()$cent)[[1]]$data)[1])
+      datatable(ar, selection=list(mode="single",target="cell"), options=list(columnDefs = list(list(visible=FALSE, targets=c(0)),list(targets=c(1), visible=TRUE, width='20px'))), callback = JS("	
+	table.on('mouseenter', 'td', function(nRow, aData, iDisplayIndex, iDisplayIndexFull) {
+	    	   var idx = table.cell( this ).index().column;
+    		var title = table.column( idx ).header();
+        var pos = title.innerHTML.search('PCT_Match');
+	    	if (pos>=0){
+         table.column( idx ).nodes().to$().css({cursor: 'pointer'});
+	    	}
+	});    ") ) %>%
       formatStyle(grep("Distance_to_Centroid", names(array(style_matches()$cent)[[1]]$data)), 
                   backgroundColor = styleInterval(cuts = c(0.695,0.69501), 
                                                   values = c("#99b964","white","white"))
@@ -593,8 +610,8 @@ shinyServer(function(input, output,session) {
       
       shinyjs::hide("EnvDataViewMessage")
       dtfET<-datatable(style_env_thresholds()$env_thresholds)
-      ETdata<-dtfET$x$data %>% rename(Row_Number = names(dtfET$x$data)[1], PCT_Match=names(dtfET$x$data)[3], PCT_ID=names(dtfET$x$data)[4])
-      ETdata<-transform(ETdata, Row_Number = as.numeric(Row_Number))
+      ETdata<-dtfET$x$data %>% rename(Row_No = names(dtfET$x$data)[1], PCT_Match=names(dtfET$x$data)[3], PCT_ID=names(dtfET$x$data)[4])
+      ETdata<-transform(ETdata, Row_No = as.numeric(Row_No))
       dta<-style_matches()$cent$x$data
       dt<-style_matches()$cent$x$data %>% select(starts_with("Distance_to_Centroid"))
       
@@ -613,7 +630,7 @@ shinyServer(function(input, output,session) {
       dtfinal2<-dtfinal2[c(3,1,2,4,8,5,6,7,0)]
       setorder(dtfinal2,Site_No,Distance_to_Centroid)
       
-      datatable(dtfinal2 , options=list(columnDefs = list(list(visible=FALSE, targets=c(0)  ))) ) %>%
+      datatable(dtfinal2 , options=list(columnDefs = list(list(visible=FALSE, targets=c(0)  ),list(targets=c(1), visible=TRUE, width='20px'))) ) %>%
         formatStyle(c("Rainfall","Elevation","Temperature"), 
                     backgroundColor = styleEqual(levels = c("Above","Below","Within"), 
                                                  values = c("white","white","#99b964"),default = "white")
@@ -642,20 +659,34 @@ shinyServer(function(input, output,session) {
     },
     content = function(file) {
       
-      arCHARDATA<-array(style_matches()$char)[[1]]$data %>% rename(Row_Number = names(array(style_matches()$char)[[1]]$data)[1])
+     
+        
+      arCHARDATA<-array(style_matches()$char)[[1]]$data %>% rename(Row_No = names(array(style_matches()$char)[[1]]$data)[1])
       names(arCHARDATA) <- gsub("Distance_to_Centroid", "%_Char_Spp", names(arCHARDATA))
    
       myvar <- Sys.Date()
-      out_string <- paste0("Exported from NSW Plot to PCT ID Tool on",myvar,". Plot to PCT assignment version 22 March 2019\n", "=================\n")
+      out_string <- paste0("Exported from NSW Plot to PCT assignment tool on ",myvar,". Plot to PCT assignment version 22 March 2019\n", "=================\n")
       cat(out_string, file = file, sep = '\n')
       
+      withProgress(message = 'Processing....',
+                   detail = 'This may take a while...', value = 0, {
+                     for (i in 1:10) {
+                       incProgress(1/10)
+                       Sys.sleep(0.25)
+                     }
+                   })
+      
+      future({
       fwrite(x = reorder_data(arCHARDATA),
              file= file,
              sep = ',',
              col.names=T,
              append=T)
+      })
       
       loggit("INFO","download char_matches", log_detail="download char_matches", event = "download", sessionid=isolate(session$token), echo = FALSE) 
+      
+    
       
     })
   
@@ -667,14 +698,26 @@ shinyServer(function(input, output,session) {
     content = function(file) {
    
       myvar <- Sys.Date()
-      out_string <- paste0("Exported from NSW Plot to PCT ID Tool on",myvar,". Plot to PCT assignment version 22 March 2019\n", "=================\n")
+      out_string <- paste0("Exported from NSW Plot to PCT assignment tool on ",myvar,". Plot to PCT assignment version 22 March 2019\n", "=================\n")
       cat(out_string, file = file, sep = '\n')
+      
+      
+      withProgress(message = 'Processing....',
+                   detail = 'This may take a while...', value = 0, {
+                     for (i in 1:10) {
+                       incProgress(1/10)
+                       Sys.sleep(0.25)
+                     }
+                   })
+      
+      future({
       
       fwrite(x = reorder_data(download_matches()$cent),
              file= file,
              sep = ',',
              col.names=T,
              append=T)
+      })
       
       
       loggit("INFO","download centroid_matches", log_detail="download centroid_matches", event = "download", sessionid=isolate(session$token), echo = FALSE) 
@@ -728,14 +771,24 @@ shinyServer(function(input, output,session) {
       # 
    
       myvar <- Sys.Date()
-      out_string <- paste0("Exported from NSW Plot to PCT ID Tool on",myvar,". Plot to PCT assignment version 22 March 2019\n", "=================\n")
+      out_string <- paste0("Exported from NSW Plot to PCT assignment tool on ",myvar,". Plot to PCT assignment version 22 March 2019\n", "=================\n")
       cat(out_string, file = file, sep = '\n')
-    
-      fwrite(x = get_PCTProfile_data(),
-             file= file,
-             sep = ',',
-             col.names=T,
-             append=T)
+      
+      withProgress(message = 'Processing....',
+                   detail = 'This may take a while...', value = 0, {
+                     for (i in 1:10) {
+                       incProgress(1/10)
+                       Sys.sleep(0.25)
+                     }
+                   })
+      
+      future({
+          fwrite(x = get_PCTProfile_data(),
+                 file= file,
+                 sep = ',',
+                 col.names=T,
+                 append=T)
+      })
       
       loggit("INFO","download PCTProfile_data", log_detail="download PCTProfile_data", event = "download",  sessionid=isolate(session$token), echo = FALSE)
       
@@ -749,8 +802,8 @@ shinyServer(function(input, output,session) {
   get_combo_data <- reactive({
     if (!is.null(match_data$matches$env_data)) {
       dtfET<-datatable(style_env_thresholds()$env_thresholds)
-      ETdata<-dtfET$x$data %>% rename(Row_Number = names(dtfET$x$data)[1], PCT_Match=names(dtfET$x$data)[3], PCT_ID=names(dtfET$x$data)[4])
-      ETdata<-transform(ETdata, Row_Number = as.numeric(Row_Number))
+      ETdata<-dtfET$x$data %>% rename(Row_No = names(dtfET$x$data)[1], PCT_Match=names(dtfET$x$data)[3], PCT_ID=names(dtfET$x$data)[4])
+      ETdata<-transform(ETdata, Row_No = as.numeric(Row_No))
       dta<-style_matches()$cent$x$data
       dt<-style_matches()$cent$x$data %>% select(starts_with("Distance_to_Centroid"))
       
@@ -787,14 +840,24 @@ shinyServer(function(input, output,session) {
       # 
       
       myvar <- Sys.Date()
-      out_string <- paste0("Exported from NSW Plot to PCT ID Tool on",myvar,". Plot to PCT assignment version 22 March 2019\n", "=================\n")
+      out_string <- paste0("Exported from NSW Plot to PCT assignment tool on ",myvar,". Plot to PCT assignment version 22 March 2019\n", "=================\n")
       cat(out_string, file = file, sep = '\n')
       
-      fwrite(x = get_combo_data(),
-             file= file,
-             sep = ',',
-             col.names=T,
-             append=T)
+      withProgress(message = 'Processing....',
+                   detail = 'This may take a while...', value = 0, {
+                     for (i in 1:10) {
+                       incProgress(1/10)
+                       Sys.sleep(0.25)
+                     }
+                   })
+      
+      future({
+        fwrite(x = get_combo_data(),
+               file= file,
+               sep = ',',
+               col.names=T,
+               append=T)
+      })
       
       loggit("INFO","download download_combo_data", log_detail="download download_combo_data", event = "download",  sessionid=isolate(session$token), echo = FALSE)
       
@@ -844,7 +907,7 @@ shinyServer(function(input, output,session) {
       
       # PCT_ID, Group_Score_Median, Group_Frequency, Growth_Form_Group.
       
-      allpctsppgfs<-sqldf("select PCT_ID, Scientific_name, Group_score_median as Group_Score_Median, Group_frequency as Group_Frequency, GrowthFormGroup as Growth_Form_Group from pctdt where PCT_ID in (SELECT pctid FROM matchedpcts) order by PCT_ID, GGroupOrder asc, Group_frequency desc")
+      allpctsppgfs<-sqldf("select PCT_ID, Scientific_name as Scientific_Name, Group_score_median as Median_Cover_Score, Group_frequency as Group_Frequency, GrowthFormGroup as Growth_Form from pctdt where PCT_ID in (SELECT pctid FROM matchedpcts) order by PCT_ID, GGroupOrder asc, Group_frequency desc")
       
       
       
@@ -861,15 +924,25 @@ shinyServer(function(input, output,session) {
       # 
       
       myvar <- Sys.Date()
-      out_string <- paste0("Exported from NSW Plot to PCT ID Tool on",myvar,". Plot to PCT assignment version 22 March 2019\n", "=================\n")
+      out_string <- paste0("Exported from NSW Plot to PCT assignment tool on ",myvar,". Plot to PCT assignment version 22 March 2019\n", "=================\n")
       cat(out_string, file = file, sep = '\n')
       
-      fwrite(x = get_PCTSpeciesGrowthforms_data(),
-             file= file,
-             sep = ',',
-             col.names=T,
-             append=T)
+      withProgress(message = 'Processing....',
+                   detail = 'This may take a while...', value = 0, {
+                     for (i in 1:10) {
+                       incProgress(1/10)
+                       Sys.sleep(0.25)
+                     }
+                   })
       
+      future({
+          fwrite(x = get_PCTSpeciesGrowthforms_data(),
+                 file= file,
+                 sep = ',',
+                 col.names=T,
+                 append=T)
+      })
+        
       loggit("INFO","download PCTSppGFData", log_detail="download PCTSppGFData", event = "download",  sessionid=isolate(session$token), echo = FALSE)
       
       
@@ -1003,7 +1076,7 @@ shinyServer(function(input, output,session) {
       
     }
     , error = function(e) {
-      showNotification(paste0("Error: ",e),duration = 10,type = c("error"))
+      showNotification(paste0("Error: ",e),duration = 30,type = c("error"))
       errmsg <- paste(Sys.time(), ", Error:",e)
       write(errmsg, paste0(file.path(getwd(), "www"),"/errorlog.txt"), append = TRUE) 
       # Choose a return value in case of error
@@ -1093,7 +1166,7 @@ shinyServer(function(input, output,session) {
           }
     }
     , error = function(e) {
-      showNotification(paste0("Error: ",e),duration = 10,type = c("error"))
+      showNotification(paste0("Error: ",e),duration = 20,type = c("error"))
       errmsg <- paste(Sys.time(), ", Error:",e)
       write(errmsg, paste0(file.path(getwd(), "www"),"/errorlog.txt"), append = TRUE) 
       # Choose a return value in case of error
@@ -1207,7 +1280,7 @@ shinyServer(function(input, output,session) {
     
     }
     , error = function(e) {
-      showNotification(paste0("Error: ",e),duration = 10,type = c("error"))
+      showNotification(paste0("Error: ",e),duration = 20,type = c("error"))
       errmsg <- paste(Sys.time(), ", Error:",e)
       write(errmsg, paste0(file.path(getwd(), "www"),"/errorlog.txt"), append = TRUE) 
      
@@ -1392,7 +1465,7 @@ shinyServer(function(input, output,session) {
         
     }
     , error = function(e) {
-      showNotification(paste0("Error: ",e),duration = 10,type = c("error"))
+      showNotification(paste0("Error: ",e),duration = 20,type = c("error"))
       errmsg <- paste(Sys.time(), ", Error:",e)
       write(errmsg, paste0(file.path(getwd(), "www"),"/errorlog.txt"), append = TRUE) 
       # Choose a return value in case of error
