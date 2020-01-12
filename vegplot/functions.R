@@ -47,7 +47,7 @@ species_percentage_match <- function(chars, species) {
 calculate_matches <- function(floristic_raw, site_labels, group_chars, topn) {
   new_site_species <- apply(X = floristic_raw, MARGIN = 1, FUN = function(x){names(x[x > 0])})
     # loop over the species lists for the new sites and calculate percentage match for each
-  char_matches <- matrix(NA, nrow = length(new_site_species), ncol = length(group_chars)) # pre-allocate
+  char_matches <- matrix(NA, nrow = length(site_labels), ncol = length(group_chars)) # pre-allocate
   for (i in 1:nrow(char_matches)) { # can make this an other lapply when needed
     #####->>>>> this could be an mclapply call if needed (overhead is not worth it yet)
     char_matches[i,] <- unlist(lapply(group_chars, species_percentage_match, new_site_species[[i]]))
