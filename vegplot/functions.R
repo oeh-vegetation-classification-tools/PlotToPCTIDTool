@@ -174,9 +174,9 @@ style_matches_thresholds <- function(table) {
 ## function to find threshold status for an individual site + group combo
 check_site_thresholds <- function(group, site, env_thresh, env_data) {
   out <- data.frame(Elevation = "N/A", Rainfall = "N/A", Temperature = "N/A")
-  if (!group %in% env_thresh$gp) return(out)
+  if (!group %in% env_thresh$PCTID) return(out)
   
-  group_thresh <- filter(env_thresh, gp == group)
+  group_thresh <- filter(env_thresh, PCTID == group)
   site_env <- filter(env_data, sites == site)
   
   if (site_env[1,"Elevation"] < group_thresh[1,"T1_elev"]) {
