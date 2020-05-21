@@ -16,7 +16,7 @@ library(dplyr)
 
 
 site_env <- read.csv("raw_data/EasternNSWClassification_Version1.1_SiteToPCTID_ALL_WithEnvVars.csv", stringsAsFactors = F) %>%
-  filter(PCTAssignmentCategory == "Primary") %>%
+  filter(PCTAssignmentCategory %in% c("Primary","Secondary")) %>%
   rename(site = Site.no) %>%
   filter(site != "") %>%
   select(site, PCTID, ElevationInMeters, annualRainfallInMillimeters, annualMeanTemperatureInCelsius) %>%
