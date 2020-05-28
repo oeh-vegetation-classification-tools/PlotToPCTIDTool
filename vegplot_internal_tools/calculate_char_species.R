@@ -20,11 +20,11 @@ species_allocs <- readRDS("intermediates/floristics_allocations.rds")
 
 # function to calculate the char spp for a given compset
 get_characteristic_compset <- function(x, data, min.occurence = 5) {
-  compset_data <- filter(data, compset == x)
+  compset_data <- filter(data, CharacteristicSpeciesComparisonSet == x)
   PCTID_allocations <- compset_data$PCTID
-  message(paste0("compset ",x,": There are ",length(unique(PCTID_allocations))," PCTIDs."))
+  message(paste0("Comparison set - ",x,": There are ",length(unique(PCTID_allocations))," PCTIDs."))
   compset_data <- compset_data %>%
-    select(-(site:compset)) %>%
+    select(-(site:CharacteristicSpeciesComparisonSet)) %>%
     select(which(colSums(.) > 0)) %>% # remove species not in compset (and pre-speed up for binary conversion)
     mutate_all(funs(ifelse(.>0, 1, 0))) %>% # convert to binary data
     select(which(colSums(.) > min.occurence)) # remove species not in compset (and less than certain occurence)
@@ -34,8 +34,8 @@ get_characteristic_compset <- function(x, data, min.occurence = 5) {
 }
 
 # do it
-PCTID_chars_per_compset <- lapply(unique(species_allocs$compset), get_characteristic_compset, species_allocs)
-names(PCTID_chars_per_compset) <- unique(species_allocs$compset)
+PCTID_chars_per_compset <- lapply(unique(species_allocs$CharacteristicSpeciesComparisonSet), get_characteristic_compset, species_allocs)
+names(PCTID_chars_per_compset) <- unique(species_allocs$CharacteristicSpeciesComparisonSet)
 # save the intermediate data - you can pick up from here, because it takes a fair time to do char spp calcs
 saveRDS(PCTID_chars_per_compset, file = "intermediates/PCTID_chars_per_compset.rds")
 
