@@ -16,7 +16,7 @@ species_allocs <- readRDS("intermediates/floristics_allocations.rds")
 # saveRDS(char_specs_perclust, file = "char_specs_perclust_all-compsets.rds")
 
 
-## rather we wand to get characteristic species per PCT, within compset
+## rather we want to get characteristic species per PCT, within compset
 
 # function to calculate the char spp for a given compset
 get_characteristic_compset <- function(x, data, min.occurence = 5) {

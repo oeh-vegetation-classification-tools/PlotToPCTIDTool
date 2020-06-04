@@ -7,15 +7,15 @@ library(dplyr)
 
 ## this needs to need to point it to the allocations file - needs to have at least columns named:
 #     - PCTID (the allocations)
-#     - SiteName
+#     - Site.no
 #     - PCTAssignmentCategory
-#     - Elevation
-#     - AnnualRainfall
-#     - AnnualMeanTemperature
-#     - it can have others but they will be ignored not required)
+#     - ElevationInMeters
+#     - annualRainfallInMillimeters
+#     - annualMeanTemperatureInCelsius
+#     - it can have others but they will be ignored not required for the generate env thresholds)
 
 
-site_env <- read.csv("raw_data/EasternNSWClassification_Version1.1_SiteToPCTID_ALL_WithEnvVars.csv", stringsAsFactors = F) %>%
+site_env <- read.csv("raw_data/EasternNSWClassification_Version1.1_SiteToPCTID_ALL_WithEnvVars&VegFormation.csv", stringsAsFactors = F) %>%
   filter(PCTAssignmentCategory %in% c("Primary","Secondary")) %>%
   rename(site = Site.no) %>%
   filter(site != "") %>%

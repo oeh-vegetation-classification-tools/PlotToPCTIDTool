@@ -3,11 +3,11 @@ library(tibble)
 
 ## FUNCTION TO CALCULATE CENTRES
 calculate_centres <- function(data, groups) {
-  centres <- data.frame(data, group = groups) %>%
-    group_by(group) %>%
-    summarise_all(funs(mean)) %>%
+  centres <- data.frame(data, PCTID = groups) %>%
+    group_by(PCTID) %>%
+    summarise_all(list(mean = mean)) %>%
     as.data.frame()
-  row.names(centres) <- centres$group
+  row.names(centres) <- centres$PCTID
   as.matrix(centres[,-1])
 }
 
@@ -18,10 +18,10 @@ calculate_centres <- function(data, groups) {
 floristics_allocations <- readRDS("intermediates/floristics_allocations.rds")
 
 floristics <- floristics_allocations %>%
-  select(-site:-rcp)
+  select(-site:-CharacteristicSpeciesComparisonSet)
 
 groups <- floristics_allocations %>%
-  select(group)
+  select(PCTID)
 
 
 
