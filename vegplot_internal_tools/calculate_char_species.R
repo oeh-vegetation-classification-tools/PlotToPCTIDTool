@@ -28,6 +28,14 @@ get_characteristic_compset <- function(x, data, min.occurence = 5) {
     select(which(colSums(.) > 0)) %>% # remove species not in compset (and pre-speed up for binary conversion)
     mutate_all(funs(ifelse(.>0, 1, 0))) %>% # convert to binary data
     select(which(colSums(.) > min.occurence)) # remove species not in compset (and less than certain occurence)
+  if (length(unique(PCTID_allocations)) < 2) {
+    message("Using (maximum) top 15 species since there is only 1 PCT in comparison set.")
+    species_freq <- names(sort(colSums(compset_data),decreasing = T, na.last = NA)[1:15])
+    char_specs <- species_freq[!is.na(species_freq)]
+    pct_list <- list(data.frame(variables = char_specs, coef_value = rep(NA,length(char_specs)), daic = rep(NA,length(char_specs)), stderr = rep(NA,length(char_specs)), stringsAsFactors = F))
+    names(pct_list)[1] <- paste0("PCT",PCTID_allocations[1])
+    return(pct_list)
+  }
   message("Fitting models...")
   get_characteristic(data = compset_data, clustering = PCTID_allocations,
                      family = "binomial", type = "per.cluster")
@@ -54,10 +62,11 @@ PCTID_chars_per_compset <- readRDS("intermediates/PCTID_chars_per_compset.rds")
 # unlist into vector strings of species
 char_spp_list <- unlist(PCTID_chars_per_compset, recursive = F)
 char_spp_list <- lapply(char_spp_list, '[[', 1)
-## hacky AF but need to rectify the issue in optimus really
-names(char_spp_list) <- unlist(lapply(X = strsplit(names(char_spp_list), ".", fixed = T), 
-                                    FUN = function(x) x[2]))
-names(char_spp_list) <- gsub(x = names(char_spp_list), pattern = "clusterSolution", replacement = "")
+# hacky AF but need to rectify the issue in optimus really
+names(char_spp_list) <- unlist(lapply(X = strsplit(names(char_spp_list), ".", fixed = T),
+                                      FUN = function(x) x[2]))
+
+names(char_spp_list) <- gsub(x = names(char_spp_list), pattern = "clusterSolution", replacement = "PCT")
 
 # save off into tool input folder
 saveRDS(char_spp_list, file = "tool_inputs/char_species_list.rds")

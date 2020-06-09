@@ -34,12 +34,12 @@ message("number of unique sites: ", length(unique(allocations$site)))
 #     - the code below assumes the first:last species are Abilovat:Zygoiodo
 #     - after you've done this once for a particular .csv file, you can comment out the code from the csv read to the rds save
 
-floristic_export <- read.csv("E/OEH Work/Veg Classn Analysis/MasterDataCopies/allflordata50882x4695_19May2020_sitesxspecies_V1.1.csv")
-# check complete rows/cols (assuming there's just one column called Site.no before hte first species column)
-sum(colSums(floristic_export[,-1]) == 0) # check for any empty species
-sum(rowSums(floristic_export[,-1]) == 0) # check for any empty sites
-# save the data as an .rds file
-saveRDS(floristic_export, "raw_data/east_nsw_floristics_v1.1.rds")
+# floristic_export <- read.csv("E/OEH Work/Veg Classn Analysis/MasterDataCopies/allflordata50882x4695_19May2020_sitesxspecies_V1.1.csv")
+# # check complete rows/cols (assuming there's just one column called Site.no before hte first species column)
+# sum(colSums(floristic_export[,-1]) == 0) # check for any empty species
+# sum(rowSums(floristic_export[,-1]) == 0) # check for any empty sites
+# # save the data as an .rds file
+# saveRDS(floristic_export, "raw_data/east_nsw_floristics_v1.1.rds")
 
 # otherwise we just load the .rds floristic data
 species_raw <- readRDS("raw_data/east_nsw_floristics_v1.1.rds") %>%
