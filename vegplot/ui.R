@@ -36,7 +36,7 @@ ui<-  htmlTemplate("main.html",
                          
                          tabPanel("Introduction",
                                   fluidPage(
-                                    fluidRow(HTML("<h3 style='text-align:justify;padding:10px 10px 1px 10px;color:#567621;font-weight:bolder;'>
+                                    fluidRow(HTML(paste0("<h3 style='text-align:justify;padding:10px 10px 1px 10px;color:#567621;font-weight:bolder;'>
                                                     Welcome to the Plot to PCT Assignment Tool
                                                   </h3>
                                                 <div class='rowI'>
@@ -60,11 +60,9 @@ ui<-  htmlTemplate("main.html",
                                                             <p style='text-align:justify;padding:1px 10px 1px 2px;'>
                                                             The eastern NSW Plot to PCT assignment tool was developed by the Department of Planning, Industry and Environment (DPIE) and the University of New South Wales (UNSW) with funding from the Australian Research Council (ARC) grant number LP150100972.
                                                             </p>
-                                                            <p style='text-align:justify;padding:1px 10px 1px 2px;'>
-                                                            **Note that this tool is currently populated with revised eastern NSW draft PCTs as at 22nd March 2019.**
-                                                            </p>
+                                                            
                                                             <div  style='font-weight: bolder;margin:10px 10px 0px 0px;text-align:left;'>
-                                                            App last updated: 24/06/2019 (Version: 1.0) &nbsp; PCT data last updated: 22/03/2019 (Version: 1)<br/>
+                                                            App last updated:", textOutput("AppLastUpdated", inline=T) ," &nbsp; PCT data last updated:", textOutput("DataLastUpdated", inline=T)," <br/>
                                                             <a href='#' data-toggle='popover' style='color:#567621;text-decoration:underline;' title='Disclaimer' 
                                                             data-placement='bottom' data-content='The Department of Planning, Industry and Environment (DPIE) has compiled this publication in good faith, 
                                                                 exercising all due care and attention. No representation is made about the accuracy, completeness or suitability of the information in this publication for any particular purpose. 
@@ -89,7 +87,7 @@ ui<-  htmlTemplate("main.html",
                                                     </div>
                                                   </div>
                                                    
-                                                  ")
+                                                  "))
                                     )
                                     
                                    
@@ -317,10 +315,11 @@ ui<-  htmlTemplate("main.html",
                                       
                                       tabPanel("Map view", value=3,
                                                fluidPage(
-                                                 tags$p("Sites displayed are drawn from the BioNet Atlas Systematic Surveys flora survey data collection. They represent the set of data used to build the eastern NSW PCT classification. Additional sites not visible here but held by BioNet include recently collected data and data collected using methods inconsistent with those used in the development of PCTs.",style="padding:20px"),
+                                                 HTML("<br/>Displayed are: sites drawn from the BioNet Atlas Systematic Surveys flora survey data collection that have been classified to a PCT in the eastern NSW PCT classification; sites input to this Plot to PCT assignment tool during the current session.<br/>
+                                                 Additional sites held by BioNet but not visible here include: recently collected data, data that are not publicly available, data collected using methods inconsistent with those used in the development of PCTs."),
                                                  htmlOutput("MapViewMessage", style="padding:20px"),
                                                  withSpinner(leafletOutput("map", width = "100%", height = "800px")),
-                                                 tags$p("Sites are displayed on the map only where they are: stored in BioNet Atlas Systematic Surveys flora survey AND listed as publicly available from BioNet AND classified to a PCT by the NSW Vegetation Classification team; OR uploaded to this Plot to PCT assignment tool during the current session.",style="padding:20px")
+                                                 tags$p("&nbsp;",style="padding:20px")
                                                )
                                         ),
                                       
@@ -333,7 +332,7 @@ ui<-  htmlTemplate("main.html",
                                                           tags$hr(),
                                                            downloadButton("PCTProfileData", "Download matched PCT information in tabular form"),
                                                           tags$hr(),
-                                                          downloadButton("PCTSppGFData", "Download matched PCT species by growth form data"),
+                                                          downloadButton("PCTSppGFData", "Download matched PCT species by growth form group data"),
                                                          
                                                           
                                                           style="padding:20px")

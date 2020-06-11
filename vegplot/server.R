@@ -72,6 +72,8 @@ shinyServer(function(input, output,session) {
     readRDS("data/GAP-EAST_plots.rds")
   })
   
+  bionetappinfo<-get_appInfo()
+  
   output$linkDownloadSampleData <- downloadHandler(
     filename = function() {
       paste("example_floristic_data.csv")
@@ -121,7 +123,34 @@ shinyServer(function(input, output,session) {
       shinyjs::disable("download_combo_data")
     }
     
+   
+    
+    
+    
+    
   })
+  
+  
+  
+  get_appInfo<- reactive({
+    
+    fp<- file.path(getwd(), "data")
+    normalizePath(fp)
+    fidb<-file.info(list.files(path=fp,pattern="pctdatadb.sqlite$", full.names=TRUE))
+    fi<-file.info(list.files(path=fp,pattern="bionetapp.info$", full.names=TRUE))
+    
+    applasteupdated <-as.character(fi$mtime,"%d/%m/%Y")
+    dblasteupdated <-as.character(fidb$mtime,"%d/%m/%Y")
+    
+    list_data <- list(c(applasteupdated), c(dblasteupdated))
+    
+    # Give names to the elements in the list.
+    names(list_data) <- c("AppLastUpdated", "DataLastUpdated")
+    
+    return(list_data)
+  })
+  
+ 
   
   #/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   # NORMAL APP FUNCTION - USER SUPPLIED DATA --------------------------------
@@ -475,7 +504,7 @@ shinyServer(function(input, output,session) {
       env_data <- select(infile_df, sites, one_of(non_floristic), -X)
       floristics <- select(infile_df, -sites, -one_of(non_floristic))
     } else {
-      env_data <- NULL
+      env_data <- NULL 
       floristics <- select(infile_df, -sites, -one_of(non_floristic))
     }
     
@@ -497,6 +526,9 @@ shinyServer(function(input, output,session) {
                                env_data = env_data)
     
     #match_data$env_data <- list(env_data = env_data)
+    
+    
+   
     
     progress$set(message = "Compiling matches", value = 0.95)
     
@@ -526,6 +558,20 @@ shinyServer(function(input, output,session) {
     }
   })
   
+  
+  # info about application
+  output$AppLastUpdated <- renderText({
+    
+    get_appInfo()$AppLastUpdated
+    
+  })
+  
+  # info about data
+  output$DataLastUpdated <- renderText({
+    
+    get_appInfo()$DataLastUpdated
+    
+  })
  
   
   #/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -649,9 +695,20 @@ shinyServer(function(input, output,session) {
   # Allow user to download the matches (topn they've decided)
   download_matches <- reactive({
     topn <- input$topn
-    return(list(char = get_topn(match_data$matches$char_matches, topn, T),
+    redata<- NULL
+    
+    if (is.null(match_data$matches$env_data))
+    { redata<- list(char = get_topn(match_data$matches$char_matches, topn, T),
+                    cent = get_topn(match_data$matches$cent_matches, topn, F),
+                    env = NULL)}
+    else{
+    
+    redata<- list(char = get_topn(match_data$matches$char_matches, topn, T),
                 cent = get_topn(match_data$matches$cent_matches, topn, F),
-                env = check_env_thresholds(style_matches()$cent_groups, env_thresh, match_data$matches$env_data)))
+                env = check_env_thresholds(style_matches()$cent_groups, env_thresh, match_data$matches$env_data))
+    }
+    
+    return(redata)
   })
   
   output$download_char_matches <- downloadHandler(
@@ -666,7 +723,7 @@ shinyServer(function(input, output,session) {
       names(arCHARDATA) <- gsub("Distance_to_Centroid", "%_Char_Spp", names(arCHARDATA))
    
       myvar <- Sys.Date()
-      out_string <- paste0("Exported from NSW Plot to PCT assignment tool on ",myvar,". Plot to PCT assignment version 22 March 2019\n", "=================\n")
+      out_string <- paste0("Exported from NSW Plot to PCT assignment tool on ",myvar,". Plot to PCT assignment version:", bionetappinfo$DataLastUpdated  ,"\n", "=================\n")
       cat(out_string, file = file, sep = '\n')
       
       withProgress(message = 'Processing....',
@@ -699,8 +756,11 @@ shinyServer(function(input, output,session) {
     content = function(file) {
    
       myvar <- Sys.Date()
-      out_string <- paste0("Exported from NSW Plot to PCT assignment tool on ",myvar,". Plot to PCT assignment version 22 March 2019\n", "=================\n")
+      centmatches<-download_matches()$cent
+      centmatches<-reorder_data(centmatches)
+      out_string <- paste0("Exported from NSW Plot to PCT assignment tool on ",myvar,". Plot to PCT assignment version ", bionetappinfo$DataLastUpdated  ,"\n", "=================\n")
       cat(out_string, file = file, sep = '\n')
+      
       
       
       withProgress(message = 'Processing....',
@@ -713,7 +773,7 @@ shinyServer(function(input, output,session) {
       
       future({
       
-      fwrite(x = reorder_data(download_matches()$cent),
+      fwrite(x = centmatches,
              file= file,
              sep = ',',
              col.names=T,
@@ -772,7 +832,7 @@ shinyServer(function(input, output,session) {
       # 
    
       myvar <- Sys.Date()
-      out_string <- paste0("Exported from NSW Plot to PCT assignment tool on ",myvar,". Plot to PCT assignment version 22 March 2019\n", "=================\n")
+      out_string <- paste0("Exported from NSW Plot to PCT assignment tool on ",myvar,". Plot to PCT assignment version ", bionetappinfo$DataLastUpdated  ,"\n", "=================\n")
       cat(out_string, file = file, sep = '\n')
       
       withProgress(message = 'Processing....',
@@ -841,7 +901,7 @@ shinyServer(function(input, output,session) {
       # 
       
       myvar <- Sys.Date()
-      out_string <- paste0("Exported from NSW Plot to PCT assignment tool on ",myvar,". Plot to PCT assignment version 22 March 2019\n", "=================\n")
+      out_string <- paste0("Exported from NSW Plot to PCT assignment tool on ",myvar,". Plot to PCT assignment version ", bionetappinfo$DataLastUpdated  ,"\n", "=================\n")
       cat(out_string, file = file, sep = '\n')
       
       withProgress(message = 'Processing....',
@@ -908,7 +968,7 @@ shinyServer(function(input, output,session) {
       
       # PCT_ID, Group_Score_Median, Group_Frequency, Growth_Form_Group.
       
-      allpctsppgfs<-sqldf("select PCT_ID, Scientific_name as Scientific_Name, Group_score_median as Median_Cover_Score, Group_frequency as Group_Frequency, GrowthFormGroup as Growth_Form from pctdt where PCT_ID in (SELECT pctid FROM matchedpcts) order by PCT_ID, GGroupOrder asc, Group_frequency desc")
+      allpctsppgfs<-sqldf("select PCT_ID, Scientific_name as Scientific_Name, Group_score_median as Median_Cover_Score, Group_frequency as Species_Frequency, GrowthFormGroup as Growth_Form_Group from pctdt where PCT_ID in (SELECT pctid FROM matchedpcts) order by PCT_ID, GGroupOrder asc, Group_frequency desc")
       
       
       
@@ -925,7 +985,7 @@ shinyServer(function(input, output,session) {
       # 
       
       myvar <- Sys.Date()
-      out_string <- paste0("Exported from NSW Plot to PCT assignment tool on ",myvar,". Plot to PCT assignment version 22 March 2019\n", "=================\n")
+      out_string <- paste0("Exported from NSW Plot to PCT assignment tool on ",myvar,". Plot to PCT assignment version ", bionetappinfo$DataLastUpdated  ,"\n", "=================\n")
       cat(out_string, file = file, sep = '\n')
       
       withProgress(message = 'Processing....',
@@ -988,9 +1048,12 @@ shinyServer(function(input, output,session) {
         
         if (substr(columnName,1,nchar(columnName)-1)=="PCT_Match"){
           shinyjs::show("PCTSubmit")
-          if (!is.null(match_data$matches$env_data)) {
-            shinyjs::show("ViewPCTMap")
-          }else{shinyjs::hide("ViewPCTMap")}
+          
+          # if (!is.null(match_data$matches$env_data)) {
+          #   shinyjs::show("ViewPCTMap")
+          # }else{shinyjs::hide("ViewPCTMap")}
+          shinyjs::show("ViewPCTMap")
+          
         pctname<-getPCTName(input$cent_table_cell_clicked$value)
         span(paste0(" PCT Name: ",pctname))
         
@@ -1024,9 +1087,13 @@ shinyServer(function(input, output,session) {
         
         if (substr(columnName,1,nchar(columnName)-1)=="PCT_Match"){
           shinyjs::show("PCTSubmit2")
-          if (!is.null(match_data$matches$env_data)) {
-            shinyjs::show("ViewPCTMap2")
-          }else{shinyjs::hide("ViewPCTMap2")}
+          
+          # if (!is.null(match_data$matches$env_data)) {
+          #   shinyjs::show("ViewPCTMap2")
+          # }else{shinyjs::hide("ViewPCTMap2")}
+          
+          shinyjs::show("ViewPCTMap2")
+          
           pctname<-getPCTName(input$char_table_cell_clicked$value)
           span(paste0(" PCT Name: ",pctname))
           
@@ -1124,7 +1191,7 @@ shinyServer(function(input, output,session) {
             # pctid<-input$cent_table_cell_clicked$value
     
            showModal(modalDialog(title="PCT Site Map",withSpinner(fluidPage(tags$script("setTimeout(function(){ var map = document.getElementById('mapView'); map.style.visibility='hidden';}, 500);"),
-                       tags$script("setTimeout(function(){ var map = document.getElementById('mapView'); map.style.visibility='visible'; }, 12000);"), leafletOutput("mapView", width = "100%", height = "600px"))),size="l",easyClose = TRUE))
+                       tags$script("setTimeout(function(){ var map = document.getElementById('mapView'); map.style.visibility='visible'; }, 1200);"), leafletOutput("mapView", width = "100%", height = "600px"))),size="l",easyClose = TRUE))
 
     #     }
     # 
@@ -1204,94 +1271,205 @@ shinyServer(function(input, output,session) {
   
 
   
-  
-  # observe({
-  #   
-  #   tryCatch({
-  #   
-  #       fp<- file.path(getwd(), "data")
-  #       normalizePath(fp)
-  #       fi<-file.info(list.files(path=fp,pattern="pctdatadb.sqlite$", full.names=TRUE))
-  #       nhours<-as.numeric(difftime(Sys.time(),fi$ctime , units="hours"))
-  #       
-  #       if ((nhours>=10000)||(length(nhours)==0)){
-  #         
-  #         
-  #         ## PCT Data updates -------------------------------------------------------------------------------------------
-  #         pctdata<-retrieveData("https://biodiversity.my.opendatasoft.com/api/odata/pctdata?apikey=e37a9d51f1cf91617f70085f3c0be6882dd589b497742ce2df604dde")
-  #         
-  #         nextlink<-pctdata[["@odata.nextLink"]]
-  #         
-  #         n<-as.integer(length(pctdata$value))
-  #         # Initialize a temporary in memory database and copy a data.frame into it
-  #         con <- dbConnect(RSQLite::SQLite(), dbname="data/pctdatadb.sqlite")
-  #         dbExecute(con,"DELETE FROM pctdata")
-  #         for (i in 1:n){
-  #           
-  #           fjs_df<-as.data.frame(pctdata$value[i], stringsAsFactors = F)
-  #           dbWriteTable(con, "pctdata",fjs_df, overwrite=F, append=T)
-  #           
-  #         }
-  #         # clean up
-  #         dbDisconnect(con)
-  #         
-  #         while(!is.null(nextlink))
-  #         {
-  #           pctdata2<-retrieveData(nextlink)
-  #           nextlink<-pctdata2[["@odata.nextLink"]]
-  #           n2<-as.integer(length(pctdata2$value))
-  #           # Initialize a temporary in memory database and copy a data.frame into it
-  #           con <- dbConnect(RSQLite::SQLite(), dbname="data/pctdatadb.sqlite")
-  #           
-  #           for (i2 in 1:n2){
-  #             
-  #             fjs_df<-as.data.frame(pctdata$value[i2], stringsAsFactors = F)
-  #             dbWriteTable(con, "pctdata",fjs_df, overwrite=F, append=T)
-  #             
-  #           }
-  #           # clean up
-  #           dbDisconnect(con)
-  #         }
-  #         
-  #         ## FSurvey data updates -------------------------------------------------------
-  #        
-  #         fjs <- fromJSON("https://biodiversity.my.opendatasoft.com/api/odata/fsdata?apikey=e37a9d51f1cf91617f70085f3c0be6882dd589b497742ce2df604dde")
-  #         
-  #         nextlink<-fjs[["@odata.nextLink"]]
-  #         
-  #         fjs_df<-as.data.frame(fjs$value)
-  #         
-  #         while(!is.null(nextlink))
-  #         {
-  #           
-  #           fsj2<-fromJSON(nextlink)
-  #           nextlink<-fsj2[["@odata.nextLink"]]
-  #           fjs2_df<-as.data.frame(fsj2$value)
-  #           fjs_df<-rbind(fjs_df,fjs2_df)
-  #           
-  #         }
-  #         con <- dbConnect(RSQLite::SQLite(), dbname="data/pctdatadb.sqlite")
-  #         dbExecute(con,"DELETE FROM fsdata")
-  #         dbWriteTable(con, "fsdata", fjs_df)
-  #         # clean up
-  #         dbDisconnect(con)
-  #         
-  #         ## End FS data ---------------------------------------------------------------------
-  #         
-  #         
-  #       }
-  #   
-  #   }
-  #   , error = function(e) {
-  #     showNotification(paste0("Error: ",e),duration = 20,type = c("error"))
-  #     errmsg <- paste(Sys.time(), ", Error:",e)
-  #     write(errmsg, paste0(file.path(getwd(), "www"),"/errorlog.txt"), append = TRUE) 
-  #    
-  #   }, finally = {
-  #     #message("Some other message at the end")
-  #   })
-  #   
-  # })
+  ## DATA FILE UPDATES FROM WEB SERVICES
+  observe({
+
+    tryCatch({
+
+        # fp<- file.path(getwd(), "data")
+        # normalizePath(fp)
+        # fi<-file.info(list.files(path=fp,pattern="pctdatadb.sqlite$", full.names=TRUE))
+        # nhours<-as.numeric(difftime(Sys.time(),fi$ctime , units="hours"))
+        
+        
+        ## parseQueryString("?updateBioNet=1&bar=pctupdate")
+        query <- parseQueryString(session$clientData$url_search)
+        
+        updateOneKey<-0
+        updateTwoKey<-0
+        
+        
+        if (length(query)>0){
+        
+          # Ways of accessing the values
+          if (as.numeric(query$updateBioNet) == 1) {
+            # Do something
+            updateOneKey<-1
+          }
+          if (query[["bar"]] == "pctupdate") {
+            # Do something else
+            updateTwoKey<-1
+          }
+        }
+        
+        if ((updateTwoKey==1)&&(updateOneKey==1)){
+
+           ##if ((nhours>=1000000)||(length(nhours)==0)){
+          
+          
+          progress <- shiny::Progress$new(style = "notification")
+          progress$set(message = "Loading flora survey data", value = 0.15)
+          on.exit(progress$close())
+          
+          showNotification(paste0("Loading flora survey data"),duration = 20,type = c("message"))
+
+
+          ## PCT DATA UPDATES FOR FLORA SURVEY
+          
+          fjs <-fromJSON("https://datatest.bionet.nsw.gov.au/BioSvcApp/odata/SystematicFloraSurvey_SiteData?$select=siteID,%20currentClassification,%20currentClassificationDescription,%20surveyName,%20PCTAssignmentCategory,%20decimalLatitude,%20decimalLongitude,%20visitNo,%20ElevationInMeters,%20annualRainfallInMillimeters,%20annualMeanTemperatureInCelsius")
+          
+          # n<-as.integer(length(pctdata$value))
+          # Initialize a temporary in memory database and copy a data.frame into it
+          con <- dbConnect(RSQLite::SQLite(), dbname="data/pctdatadb.sqlite")
+          dbExecute(con,"DELETE FROM fsdata")
+          ## for (i in 1:n){
+          
+          fjs_df<-as.data.frame(fjs$value, stringsAsFactors = F)
+          
+          names(fjs_df)[names(fjs_df) == "siteID"] <- "siteno"
+          names(fjs_df)[names(fjs_df) == "currentClassification"] <- "pctid"
+          names(fjs_df)[names(fjs_df) == "currentClassificationDescription"] <- "pctname"
+          names(fjs_df)[names(fjs_df) == "PCTAssignmentCategory"] <- "pctassignmentcategory"
+          names(fjs_df)[names(fjs_df) == "surveyName"] <- "surveyname"
+          names(fjs_df)[names(fjs_df) == "decimalLatitude"] <- "lat"
+          names(fjs_df)[names(fjs_df) == "decimalLongitude"] <- "long"
+          names(fjs_df)[names(fjs_df) == "visitNo"] <- "replicatenumber"
+          names(fjs_df)[names(fjs_df) == "ElevationInMeters"] <- "elevation"
+          names(fjs_df)[names(fjs_df) == "annualRainfallInMillimeters"] <- "rainfall"
+          names(fjs_df)[names(fjs_df) == "annualMeanTemperatureInCelsius"] <- "temp"
+          
+          
+          dbWriteTable(con, "fsdata",fjs_df, overwrite=F, append=T)
+          
+        
+          
+          
+          ## pct profile data
+          progress$set(message = "Loading classification data", value = 0.25)
+          
+          showNotification(paste0("Loading classification data"),duration = 20,type = c("message"))
+          
+          pctjson <-fromJSON("https://datatest.bionet.nsw.gov.au/BioSvcApp/odata/VegetationClassification_PCTDefinition?$select=PCTID,PCTName,vegetationDescription,classificationConfidenceLevel,numberOfPrimaryReplicates,numberOfSecondaryReplicates,vegetationFormation,vegetationClass,IBRASubregion,maximumElevationInMeters,minimumElevationInMeters,medianElevationInMeters,maximumAnnualRainfallInMillimeters,minimumAnnualRainfallInMillimeters,medianAnnualRainfallInMillimeters,maximumAnnualMeanTemperatureInCelsius,minimumAnnualMeanTemperatureInCelsius,medianAnnualMeanTemperatureInCelsius,TECAssessed,stateTECFitStatus,medianNativeSpeciesRichness")
+          
+          
+          # Initialize a temporary in memory database and copy a data.frame into it
+          ##con <- dbConnect(RSQLite::SQLite(), dbname="data/pctdatadb.sqlite")
+          dbExecute(con,"DELETE FROM pctprofiledata")
+          
+          
+          pctprofiledt_df<-as.data.frame(pctjson$value, stringsAsFactors = F)
+          
+          names(pctprofiledt_df)[names(pctprofiledt_df) == "vegetationDescription"] <- "Vegetation_description"
+          names(pctprofiledt_df)[names(pctprofiledt_df) == "classificationConfidenceLevel"] <- "Classification_confidence_level"
+          names(pctprofiledt_df)[names(pctprofiledt_df) == "numberOfPrimaryReplicates"] <- "Number_of_Primary_replicates"
+          names(pctprofiledt_df)[names(pctprofiledt_df) == "numberOfSecondaryReplicates"] <- "Number_of_Secondary_replicates"
+          names(pctprofiledt_df)[names(pctprofiledt_df) == "vegetationFormation"] <- "Vegetation_Formation"
+          names(pctprofiledt_df)[names(pctprofiledt_df) == "vegetationClass"] <- "Vegetation_Class"
+          names(pctprofiledt_df)[names(pctprofiledt_df) == "IBRASubregion"] <- "IBRA_Subregion"
+          names(pctprofiledt_df)[names(pctprofiledt_df) == "maximumElevationInMeters"] <- "Elevation_max"
+          names(pctprofiledt_df)[names(pctprofiledt_df) == "minimumElevationInMeters"] <- "Elevation_min"
+          names(pctprofiledt_df)[names(pctprofiledt_df) == "medianElevationInMeters"] <- "Elevation_median"
+          
+          names(pctprofiledt_df)[names(pctprofiledt_df) == "maximumAnnualRainfallInMillimeters"] <- "Rainfall_max"
+          names(pctprofiledt_df)[names(pctprofiledt_df) == "minimumAnnualRainfallInMillimeters"] <- "Rainfall_min"
+          names(pctprofiledt_df)[names(pctprofiledt_df) == "medianAnnualRainfallInMillimeters"] <- "Rainfall_median"
+          
+          names(pctprofiledt_df)[names(pctprofiledt_df) == "maximumAnnualMeanTemperatureInCelsius"] <- "Temperature_max"
+          names(pctprofiledt_df)[names(pctprofiledt_df) == "minimumAnnualMeanTemperatureInCelsius"] <- "Temperature_min"
+          names(pctprofiledt_df)[names(pctprofiledt_df) == "medianAnnualMeanTemperatureInCelsius"] <- "Temperature_median"
+          
+          names(pctprofiledt_df)[names(pctprofiledt_df) == "TECAssessed"] <- "TEC_list"
+          names(pctprofiledt_df)[names(pctprofiledt_df) == "stateTECFitStatus"] <- "TEC_Act"
+          names(pctprofiledt_df)[names(pctprofiledt_df) == "medianNativeSpeciesRichness"] <- "Median_species_richness"
+          
+          
+          dbWriteTable(con, "pctprofiledata",pctprofiledt_df, overwrite=F, append=T)
+          
+          
+          dbExecute(con,"update pctspeciesgrowthforms set group_frequency = group_frequency*100")
+          
+          
+          ## pct tec data
+          
+          
+          
+          pcttecjson <-fromJSON("https://datatest.bionet.nsw.gov.au/BioSvcApp/odata/VegetationClassification_PCTDefinition?$select=PCTID,TECAssessed,stateTECProfileID,stateTECFitStatus,stateTECDegreeOfFit,countryTECProfileID,countryTECFitStatus,countryTECDegreeOfFit")
+          
+          
+          # Initialize a temporary in memory database and copy a data.frame into it
+          ##con <- dbConnect(RSQLite::SQLite(), dbname="data/pctdatadb.sqlite")
+          dbExecute(con,"DELETE FROM pct_tecdata")
+          
+          
+          pctTECdt_df<-as.data.frame(pcttecjson$value, stringsAsFactors = F)
+          
+          dbWriteTable(con, "pct_tecdata",pctTECdt_df, overwrite=F, append=T)
+          
+          
+         
+          progress$set(message = "Loading TEC data", value = 0.50)
+          showNotification(paste0("Loading TEC data"),duration = 20,type = c("message"))
+          
+          ## tec data only
+          tecjson <-fromJSON("https://datatest.bionet.nsw.gov.au/BioSvcApp/odata/ThreatenedBiodiversity_EcologicalCommunities?$select=profileID,TECName,stateConservation,countryConservation")
+          
+          
+          # Initialize a temporary in memory database and copy a data.frame into it
+          ##con <- dbConnect(RSQLite::SQLite(), dbname="data/pctdatadb.sqlite")
+          dbExecute(con,"DELETE FROM tecdata")
+          
+          
+          TECdt_df<-as.data.frame(tecjson$value, stringsAsFactors = F)
+          
+          
+          
+          dbWriteTable(con, "tecdata",TECdt_df, overwrite=F, append=T)
+          
+      
+          
+          ## PCT SPP GF data only
+          progress$set(message = "Loading PCT Species growth forms data", value = 0.95)
+          showNotification(paste0("Loading PCT Species growth form data"),duration = 20,type = c("message"))
+          
+          spgfjson <-fromJSON("https://datatest.bionet.nsw.gov.au/BioSvcApp/odata/VegetationClassification_PCTGrowthForm?$select=PCTID,scientificName,medianCoverScore,speciesFrequency,primaryGrowthFormGroup")
+          
+          
+          # Initialize a temporary in memory database and copy a data.frame into it
+          ##con <- dbConnect(RSQLite::SQLite(), dbname="data/pctdatadbtest.sqlite")
+          dbExecute(con,"DELETE FROM pctspeciesgrowthforms")
+          
+          
+          SPGFdt_df<-as.data.frame(spgfjson$value, stringsAsFactors = F)
+          
+          names(SPGFdt_df)[names(SPGFdt_df) == "PCTID"] <- "PCT_ID"
+          names(SPGFdt_df)[names(SPGFdt_df) == "scientificName"] <- "Scientific_name"
+          names(SPGFdt_df)[names(SPGFdt_df) == "medianCoverScore"] <- "Group_score_median"
+          names(SPGFdt_df)[names(SPGFdt_df) == "speciesFrequency"] <- "Group_frequency"
+          names(SPGFdt_df)[names(SPGFdt_df) == "primaryGrowthFormGroup"] <- "GrowthFormGroup"
+          
+          
+          dbWriteTable(con, "pctspeciesgrowthforms",SPGFdt_df, overwrite=F, append=T)
+          
+          
+          # clean up
+          dbDisconnect(con)
+
+          ## End DATA UPDATES ---------------------------------------------------------------------
+          showNotification(paste0("Loading data complete"),duration = 20,type = c("message"))
+
+        }
+
+    }
+    , error = function(e) {
+      showNotification(paste0("Error: ",e),duration = 20,type = c("error"))
+      errmsg <- paste(Sys.time(), ", Error:",e)
+      write(errmsg, paste0(file.path(getwd(), "www"),"/errorlog.txt"), append = TRUE)
+
+    }, finally = {
+      #message("Some other message at the end")
+    })
+
+  })
 
   
   # envdata supply
@@ -1413,16 +1591,16 @@ shinyServer(function(input, output,session) {
           activeColor = "#3D535D",
           completedColor = "#7D4479")%>%
         
-        addPolygons(data = EasternNSWStudyRegion, fill = F, weight = 2, color = "#FF0000") %>%
+        addPolygons(data = EasternNSWStudyRegion, fill = F, weight = 2, color = "#9932CC") %>%
         
         addAwesomeMarkers(icon=oehblueicon ,lat = dtfinal$Latitude,lng = dtfinal$Longitude,layerId = dtfinal$sites,label = dtfinal$sites, labelOptions = labelOptions(noHide = T, direction = "bottom"),
-                   popup = ~paste("<b>Site No:</b>",dtfinal$sites,"<br/><b>Lat:</b>",dtfinal$Latitude," <b>Long:</b>",dtfinal$Longitude,"<br/><b>Elevation:</b>",dtfinal$Elevation,"<br/><b>Rainfall:</b>",dtfinal$RainfallAnn,"<br/><b>Temp(&#8451;):</b>",dtfinal$TempAnn,"<br/>", pctstats) ) %>%
+                   popup = ~paste("<b>Site No:</b>",dtfinal$sites,"<br/><b>Lat:</b>",dtfinal$Latitude," <b>Long:</b>",dtfinal$Longitude,"<br/><b>Elevation(m):</b>",dtfinal$Elevation,"<br/><b>Rainfall(mm):</b>",dtfinal$RainfallAnn,"<br/><b>Temperature(deg.C):</b>",dtfinal$TempAnn,"<br/>", pctstats) ) %>%
         
         addCircles(radius= 100, lat = ~matchedplots$lat, lng = ~matchedplots$long, layerId = ~matchedplots$siteno, label = ~matchedplots$pctid,  color =~MatchedCol(matchedplots$pctid), fillColor =~MatchedCol(matchedplots$pctid),opacity = 1,   fillOpacity = 0.7,
-                   data = matchedplots, popup = ~paste("<b>PCT ID:</b>", matchedplots$pctid,"<br/><b>PCT Name:</b>", matchedplots$pctname, "<br/><b>PCT Assignment Category:</b>",matchedplots$pctassignmentcategory,"<br/><b>Site No:</b>",matchedplots$siteno,"<br/><b>Survey Name:</b>", matchedplots$surveyname  ,"<br/><b>Lat:</b>",matchedplots$lat," <b>Long:</b>",matchedplots$long,"<br/><b>Elevation:</b>",matchedplots$elevation,"<br/><b>Rainfall:</b>",matchedplots$rainfall,"<br/><b>Temp(&#8451;):</b>",matchedplots$temp))%>%
+                   data = matchedplots, popup = ~paste("<b>PCT ID:</b>", matchedplots$pctid,"<br/><b>PCT Name:</b>", matchedplots$pctname, "<br/><b>PCT Assignment Category:</b>",matchedplots$pctassignmentcategory,"<br/><b>Site No:</b>",matchedplots$siteno,"<br/><b>Survey Name:</b>", matchedplots$surveyname  ,"<br/><b>Lat:</b>",matchedplots$lat," <b>Long:</b>",matchedplots$long,"<br/><b>Elevation(m):</b>",matchedplots$elevation,"<br/><b>Rainfall(mm):</b>",matchedplots$rainfall,"<br/><b>Temperature(deg.C):</b>",matchedplots$temp))%>%
       
       addCircles(radius= 50, lat = ~unmatchedplots$lat, lng = ~unmatchedplots$long, layerId = ~unmatchedplots$siteno, color = ~UnMatchedCol(unmatchedplots$pctid),  fillOpacity = 0.5, group = groupName,
-                 data = unmatchedplots, popup = ~paste("<b>PCT ID:</b>", unmatchedplots$pctid,"<br/><b>PCT Name:</b>", unmatchedplots$pctname, "<br/><b>PCT Assignment Category:</b>",unmatchedplots$pctassignmentcategory,"<br/><b>Site No:</b>",unmatchedplots$siteno,"<br/><b>Survey Name:</b>", unmatchedplots$surveyname  ,"<br/><b>Lat:</b>",unmatchedplots$lat," <b>Long:</b>",unmatchedplots$long,"<br/><b>Elevation:</b>",unmatchedplots$elevation,"<br/><b>Rainfall:</b>",unmatchedplots$rainfall,"<br/><b>Temp(&#8451;):</b>",unmatchedplots$temp))%>%
+                 data = unmatchedplots, popup = ~paste("<b>PCT ID:</b>", unmatchedplots$pctid,"<br/><b>PCT Name:</b>", unmatchedplots$pctname, "<br/><b>PCT Assignment Category:</b>",unmatchedplots$pctassignmentcategory,"<br/><b>Site No:</b>",unmatchedplots$siteno,"<br/><b>Survey Name:</b>", unmatchedplots$surveyname  ,"<br/><b>Lat:</b>",unmatchedplots$lat," <b>Long:</b>",unmatchedplots$long,"<br/><b>Elevation(m):</b>",unmatchedplots$elevation,"<br/><b>Rainfall(mm):</b>",unmatchedplots$rainfall,"<br/><b>Temperature(deg.C):</b>",unmatchedplots$temp))%>%
                      hideGroup(groupName)%>%
             addLayersControl(
               baseGroups = c("Terrain", "Satellite"),
@@ -1534,14 +1712,26 @@ shinyServer(function(input, output,session) {
           
           categories<-pctplotsdata$pctid
           
-          if ((!is.null(match_data$matches))&&(check_infile()$env_present)) {
+          if ((!is.null(match_data$matches))) {      ##   &&(check_infile()$env_present)) {
+            
+             
+            dt<-style_matches()$cent$x$data %>% select(starts_with("PCT_Match"))  
+            
+            dtFilteredData<-filteredData()
+            dtmerged<- NULL
+            
+            if (is.null(dtFilteredData)){
+              dtmerged<-style_matches()$cent$x$data
+              dtfinal<-sqldf(paste0("SELECT * from dtmerged WHERE Site_No='",sitename,"'"))
+              
+            }else{
+            
+                dtmerged<-merge(filteredData(),style_matches()$cent$x$data,by.x="sites",by.y="Site_No")
+                dtfinal<-sqldf(paste0("SELECT * from dtmerged WHERE sites='",sitename,"'"))
+            
+            }
             
             
-            dt<-style_matches()$cent$x$data %>% select(starts_with("PCT_Match"))           
-            
-            dtmerged<-merge(filteredData(),style_matches()$cent$x$data,by.x="sites",by.y="Site_No")
-            
-            dtfinal<-sqldf(paste0("SELECT * from dtmerged WHERE sites='",sitename,"'"))
             
             
             SQLString<-""
@@ -1583,34 +1773,70 @@ shinyServer(function(input, output,session) {
                                            squareMarker =  TRUE)
             
             
+            if (is.null(dtFilteredData)){
             
+                    leaflet(data=dtfinal )%>% addTiles(group = "Terrain") %>% 
+                      addScaleBar() %>%
+                      addProviderTiles(providers$Esri.WorldTopoMap, group = "Terrain")%>%
+                      addProviderTiles(providers$Esri.WorldImagery, group = "Satellite")%>%
+                      #fitBounds(~min(dtfinal$Longitude), ~min(dtfinal$Latitude), ~max(dtfinal$Longitude), ~max(dtfinal$Latitude)) %>%
+                      clearShapes() %>%
+                      clearMarkers()%>%
+                      addMeasure(
+                        position = "bottomleft",
+                        primaryLengthUnit = "meters",
+                        primaryAreaUnit = "sqmeters",
+                        activeColor = "#3D535D",
+                        completedColor = "#7D4479")%>%
+                      
+                      addPolygons(data = EasternNSWStudyRegion, fill = F, weight = 2, color = "#9932CC") %>%
+                      
+                      # addAwesomeMarkers(icon = oehblueicon, lat = dtfinal$Latitude,lng = dtfinal$Longitude,layerId = dtfinal$sites,label = dtfinal$sites, labelOptions = labelOptions(noHide = T, direction = "bottom"),
+                      #            popup = ~paste("<b>Site No:</b>",dtfinal$sites,"<br/><b>Lat:</b>",dtfinal$Latitude," <b>Long:</b>",dtfinal$Longitude,"<br/><b>Elevation(m):</b>",dtfinal$Elevation,"<br/><b>Rainfall(mm):</b>",dtfinal$RainfallAnn,"<br/><b>Temperature(deg.C):</b>",dtfinal$TempAnn,"<br/>", pctstats) ) %>%
+                      # 
+                      addCircles(radius= 200, lat = ~matchedplots$lat, lng = ~matchedplots$long, layerId = ~matchedplots$siteno, label = ~matchedplots$pctid,  color =~MatchedCol(matchedplots$pctid), fillColor =~MatchedCol(matchedplots$pctid),opacity = 1,   fillOpacity = 0.7,
+                                 data = matchedplots, popup = ~paste("<b>PCT ID:</b>", matchedplots$pctid,"<br/><b>PCT Name:</b>", matchedplots$pctname, "<br/><b>PCT Assignment Category:</b>",matchedplots$pctassignmentcategory,"<br/><b>Site No:</b>",matchedplots$siteno,"<br/><b>Survey Name:</b>", matchedplots$surveyname  ,"<br/><b>Lat:</b>",matchedplots$lat," <b>Long:</b>",matchedplots$long,"<br/><b>Elevation:</b>",matchedplots$elevation,"<br/><b>Rainfall:</b>",matchedplots$rainfall,"<br/><b>Temp(&#8451;):</b>",matchedplots$temp))%>%
+                      
+                      addLayersControl(
+                        baseGroups = c("Terrain", "Satellite"),             
+                        options = layersControlOptions(collapsed = FALSE)
+                      )
+              
+            } else
+            {
+              
+              checkpoint<-1
+              
+                    leaflet(data=dtfinal )%>% addTiles(group = "Terrain") %>% 
+                      addScaleBar() %>%
+                      addProviderTiles(providers$Esri.WorldTopoMap, group = "Terrain")%>%
+                      addProviderTiles(providers$Esri.WorldImagery, group = "Satellite")%>%
+                      #fitBounds(~min(dtfinal$Longitude), ~min(dtfinal$Latitude), ~max(dtfinal$Longitude), ~max(dtfinal$Latitude)) %>%
+                      clearShapes() %>%
+                      clearMarkers()%>%
+                      addMeasure(
+                        position = "bottomleft",
+                        primaryLengthUnit = "meters",
+                        primaryAreaUnit = "sqmeters",
+                        activeColor = "#3D535D",
+                        completedColor = "#7D4479")%>%
+                      
+                      addPolygons(data = EasternNSWStudyRegion, fill = F, weight = 2, color = "#9932CC") %>%
+                      
+                      addAwesomeMarkers(icon = oehblueicon, lat = dtfinal$Latitude,lng = dtfinal$Longitude,layerId = dtfinal$sites,label = dtfinal$sites, labelOptions = labelOptions(noHide = T, direction = "bottom"),
+                                        popup = ~paste("<b>Site No:</b>",dtfinal$sites,"<br/><b>Lat:</b>",dtfinal$Latitude," <b>Long:</b>",dtfinal$Longitude,"<br/><b>Elevation(m):</b>",dtfinal$Elevation,"<br/><b>Rainfall(mm):</b>",dtfinal$RainfallAnn,"<br/><b>Temperature(deg.C):</b>",dtfinal$TempAnn,"<br/>", pctstats) ) %>%
+                      
+                      addCircles(radius= 200, lat = ~matchedplots$lat, lng = ~matchedplots$long, layerId = ~matchedplots$siteno, label = ~matchedplots$pctid,  color =~MatchedCol(matchedplots$pctid), fillColor =~MatchedCol(matchedplots$pctid),opacity = 1,   fillOpacity = 0.7,
+                                 data = matchedplots, popup = ~paste("<b>PCT ID:</b>", matchedplots$pctid,"<br/><b>PCT Name:</b>", matchedplots$pctname, "<br/><b>PCT Assignment Category:</b>",matchedplots$pctassignmentcategory,"<br/><b>Site No:</b>",matchedplots$siteno,"<br/><b>Survey Name:</b>", matchedplots$surveyname  ,"<br/><b>Lat:</b>",matchedplots$lat," <b>Long:</b>",matchedplots$long,"<br/><b>Elevation(m):</b>",matchedplots$elevation,"<br/><b>Rainfall(mm):</b>",matchedplots$rainfall,"<br/><b>Temperature(deg.C):</b>",matchedplots$temp))%>%
+                      
+                      addLayersControl(
+                        baseGroups = c("Terrain", "Satellite"),             
+                        options = layersControlOptions(collapsed = FALSE)
+                      )
+              
+            }
+                        
             
-            leaflet(data=dtfinal )%>% addTiles(group = "Terrain") %>% 
-              addScaleBar() %>%
-              addProviderTiles(providers$Esri.WorldTopoMap, group = "Terrain")%>%
-              addProviderTiles(providers$Esri.WorldImagery, group = "Satellite")%>%
-              #fitBounds(~min(dtfinal$Longitude), ~min(dtfinal$Latitude), ~max(dtfinal$Longitude), ~max(dtfinal$Latitude)) %>%
-              clearShapes() %>%
-              clearMarkers()%>%
-              addMeasure(
-                position = "bottomleft",
-                primaryLengthUnit = "meters",
-                primaryAreaUnit = "sqmeters",
-                activeColor = "#3D535D",
-                completedColor = "#7D4479")%>%
-              
-              addPolygons(data = EasternNSWStudyRegion, fill = F, weight = 2, color = "#FF0000") %>%
-              
-              addAwesomeMarkers(icon = oehblueicon, lat = dtfinal$Latitude,lng = dtfinal$Longitude,layerId = dtfinal$sites,label = dtfinal$sites, labelOptions = labelOptions(noHide = T, direction = "bottom"),
-                         popup = ~paste("<b>Site No:</b>",dtfinal$sites,"<br/><b>Lat:</b>",dtfinal$Latitude," <b>Long:</b>",dtfinal$Longitude,"<br/><b>Elevation:</b>",dtfinal$Elevation,"<br/><b>Rainfall:</b>",dtfinal$RainfallAnn,"<br/><b>Temp(&#8451;):</b>",dtfinal$TempAnn,"<br/>", pctstats) ) %>%
-              
-              addCircles(radius= 200, lat = ~matchedplots$lat, lng = ~matchedplots$long, layerId = ~matchedplots$siteno, label = ~matchedplots$pctid,  color =~MatchedCol(matchedplots$pctid), fillColor =~MatchedCol(matchedplots$pctid),opacity = 1,   fillOpacity = 0.7,
-                         data = matchedplots, popup = ~paste("<b>PCT ID:</b>", matchedplots$pctid,"<br/><b>PCT Name:</b>", matchedplots$pctname, "<br/><b>PCT Assignment Category:</b>",matchedplots$pctassignmentcategory,"<br/><b>Site No:</b>",matchedplots$siteno,"<br/><b>Survey Name:</b>", matchedplots$surveyname  ,"<br/><b>Lat:</b>",matchedplots$lat," <b>Long:</b>",matchedplots$long,"<br/><b>Elevation:</b>",matchedplots$elevation,"<br/><b>Rainfall:</b>",matchedplots$rainfall,"<br/><b>Temp(&#8451;):</b>",matchedplots$temp))%>%
-              
-              addLayersControl(
-                baseGroups = c("Terrain", "Satellite"),             
-                options = layersControlOptions(collapsed = FALSE)
-              )
           } 
           
           
@@ -1653,14 +1879,26 @@ shinyServer(function(input, output,session) {
           
           categories<-pctplotsdata$pctid
           
-          if ((!is.null(match_data$matches))&&(check_infile()$env_present)) {
+          if ((!is.null(match_data$matches))) {      ##   &&(check_infile()$env_present)) {
             
             
-            dt<-style_matches()$cent$x$data %>% select(starts_with("PCT_Match"))           
+            dt<-style_matches()$cent$x$data %>% select(starts_with("PCT_Match"))  
             
-            dtmerged<-merge(filteredData(),style_matches()$cent$x$data,by.x="sites",by.y="Site_No")
+            dtFilteredData<-filteredData()
+            dtmerged<- NULL
             
-            dtfinal<-sqldf(paste0("SELECT * from dtmerged WHERE sites='",sitename,"'"))
+            if (is.null(dtFilteredData)){
+              dtmerged<-style_matches()$cent$x$data
+              dtfinal<-sqldf(paste0("SELECT * from dtmerged WHERE Site_No='",sitename,"'"))
+              
+            }else{
+              
+              dtmerged<-merge(filteredData(),style_matches()$cent$x$data,by.x="sites",by.y="Site_No")
+              dtfinal<-sqldf(paste0("SELECT * from dtmerged WHERE sites='",sitename,"'"))
+              
+            }
+            
+            
             
             
             SQLString<-""
@@ -1702,29 +1940,67 @@ shinyServer(function(input, output,session) {
                                            squareMarker =  TRUE)
             
             
+            if (is.null(dtFilteredData)){
+              
+              leaflet(data=dtfinal )%>% addTiles(group = "Terrain") %>%
+                addScaleBar() %>%
+                addProviderTiles(providers$Esri.WorldTopoMap, group = "Terrain")%>%
+                addProviderTiles(providers$Esri.WorldImagery, group = "Satellite")%>%
+                clearShapes() %>%
+                clearMarkers()%>%
+                addMeasure(
+                  position = "bottomleft",
+                  primaryLengthUnit = "meters",
+                  primaryAreaUnit = "sqmeters",
+                  activeColor = "#3D535D",
+                  completedColor = "#7D4479")%>%
+                addPolygons(data = EasternNSWStudyRegion, fill = F, weight = 2, color = "#9932CC") %>%
+                
+                # addAwesomeMarkers(icon = oehblueicon, lat = dtfinal$Latitude,lng = dtfinal$Longitude,layerId = dtfinal$sites,label = dtfinal$sites, labelOptions = labelOptions(noHide = T, direction = "bottom"),
+                #            popup = ~paste("<b>Site No:</b>",dtfinal$sites,"<br/><b>Lat:</b>",dtfinal$Latitude," <b>Long:</b>",dtfinal$Longitude,"<br/><b>Elevation(m):</b>",dtfinal$Elevation,"<br/><b>Rainfall(mm):</b>",dtfinal$RainfallAnn,"<br/><b>Temperature(deg.C):</b>",dtfinal$TempAnn,"<br/>", pctstats) ) %>%
+                # 
+                addCircles(radius= 200, lat = ~matchedplots$lat, lng = ~matchedplots$long, layerId = ~matchedplots$siteno, label = ~matchedplots$pctid,  color =~MatchedCol(matchedplots$pctid), fillColor =~MatchedCol(matchedplots$pctid),opacity = 1,   fillOpacity = 0.7,
+                           data = matchedplots, popup = ~paste("<b>PCT ID:</b>", matchedplots$pctid,"<br/><b>PCT Name:</b>", matchedplots$pctname, "<br/><b>PCT Assignment Category:</b>",matchedplots$pctassignmentcategory,"<br/><b>Site No:</b>",matchedplots$siteno,"<br/><b>Survey Name:</b>", matchedplots$surveyname  ,"<br/><b>Lat:</b>",matchedplots$lat," <b>Long:</b>",matchedplots$long,"<br/><b>Elevation:</b>",matchedplots$elevation,"<br/><b>Rainfall:</b>",matchedplots$rainfall,"<br/><b>Temp(&#8451;):</b>",matchedplots$temp))%>%
+                
+                addLayersControl(
+                  baseGroups = c("Terrain", "Satellite"),             
+                  options = layersControlOptions(collapsed = FALSE)
+                )
+              
+            }else
+            {
+              leaflet(data=dtfinal )%>% addTiles(group = "Terrain") %>% 
+                addScaleBar() %>%
+                addProviderTiles(providers$Esri.WorldTopoMap, group = "Terrain")%>%
+                addProviderTiles(providers$Esri.WorldImagery, group = "Satellite")%>%
+                #fitBounds(~min(dtfinal$Longitude), ~min(dtfinal$Latitude), ~max(dtfinal$Longitude), ~max(dtfinal$Latitude)) %>%
+                clearShapes() %>%
+                clearMarkers()%>%
+                addMeasure(
+                  position = "bottomleft",
+                  primaryLengthUnit = "meters",
+                  primaryAreaUnit = "sqmeters",
+                  activeColor = "#3D535D",
+                  completedColor = "#7D4479")%>%
+                
+                addPolygons(data = EasternNSWStudyRegion, fill = F, weight = 2, color = "#9932CC") %>%
+                
+                addAwesomeMarkers(icon = oehblueicon, lat = dtfinal$Latitude,lng = dtfinal$Longitude,layerId = dtfinal$sites,label = dtfinal$sites, labelOptions = labelOptions(noHide = T, direction = "bottom"),
+                                  popup = ~paste("<b>Site No:</b>",dtfinal$sites,"<br/><b>Lat:</b>",dtfinal$Latitude," <b>Long:</b>",dtfinal$Longitude,"<br/><b>Elevation(m):</b>",dtfinal$Elevation,"<br/><b>Rainfall(mm):</b>",dtfinal$RainfallAnn,"<br/><b>Temperature(deg.C):</b>",dtfinal$TempAnn,"<br/>", pctstats) ) %>%
+                
+                addCircles(radius= 200, lat = ~matchedplots$lat, lng = ~matchedplots$long, layerId = ~matchedplots$siteno, label = ~matchedplots$pctid,  color =~MatchedCol(matchedplots$pctid), fillColor =~MatchedCol(matchedplots$pctid),opacity = 1,   fillOpacity = 0.7,
+                           data = matchedplots, popup = ~paste("<b>PCT ID:</b>", matchedplots$pctid,"<br/><b>PCT Name:</b>", matchedplots$pctname, "<br/><b>PCT Assignment Category:</b>",matchedplots$pctassignmentcategory,"<br/><b>Site No:</b>",matchedplots$siteno,"<br/><b>Survey Name:</b>", matchedplots$surveyname  ,"<br/><b>Lat:</b>",matchedplots$lat," <b>Long:</b>",matchedplots$long,"<br/><b>Elevation(m):</b>",matchedplots$elevation,"<br/><b>Rainfall(mm):</b>",matchedplots$rainfall,"<br/><b>Temperature(deg.C):</b>",matchedplots$temp))%>%
+                
+                addLayersControl(
+                  baseGroups = c("Terrain", "Satellite"),             
+                  options = layersControlOptions(collapsed = FALSE)
+                )
+              
+            }
             
             
-            leaflet(data=dtfinal )%>% addTiles(group = "Terrain") %>%
-              addScaleBar() %>%
-              addProviderTiles(providers$Esri.WorldTopoMap, group = "Terrain")%>%
-              addProviderTiles(providers$Esri.WorldImagery, group = "Satellite")%>%
-              clearShapes() %>%
-              clearMarkers()%>%
-              addMeasure(
-                position = "bottomleft",
-                primaryLengthUnit = "meters",
-                primaryAreaUnit = "sqmeters",
-                activeColor = "#3D535D",
-                completedColor = "#7D4479")%>%
-              addPolygons(data = EasternNSWStudyRegion, fill = F, weight = 2, color = "#FF0000") %>%
-              addAwesomeMarkers(icon = oehblueicon, lat = dtfinal$Latitude,lng = dtfinal$Longitude,layerId = dtfinal$sites,label = dtfinal$sites, labelOptions = labelOptions(noHide = T, direction = "bottom"),
-                  popup = ~paste("<b>Site No:</b>",dtfinal$sites,"<br/><b>Lat:</b>",dtfinal$Latitude," <b>Long:</b>",dtfinal$Longitude,"<br/><b>Elevation:</b>",dtfinal$Elevation,"<br/><b>Rainfall:</b>",dtfinal$RainfallAnn,"<br/><b>Temp(&#8451;):</b>",dtfinal$TempAnn,"<br/>", pctstats) ) %>%
-              addCircles(radius= 200, lat = ~matchedplots$lat, lng = ~matchedplots$long, layerId = ~matchedplots$siteno, label = ~matchedplots$pctid,  color =~MatchedCol(matchedplots$pctid), fillColor =~MatchedCol(matchedplots$pctid),opacity = 1,   fillOpacity = 0.7,
-                         data = matchedplots, popup = ~paste("<b>PCT ID:</b>", matchedplots$pctid,"<br/><b>PCT Name:</b>", matchedplots$pctname, "<br/><b>PCT Assignment Category:</b>",matchedplots$pctassignmentcategory,"<br/><b>Site No:</b>",matchedplots$siteno,"<br/><b>Survey Name:</b>", matchedplots$surveyname  ,"<br/><b>Lat:</b>",matchedplots$lat," <b>Long:</b>",matchedplots$long,"<br/><b>Elevation:</b>",matchedplots$elevation,"<br/><b>Rainfall:</b>",matchedplots$rainfall,"<br/><b>Temp(&#8451;):</b>",matchedplots$temp))%>%
-              addLayersControl(
-                baseGroups = c("Terrain", "Satellite"),
-                options = layersControlOptions(collapsed = FALSE)
-              )
+            
+            
           } 
           
           

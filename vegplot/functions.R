@@ -34,6 +34,27 @@ get_cores <- function(sites) {
   }
 }
 
+get_appInfo<- function(){
+  
+  fp<- file.path(getwd(), "data")
+  normalizePath(fp)
+        fidb<-file.info(list.files(path=fp,pattern="pctdatadb.sqlite$", full.names=TRUE))
+        fi<-file.info(list.files(path=fp,pattern="bionetapp.info$", full.names=TRUE))
+        
+        applasteupdated <-as.character(fi$mtime,"%d/%m/%Y")
+        dblasteupdated <-as.character(fidb$mtime,"%d/%m/%Y")
+        
+        list_data <- list(c(applasteupdated), c(dblasteupdated))
+        
+        # Give names to the elements in the list.
+        names(list_data) <- c("AppLastUpdated", "DataLastUpdated")
+    
+ return(list_data)
+}
+
+
+
+
 
 
 # characteristic species based matching -----------------------------------
@@ -310,13 +331,60 @@ getPCTProfile<- function(pctid) {
                                  WHEN 'Forb (FG)' THEN 5           
                                  ELSE 6
                              END GGroupOrder
-                         FROM pctspeciesgrowthforms where PCT_ID='",pctid,"' order by GGroupOrder asc, Group_frequency desc"))
+                         FROM pctspeciesgrowthforms where PCT_ID='",pctid,"' and Group_frequency >=20 order by GGroupOrder asc, Group_frequency desc"))
   d2 <- dbFetch(rs)
+  dbHasCompleted(rs)
+  dbClearResult(rs)
+  
+  
+ ##state tec names 
+  rs <- dbSendQuery(con, paste0("SELECT B.profileID,B.TECName,'BC Act' as ACT, A.stateTECFitStatus as TECFitStatus FROM PCT_TECData A 
+                                INNER JOIN TECData B on A.stateTECProfileID like '%'||B.profileID||'%'
+                                where A.PCTID='",pctid,"' "))
+  dtStateTEC <- dbFetch(rs)
+  dbHasCompleted(rs)
+  dbClearResult(rs)
+  
+  
+  ##comm tec names
+  rs <- dbSendQuery(con, paste0("SELECT B.profileID,B.TECName, 'EPBC Act' as ACT, A.countryTECFitStatus as TECFitStatus FROM PCT_TECData A 
+                                         INNER JOIN TECData B on A.countryTECProfileID like '%'||B.profileID||'%'
+                                        where A.PCTID='",pctid,"' "))
+  dtComTEC <- dbFetch(rs)
   dbHasCompleted(rs)
   dbClearResult(rs)
   
   # clean up
   dbDisconnect(con)
+  
+  
+  n<-0
+  n<-nrow(dtStateTEC)
+  StateTECName<-""
+  
+  if (n>0){
+    for (i in 1:n){ 
+      
+      s<-as.data.frame(strsplit(toString(dtStateTEC$TECFitStatus[n]),";"), stringsAsFactors = F)
+      StateTECName <- paste0(dtStateTEC$TECName[n]," ", s[[1]][[n]],"<br/>",StateTECName)
+      
+    }
+  }
+  
+  
+  n<-0
+  n<-nrow(dtComTEC)
+  CommTECName<-""
+  
+  if (n>0){
+    for (i in 1:n){ 
+      
+      s<-as.data.frame(strsplit(toString(dtComTEC$TECFitStatus[n]),";"), stringsAsFactors = F)
+      CommTECName <- paste0(dtComTEC$TECName[n]," ", s[[1]][[n]],"<br/>",CommTECName)
+      
+    }
+  }
+  
   
  #PCTID, PCTName, Vegetation_description, Classification_confidence_level, Number_of_Primary_replicates, 
   # Number_of_Secondary_replicates, Vegetation_Formation, Vegetation_Class, IBRA_Subregion, 
@@ -344,7 +412,7 @@ getPCTProfile<- function(pctid) {
                             ,"<b>TEC List:</b>",if (is.na(d1$TEC_list)) "" else d1$TEC_list,"<br/>"
                             ,"<b>TEC Act:</b>",if (is.na(d1$TEC_Act)) "" else d1$TEC_Act,"<br/>"
                             ,"<b>Median Native Species Richness:</b>",d1$Median_species_richness,"<br/>"
-                            ,"<div><b>Species by Growth Form:</b>")
+                            ,"<div><b>Species by Growth Form Group:</b>")
   
   
   
@@ -353,8 +421,8 @@ getPCTProfile<- function(pctid) {
         	<tr style='width:600px;'>
         	<td style='vertical-align:top;font-weight:bolder;padding:2px;margin:2px;'>Scientific Name</td>
         	<td style='vertical-align:top;font-weight:bolder;padding:2px;margin:2px;'>Median Cover Score</td>
-        	<td style='vertical-align:top;font-weight:bolder;padding:2px;margin:2px;'>Group Frequency</td>
-        	<td style='vertical-align:top;font-weight:bolder;padding:2px;margin:2px;'>Growth Form</td>
+        	<td style='vertical-align:top;font-weight:bolder;padding:2px;margin:2px;'>Species Frequency (&gt;=20%)</td>
+        	<td style='vertical-align:top;font-weight:bolder;padding:2px;margin:2px;'>Growth Form Group</td>
         	</tr>")
         
         
