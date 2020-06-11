@@ -5,9 +5,9 @@ library(tibble)
 calculate_centres <- function(data, groups) {
   centres <- data.frame(data, PCTID = groups) %>%
     group_by(PCTID) %>%
-    summarise_all(list(mean = mean)) %>%
+    summarise_all(mean) %>%
     as.data.frame()
-  row.names(centres) <- centres$PCTID
+  row.names(centres) <- paste0("PCT",centres$PCTID)
   as.matrix(centres[,-1])
 }
 
