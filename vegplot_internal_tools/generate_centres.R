@@ -7,7 +7,7 @@ calculate_centres <- function(data, groups) {
     group_by(PCTID) %>%
     summarise_all(mean) %>%
     as.data.frame()
-  row.names(centres) <- paste0("PCT",centres$PCTID)
+  row.names(centres) <- centres$PCTID
   as.matrix(centres[,-1])
 }
 
