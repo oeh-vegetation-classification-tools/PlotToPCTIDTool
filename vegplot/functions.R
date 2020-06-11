@@ -122,7 +122,11 @@ calculate_centroids <- function(floristic_raw, site_labels, centroids) {
   colnames(cent_matches) <- rownames(centroids)
   df_out <- data.frame(site_labels, as.data.frame(round(cent_matches, 3)), stringsAsFactors = F)
   
-  
+  for(i in 1:ncol(df_out)) {
+    if (substr(names(df_out)[i],1,1)=="X" ){
+      names(df_out)[i]=substr(names(df_out)[i],2,str_length(as.character(names(df_out[i]))) )
+    }
+  }
   
   attr(df_out, "mc_cores") <- mc_cores
   
