@@ -66,7 +66,7 @@ char_spp_list <- lapply(char_spp_list, '[[', 1)
 names(char_spp_list) <- unlist(lapply(X = strsplit(names(char_spp_list), ".", fixed = T),
                                       FUN = function(x) x[2]))
 
-names(char_spp_list) <- gsub(x = names(char_spp_list), pattern = "clusterSolution", replacement = "PCT")
+names(char_spp_list) <- gsub(x = names(char_spp_list), pattern = "clusterSolution", replacement = "")
 
 # save off into tool input folder
 saveRDS(char_spp_list, file = "tool_inputs/char_species_list.rds")
