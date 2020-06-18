@@ -75,7 +75,17 @@ calculate_matches <- function(floristic_raw, site_labels, group_chars, topn) {
   }
   colnames(char_matches) <- names(group_chars)
   # join together with site info
-  data.frame(site_labels, as.data.frame(round(char_matches*100)), stringsAsFactors = F)
+ 
+  
+  df_out2 <- data.frame(site_labels, as.data.frame(round(char_matches*100)), stringsAsFactors = F)
+  
+  for(i in 1:ncol(df_out2)) {
+    if (substr(names(df_out2)[i],1,1)=="X" ){
+      names(df_out2)[i]=substr(names(df_out2)[i],2,str_length(as.character(names(df_out2[i]))) )
+    }
+  }
+  
+  df_out2
 }
 
 
@@ -109,7 +119,7 @@ calculate_centroids <- function(floristic_raw, site_labels, centroids) {
   new_dat_absenses <- new_dat_absenses[,sort(names(new_dat_absenses))]
   # calculate the distances and hack the matches and group names together
   mc_cores <- get_cores(nrow(floristic_raw))
-  cent_matches <- t(bind_rows(
+  cent_matches <- bind_rows(
     mclapply(X = as.data.frame(t(new_dat_absenses)),
            FUN = dist_to_centroid,
            centres = centroids,
@@ -117,7 +127,7 @@ calculate_centroids <- function(floristic_raw, site_labels, centroids) {
     # lapply(X = as.data.frame(t(new_dat_absenses)),
     #          FUN = dist_to_centroid,
     #          centres = centroids)
-  ))
+  )
   rownames(cent_matches) <- NULL
   colnames(cent_matches) <- rownames(centroids)
   df_out <- data.frame(site_labels, as.data.frame(round(cent_matches, 3)), stringsAsFactors = F)

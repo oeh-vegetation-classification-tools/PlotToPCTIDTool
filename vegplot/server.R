@@ -42,7 +42,7 @@ library(loggit)
 library(stringr)
 library(future)
 
-setLogFile("www/applog.json")
+ set_logfile("www/applog.json")
 
 source("functions.R")
 
@@ -580,12 +580,12 @@ shinyServer(function(input, output,session) {
     topn <- input$topn
     top_char_matches <- get_topn(match_data$matches$char_matches, topn, T)
     top_cent_matches <- get_topn(match_data$matches$cent_matches, topn, F)
-    combined_matches <- as.data.frame(t(bind_rows(
+    combined_matches <- as.data.frame(bind_rows(
       mapply(FUN = match_topn,
              as.data.frame(t(top_cent_matches), stringsAsFactors = F),
              as.data.frame(t(top_char_matches), stringsAsFactors = F),
              MoreArgs = list(topn = topn), SIMPLIFY = F)
-      )))
+      ))
     cent_groups <- top_cent_matches[c(1,grep("PCT_Match", names(top_cent_matches)))]
     rownames(combined_matches) <- NULL
     names(combined_matches) <- c("Site", 1:topn)
