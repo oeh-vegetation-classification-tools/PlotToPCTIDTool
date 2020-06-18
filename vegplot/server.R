@@ -76,7 +76,7 @@ shinyServer(function(input, output,session) {
   
   output$linkDownloadSampleData <- downloadHandler(
     filename = function() {
-      paste("example_floristic_data.csv")
+      paste("ENSWPlotToPCTAssignmentTool_SampleData.csv")
     },
     content = function(file) {
           write.csv(get_example_data(), file, row.names = F)
@@ -85,7 +85,7 @@ shinyServer(function(input, output,session) {
   
   output$DownloadSampleData2 <- downloadHandler(
     filename = function() {
-      paste("example_floristic_data.csv")
+      paste("ENSWPlotToPCTAssignmentTool_SampleData.csv")
     },
     content = function(file) {
       write.csv(get_example_data(), file, row.names = F)
