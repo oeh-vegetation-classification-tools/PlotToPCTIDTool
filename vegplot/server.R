@@ -69,7 +69,7 @@ shinyServer(function(input, output,session) {
   
  
   get_example_data <- reactive({
-    readRDS("data/GAP-EAST_plots.rds")
+    read.csv("www/ENSWPlotToPCTAssignmentTool_SampleData.csv")
   })
   
   bionetappinfo<-get_appInfo()
