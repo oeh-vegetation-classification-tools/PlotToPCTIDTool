@@ -1283,6 +1283,7 @@ shinyServer(function(input, output,session) {
         
         
         ## parseQueryString("?updateBioNet=1&bar=pctupdate")
+      # ?updateBioNet=1&bar=pctupdate
         query <- parseQueryString(session$clientData$url_search)
         
         updateOneKey<-0
@@ -1386,9 +1387,6 @@ shinyServer(function(input, output,session) {
           dbWriteTable(con, "pctprofiledata",pctprofiledt_df, overwrite=F, append=T)
           
           
-          dbExecute(con,"update pctspeciesgrowthforms set group_frequency = group_frequency*100")
-          
-          
           ## pct tec data
           
           
@@ -1449,6 +1447,9 @@ shinyServer(function(input, output,session) {
           
           
           dbWriteTable(con, "pctspeciesgrowthforms",SPGFdt_df, overwrite=F, append=T)
+          
+          
+          dbExecute(con,"update pctspeciesgrowthforms set group_frequency = group_frequency*100")
           
           
           # clean up
@@ -1594,13 +1595,13 @@ shinyServer(function(input, output,session) {
         addPolygons(data = EasternNSWStudyRegion, fill = F, weight = 2, color = "#9932CC") %>%
         
         addAwesomeMarkers(icon=oehblueicon ,lat = dtfinal$Latitude,lng = dtfinal$Longitude,layerId = dtfinal$sites,label = dtfinal$sites, labelOptions = labelOptions(noHide = T, direction = "bottom"),
-                   popup = ~paste("<b>Site No:</b>",dtfinal$sites,"<br/><b>Lat:</b>",dtfinal$Latitude," <b>Long:</b>",dtfinal$Longitude,"<br/><b>Elevation(m):</b>",dtfinal$Elevation,"<br/><b>Rainfall(mm):</b>",dtfinal$RainfallAnn,"<br/><b>Temperature(deg.C):</b>",dtfinal$TempAnn,"<br/>", pctstats) ) %>%
+                   popup = ~paste("<b>Site No:</b>",dtfinal$sites,"<br/><b>Lat:</b>",dtfinal$Latitude," <b>Long:</b>",dtfinal$Longitude,"<br/><b>Elevation (m):</b>",dtfinal$Elevation,"<br/><b>Annual Rainfall (mm):</b>",dtfinal$RainfallAnn,"<br/><b>Annual Mean Temperature (°C):</b>",dtfinal$TempAnn,"<br/>", pctstats) ) %>%
         
         addCircles(radius= 100, lat = ~matchedplots$lat, lng = ~matchedplots$long, layerId = ~matchedplots$siteno, label = ~matchedplots$pctid,  color =~MatchedCol(matchedplots$pctid), fillColor =~MatchedCol(matchedplots$pctid),opacity = 1,   fillOpacity = 0.7,
-                   data = matchedplots, popup = ~paste("<b>PCT ID:</b>", matchedplots$pctid,"<br/><b>PCT Name:</b>", matchedplots$pctname, "<br/><b>PCT Assignment Category:</b>",matchedplots$pctassignmentcategory,"<br/><b>Site No:</b>",matchedplots$siteno,"<br/><b>Survey Name:</b>", matchedplots$surveyname  ,"<br/><b>Lat:</b>",matchedplots$lat," <b>Long:</b>",matchedplots$long,"<br/><b>Elevation(m):</b>",matchedplots$elevation,"<br/><b>Rainfall(mm):</b>",matchedplots$rainfall,"<br/><b>Temperature(deg.C):</b>",matchedplots$temp))%>%
+                   data = matchedplots, popup = ~paste("<b>PCT ID:</b>", matchedplots$pctid,"<br/><b>PCT Name:</b>", matchedplots$pctname, "<br/><b>PCT Assignment Category:</b>",matchedplots$pctassignmentcategory,"<br/><b>Site No:</b>",matchedplots$siteno,"<br/><b>Survey Name:</b>", matchedplots$surveyname  ,"<br/><b>Lat:</b>",matchedplots$lat," <b>Long:</b>",matchedplots$long,"<br/><b>Elevation (m):</b>",matchedplots$elevation,"<br/><b>Annual Rainfall (mm):</b>",matchedplots$rainfall,"<br/><b>Annual Mean Temperature (°C):</b>",matchedplots$temp))%>%
       
       addCircles(radius= 50, lat = ~unmatchedplots$lat, lng = ~unmatchedplots$long, layerId = ~unmatchedplots$siteno, color = ~UnMatchedCol(unmatchedplots$pctid),  fillOpacity = 0.5, group = groupName,
-                 data = unmatchedplots, popup = ~paste("<b>PCT ID:</b>", unmatchedplots$pctid,"<br/><b>PCT Name:</b>", unmatchedplots$pctname, "<br/><b>PCT Assignment Category:</b>",unmatchedplots$pctassignmentcategory,"<br/><b>Site No:</b>",unmatchedplots$siteno,"<br/><b>Survey Name:</b>", unmatchedplots$surveyname  ,"<br/><b>Lat:</b>",unmatchedplots$lat," <b>Long:</b>",unmatchedplots$long,"<br/><b>Elevation(m):</b>",unmatchedplots$elevation,"<br/><b>Rainfall(mm):</b>",unmatchedplots$rainfall,"<br/><b>Temperature(deg.C):</b>",unmatchedplots$temp))%>%
+                 data = unmatchedplots, popup = ~paste("<b>PCT ID:</b>", unmatchedplots$pctid,"<br/><b>PCT Name:</b>", unmatchedplots$pctname, "<br/><b>PCT Assignment Category:</b>",unmatchedplots$pctassignmentcategory,"<br/><b>Site No:</b>",unmatchedplots$siteno,"<br/><b>Survey Name:</b>", unmatchedplots$surveyname  ,"<br/><b>Lat:</b>",unmatchedplots$lat," <b>Long:</b>",unmatchedplots$long,"<br/><b>Elevation (m):</b>",unmatchedplots$elevation,"<br/><b>Annual Rainfall (mm):</b>",unmatchedplots$rainfall,"<br/><b>Annual Mean Temperature (°C):</b>",unmatchedplots$temp))%>%
                      hideGroup(groupName)%>%
             addLayersControl(
               baseGroups = c("Terrain", "Satellite"),
@@ -1795,7 +1796,7 @@ shinyServer(function(input, output,session) {
                       #            popup = ~paste("<b>Site No:</b>",dtfinal$sites,"<br/><b>Lat:</b>",dtfinal$Latitude," <b>Long:</b>",dtfinal$Longitude,"<br/><b>Elevation(m):</b>",dtfinal$Elevation,"<br/><b>Rainfall(mm):</b>",dtfinal$RainfallAnn,"<br/><b>Temperature(deg.C):</b>",dtfinal$TempAnn,"<br/>", pctstats) ) %>%
                       # 
                       addCircles(radius= 200, lat = ~matchedplots$lat, lng = ~matchedplots$long, layerId = ~matchedplots$siteno, label = ~matchedplots$pctid,  color =~MatchedCol(matchedplots$pctid), fillColor =~MatchedCol(matchedplots$pctid),opacity = 1,   fillOpacity = 0.7,
-                                 data = matchedplots, popup = ~paste("<b>PCT ID:</b>", matchedplots$pctid,"<br/><b>PCT Name:</b>", matchedplots$pctname, "<br/><b>PCT Assignment Category:</b>",matchedplots$pctassignmentcategory,"<br/><b>Site No:</b>",matchedplots$siteno,"<br/><b>Survey Name:</b>", matchedplots$surveyname  ,"<br/><b>Lat:</b>",matchedplots$lat," <b>Long:</b>",matchedplots$long,"<br/><b>Elevation:</b>",matchedplots$elevation,"<br/><b>Rainfall:</b>",matchedplots$rainfall,"<br/><b>Temp(&#8451;):</b>",matchedplots$temp))%>%
+                                 data = matchedplots, popup = ~paste("<b>PCT ID:</b>", matchedplots$pctid,"<br/><b>PCT Name:</b>", matchedplots$pctname, "<br/><b>PCT Assignment Category:</b>",matchedplots$pctassignmentcategory,"<br/><b>Site No:</b>",matchedplots$siteno,"<br/><b>Survey Name:</b>", matchedplots$surveyname  ,"<br/><b>Lat:</b>",matchedplots$lat," <b>Long:</b>",matchedplots$long,"<br/><b>Elevation (m):</b>",matchedplots$elevation,"<br/><b>Annual Rainfall (mm):</b>",matchedplots$rainfall,"<br/><b>Annual Mean Temperature (°C):</b>",matchedplots$temp))%>%
                       
                       addLayersControl(
                         baseGroups = c("Terrain", "Satellite"),             
@@ -1824,10 +1825,10 @@ shinyServer(function(input, output,session) {
                       addPolygons(data = EasternNSWStudyRegion, fill = F, weight = 2, color = "#9932CC") %>%
                       
                       addAwesomeMarkers(icon = oehblueicon, lat = dtfinal$Latitude,lng = dtfinal$Longitude,layerId = dtfinal$sites,label = dtfinal$sites, labelOptions = labelOptions(noHide = T, direction = "bottom"),
-                                        popup = ~paste("<b>Site No:</b>",dtfinal$sites,"<br/><b>Lat:</b>",dtfinal$Latitude," <b>Long:</b>",dtfinal$Longitude,"<br/><b>Elevation(m):</b>",dtfinal$Elevation,"<br/><b>Rainfall(mm):</b>",dtfinal$RainfallAnn,"<br/><b>Temperature(deg.C):</b>",dtfinal$TempAnn,"<br/>", pctstats) ) %>%
+                                        popup = ~paste("<b>Site No:</b>",dtfinal$sites,"<br/><b>Lat:</b>",dtfinal$Latitude," <b>Long:</b>",dtfinal$Longitude,"<br/><b>Elevation (m):</b>",dtfinal$Elevation,"<br/><b>Annual Rainfall (mm):</b>",dtfinal$RainfallAnn,"<br/><b>Annual Mean Temperature (°C):</b>",dtfinal$TempAnn,"<br/>", pctstats) ) %>%
                       
                       addCircles(radius= 200, lat = ~matchedplots$lat, lng = ~matchedplots$long, layerId = ~matchedplots$siteno, label = ~matchedplots$pctid,  color =~MatchedCol(matchedplots$pctid), fillColor =~MatchedCol(matchedplots$pctid),opacity = 1,   fillOpacity = 0.7,
-                                 data = matchedplots, popup = ~paste("<b>PCT ID:</b>", matchedplots$pctid,"<br/><b>PCT Name:</b>", matchedplots$pctname, "<br/><b>PCT Assignment Category:</b>",matchedplots$pctassignmentcategory,"<br/><b>Site No:</b>",matchedplots$siteno,"<br/><b>Survey Name:</b>", matchedplots$surveyname  ,"<br/><b>Lat:</b>",matchedplots$lat," <b>Long:</b>",matchedplots$long,"<br/><b>Elevation(m):</b>",matchedplots$elevation,"<br/><b>Rainfall(mm):</b>",matchedplots$rainfall,"<br/><b>Temperature(deg.C):</b>",matchedplots$temp))%>%
+                                 data = matchedplots, popup = ~paste("<b>PCT ID:</b>", matchedplots$pctid,"<br/><b>PCT Name:</b>", matchedplots$pctname, "<br/><b>PCT Assignment Category:</b>",matchedplots$pctassignmentcategory,"<br/><b>Site No:</b>",matchedplots$siteno,"<br/><b>Survey Name:</b>", matchedplots$surveyname  ,"<br/><b>Lat:</b>",matchedplots$lat," <b>Long:</b>",matchedplots$long,"<br/><b>Elevation (m):</b>",matchedplots$elevation,"<br/><b>Annual Rainfall (mm):</b>",matchedplots$rainfall,"<br/><b>Annual Mean Temperature (°C):</b>",matchedplots$temp))%>%
                       
                       addLayersControl(
                         baseGroups = c("Terrain", "Satellite"),             
@@ -1960,7 +1961,7 @@ shinyServer(function(input, output,session) {
                 #            popup = ~paste("<b>Site No:</b>",dtfinal$sites,"<br/><b>Lat:</b>",dtfinal$Latitude," <b>Long:</b>",dtfinal$Longitude,"<br/><b>Elevation(m):</b>",dtfinal$Elevation,"<br/><b>Rainfall(mm):</b>",dtfinal$RainfallAnn,"<br/><b>Temperature(deg.C):</b>",dtfinal$TempAnn,"<br/>", pctstats) ) %>%
                 # 
                 addCircles(radius= 200, lat = ~matchedplots$lat, lng = ~matchedplots$long, layerId = ~matchedplots$siteno, label = ~matchedplots$pctid,  color =~MatchedCol(matchedplots$pctid), fillColor =~MatchedCol(matchedplots$pctid),opacity = 1,   fillOpacity = 0.7,
-                           data = matchedplots, popup = ~paste("<b>PCT ID:</b>", matchedplots$pctid,"<br/><b>PCT Name:</b>", matchedplots$pctname, "<br/><b>PCT Assignment Category:</b>",matchedplots$pctassignmentcategory,"<br/><b>Site No:</b>",matchedplots$siteno,"<br/><b>Survey Name:</b>", matchedplots$surveyname  ,"<br/><b>Lat:</b>",matchedplots$lat," <b>Long:</b>",matchedplots$long,"<br/><b>Elevation:</b>",matchedplots$elevation,"<br/><b>Rainfall:</b>",matchedplots$rainfall,"<br/><b>Temp(&#8451;):</b>",matchedplots$temp))%>%
+                           data = matchedplots, popup = ~paste("<b>PCT ID:</b>", matchedplots$pctid,"<br/><b>PCT Name:</b>", matchedplots$pctname, "<br/><b>PCT Assignment Category:</b>",matchedplots$pctassignmentcategory,"<br/><b>Site No:</b>",matchedplots$siteno,"<br/><b>Survey Name:</b>", matchedplots$surveyname  ,"<br/><b>Lat:</b>",matchedplots$lat," <b>Long:</b>",matchedplots$long,"<br/><b>Elevation (m):</b>",matchedplots$elevation,"<br/><b>Annual Rainfall (mm):</b>",matchedplots$rainfall,"<br/><b>Annual Mean Temperature (°C):</b>",matchedplots$temp))%>%
                 
                 addLayersControl(
                   baseGroups = c("Terrain", "Satellite"),             
@@ -1986,10 +1987,10 @@ shinyServer(function(input, output,session) {
                 addPolygons(data = EasternNSWStudyRegion, fill = F, weight = 2, color = "#9932CC") %>%
                 
                 addAwesomeMarkers(icon = oehblueicon, lat = dtfinal$Latitude,lng = dtfinal$Longitude,layerId = dtfinal$sites,label = dtfinal$sites, labelOptions = labelOptions(noHide = T, direction = "bottom"),
-                                  popup = ~paste("<b>Site No:</b>",dtfinal$sites,"<br/><b>Lat:</b>",dtfinal$Latitude," <b>Long:</b>",dtfinal$Longitude,"<br/><b>Elevation(m):</b>",dtfinal$Elevation,"<br/><b>Rainfall(mm):</b>",dtfinal$RainfallAnn,"<br/><b>Temperature(deg.C):</b>",dtfinal$TempAnn,"<br/>", pctstats) ) %>%
+                                  popup = ~paste("<b>Site No:</b>",dtfinal$sites,"<br/><b>Lat:</b>",dtfinal$Latitude," <b>Long:</b>",dtfinal$Longitude,"<br/><b>Elevation (m):</b>",dtfinal$Elevation,"<br/><b>Annual Rainfall (mm):</b>",dtfinal$RainfallAnn,"<br/><b>Annual Mean Temperature (°C):</b>",dtfinal$TempAnn,"<br/>", pctstats) ) %>%
                 
                 addCircles(radius= 200, lat = ~matchedplots$lat, lng = ~matchedplots$long, layerId = ~matchedplots$siteno, label = ~matchedplots$pctid,  color =~MatchedCol(matchedplots$pctid), fillColor =~MatchedCol(matchedplots$pctid),opacity = 1,   fillOpacity = 0.7,
-                           data = matchedplots, popup = ~paste("<b>PCT ID:</b>", matchedplots$pctid,"<br/><b>PCT Name:</b>", matchedplots$pctname, "<br/><b>PCT Assignment Category:</b>",matchedplots$pctassignmentcategory,"<br/><b>Site No:</b>",matchedplots$siteno,"<br/><b>Survey Name:</b>", matchedplots$surveyname  ,"<br/><b>Lat:</b>",matchedplots$lat," <b>Long:</b>",matchedplots$long,"<br/><b>Elevation(m):</b>",matchedplots$elevation,"<br/><b>Rainfall(mm):</b>",matchedplots$rainfall,"<br/><b>Temperature(deg.C):</b>",matchedplots$temp))%>%
+                           data = matchedplots, popup = ~paste("<b>PCT ID:</b>", matchedplots$pctid,"<br/><b>PCT Name:</b>", matchedplots$pctname, "<br/><b>PCT Assignment Category:</b>",matchedplots$pctassignmentcategory,"<br/><b>Site No:</b>",matchedplots$siteno,"<br/><b>Survey Name:</b>", matchedplots$surveyname  ,"<br/><b>Lat:</b>",matchedplots$lat," <b>Long:</b>",matchedplots$long,"<br/><b>Elevation (m):</b>",matchedplots$elevation,"<br/><b>Annual Rainfall (mm):</b>",matchedplots$rainfall,"<br/><b>Annual Mean Temperature (°C):</b>",matchedplots$temp))%>%
                 
                 addLayersControl(
                   baseGroups = c("Terrain", "Satellite"),             

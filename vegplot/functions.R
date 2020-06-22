@@ -352,7 +352,7 @@ getPCTProfile<- function(pctid) {
   
   
  ##state tec names 
-  rs <- dbSendQuery(con, paste0("SELECT B.profileID,B.TECName,'BC Act' as ACT, A.stateTECFitStatus as TECFitStatus FROM PCT_TECData A 
+  rs <- dbSendQuery(con, paste0("SELECT B.profileID,B.TECName,'BC Act' as ACT, A.stateTECFitStatus as TECFitStatus, A.TECAssessed TECAssessed FROM PCT_TECData A 
                                 INNER JOIN TECData B on A.stateTECProfileID like '%'||B.profileID||'%'
                                 where A.PCTID='",pctid,"' "))
   dtStateTEC <- dbFetch(rs)
@@ -361,7 +361,7 @@ getPCTProfile<- function(pctid) {
   
   
   ##comm tec names
-  rs <- dbSendQuery(con, paste0("SELECT B.profileID,B.TECName, 'EPBC Act' as ACT, A.countryTECFitStatus as TECFitStatus FROM PCT_TECData A 
+  rs <- dbSendQuery(con, paste0("SELECT B.profileID,B.TECName, 'EPBC Act' as ACT, A.countryTECFitStatus as TECFitStatus, A.TECAssessed TECAssessed FROM PCT_TECData A 
                                          INNER JOIN TECData B on A.countryTECProfileID like '%'||B.profileID||'%'
                                         where A.PCTID='",pctid,"' "))
   dtComTEC <- dbFetch(rs)
@@ -376,12 +376,17 @@ getPCTProfile<- function(pctid) {
   n<-nrow(dtStateTEC)
   StateTECName<-""
   
+  TECAssessed<-"Not assessed"
+  
   if (n>0){
     for (i in 1:n){ 
       
       s<-as.data.frame(strsplit(toString(dtStateTEC$TECFitStatus[n]),";"), stringsAsFactors = F)
       StateTECName <- paste0(dtStateTEC$TECName[n]," ", s[[1]][[n]],"<br/>",StateTECName)
       
+    }
+    if (TECAssessed=="") {
+      TECAssessed<-dtStateTEC$TECAssessed[1]
     }
   }
   
@@ -396,6 +401,9 @@ getPCTProfile<- function(pctid) {
       s<-as.data.frame(strsplit(toString(dtComTEC$TECFitStatus[n]),";"), stringsAsFactors = F)
       CommTECName <- paste0(dtComTEC$TECName[n]," ", s[[1]][[n]],"<br/>",CommTECName)
       
+    }
+    if (TECAssessed=="") {
+      TECAssessed<-dtComTEC$TECAssessed[1]
     }
   }
   
@@ -414,15 +422,18 @@ getPCTProfile<- function(pctid) {
                             ,"<b>Vegetation Formation:</b>",d1$Vegetation_Formation,"<br/>"
                             ,"<b>Vegetation Class:</b>",d1$Vegetation_Class,"<br/>"
                             ,"<b>IBRA Subregion(s):</b>",d1$IBRA_Subregion,"<br/>"
-                            ,"<b>Elevation Max:</b>",d1$Elevation_max,"<br/>"
-                            ,"<b>Elevation Min:</b>",d1$Elevation_min,"<br/>"
-                            ,"<b>Elevation Median:</b>",d1$Elevation_median,"<br/>"
-                            ,"<b>Rainfall Max:</b>",d1$Rainfall_max,"<br/>"
-                            ,"<b>Rainfall Min:</b>",d1$Rainfall_min,"<br/>"
-                            ,"<b>Rainfall Median:</b>",d1$Rainfall_median,"<br/>"
-                            ,"<b>Temperature Max:</b>",d1$Temperature_max,"<br/>"
-                            ,"<b>Temperature Min:</b>",d1$Temperature_min,"<br/>"
-                            ,"<b>Temperature Median:</b>",d1$Temperature_median,"<br/>"
+                         
+                            ,"<b>Minimum Elevation (m):</b>",d1$Elevation_min,"<br/>"
+                            ,"<b>Maximum Elevation (m):</b>",d1$Elevation_max,"<br/>"
+                            ,"<b>Median Elevation (m):</b>",d1$Elevation_median,"<br/>"
+                            ,"<b>Minimum Annual Rainfall (mm):</b>",d1$Rainfall_min,"<br/>"
+                            ,"<b>Maximum Annual Rainfall (mm):</b>",d1$Rainfall_max,"<br/>"
+                            ,"<b>Median Annual Rainfall (mm):</b>",d1$Rainfall_median,"<br/>"
+                            ,"<b>Minimum Annual Mean Temperature (deg.C):</b>",d1$Temperature_min,"<br/>"
+                            ,"<b>Maximum Annual Mean Temperature (deg.C):</b>",d1$Temperature_max,"<br/>"
+                            ,"<b>Median Annual Mean Temperature (deg.C):</b>",d1$Temperature_median,"<br/>"
+                         
+                            ,"<b>TEC Assessed:</b>",TECAssessed,"<br/>"
                             ,"<b>TEC List:</b>",if (is.na(d1$TEC_list)) "" else d1$TEC_list,"<br/>"
                             ,"<b>TEC Act:</b>",if (is.na(d1$TEC_Act)) "" else d1$TEC_Act,"<br/>"
                             ,"<b>Median Native Species Richness:</b>",d1$Median_species_richness,"<br/>"
