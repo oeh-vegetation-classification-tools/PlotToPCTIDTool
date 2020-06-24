@@ -167,13 +167,13 @@ ui<-  htmlTemplate("main.html",
                                       
                                     
                                       # button to download the data check report
-                                      tags$div(downloadButton("linkDownloadDataCheckReport", "Download data check report", class = ".btn-primary"),style="padding:20px"),
+                                      #tags$div(downloadButton("linkDownloadDataCheckReport", "Download data check report", class = ".btn-primary"),style="padding:20px"),
                                    
-                                      tags$hr(),
+                                      tags$hr()
                                       
                                    
                                    # button to download the example data
-                                   tags$div(downloadButton("linkDownloadSampleData", "Download Sample Data", class = ".btn-primary"),style="padding:20px")
+                                   #tags$div(downloadButton("linkDownloadSampleData", "Download Sample Data", class = ".btn-primary"),style="padding:20px")
                                 
                                   ,style="padding:20px"),
                          

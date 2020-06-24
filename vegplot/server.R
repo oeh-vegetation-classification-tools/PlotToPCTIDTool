@@ -117,7 +117,12 @@ shinyServer(function(input, output,session) {
     
     if (!is.null(match_data$matches$env_data)) {
       
-      shinyjs::enable("download_combo_data")
+      ENVARS_NA<-is.na(match_data$matches$env_data$Elevation)
+      
+      if (ENVARS_NA==TRUE){
+        shinyjs::disable("download_combo_data") }else{
+      
+      shinyjs::enable("download_combo_data")}
     }else{
      
       shinyjs::disable("download_combo_data")
@@ -596,7 +601,14 @@ shinyServer(function(input, output,session) {
   })
   
   style_env_thresholds <- reactive({
+    
     if (!is.null(match_data$matches$env_data)) {
+      
+      ENVARS_NA<-is.na(match_data$matches$env_data$Elevation)
+
+      if (ENVARS_NA==TRUE){
+         return(NULL)}
+      
       progress <- shiny::Progress$new(style = "notification")
       progress$set(message = "Checking env. thresholds", value = 0.5)
       on.exit(progress$close())
@@ -655,6 +667,13 @@ shinyServer(function(input, output,session) {
   output$env_thresholds <- renderDataTable({
     if (!is.null(match_data$matches$env_data)) {
       
+      ENVARS_NA<-is.na(match_data$matches$env_data$Elevation)
+      
+      if (ENVARS_NA==TRUE){
+        shinyjs::show("EnvDataViewMessage") 
+         return()
+        }
+      
       shinyjs::hide("EnvDataViewMessage")
       dtfET<-datatable(style_env_thresholds()$env_thresholds)
       ETdata<-dtfET$x$data %>% rename(Row_No = names(dtfET$x$data)[1], PCT_Match=names(dtfET$x$data)[3], PCT_ID=names(dtfET$x$data)[4])
@@ -697,19 +716,36 @@ shinyServer(function(input, output,session) {
     topn <- input$topn
     redata<- NULL
     
+    if (!is.null(match_data$matches$env_data)){
+      
+      ENVARS_NA<-is.na(match_data$matches$env_data$Elevation)
+      
+      if (ENVARS_NA==TRUE){
+        redata<- list(char = get_topn(match_data$matches$char_matches, topn, T),
+                      cent = get_topn(match_data$matches$cent_matches, topn, F),
+                      env = NULL)
+        return(redata)
+      }else{
+      
+          redata<- list(char = get_topn(match_data$matches$char_matches, topn, T),
+                        cent = get_topn(match_data$matches$cent_matches, topn, F),
+                        env = check_env_thresholds(style_matches()$cent_groups, env_thresh, match_data$matches$env_data))
+          return(redata)
+      }
+      
+    }
+    
     if (is.null(match_data$matches$env_data))
     { redata<- list(char = get_topn(match_data$matches$char_matches, topn, T),
                     cent = get_topn(match_data$matches$cent_matches, topn, F),
-                    env = NULL)}
-    else{
-    
-    redata<- list(char = get_topn(match_data$matches$char_matches, topn, T),
-                cent = get_topn(match_data$matches$cent_matches, topn, F),
-                env = check_env_thresholds(style_matches()$cent_groups, env_thresh, match_data$matches$env_data))
+                    env = NULL)
+      return(redata)
     }
-    
-    return(redata)
+  
+   
   })
+  
+  
   
   output$download_char_matches <- downloadHandler(
     filename = function() {
