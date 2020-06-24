@@ -69,7 +69,7 @@ shinyServer(function(input, output,session) {
   
  
   get_example_data <- reactive({
-    read.csv("www/ENSWPlotToPCTAssignmentTool_SampleData.csv")
+    read.csv("www/ENSWPlotToPCTAssignmentTool_SampleData.csv", check.names = FALSE)
   })
   
   bionetappinfo<-get_appInfo()
@@ -719,12 +719,21 @@ shinyServer(function(input, output,session) {
       
      
         
-      arCHARDATA<-array(style_matches()$char)[[1]]$data %>% rename(Row_No = names(array(style_matches()$char)[[1]]$data)[1])
-      names(arCHARDATA) <- gsub("Distance_to_Centroid", "%_Char_Spp", names(arCHARDATA))
+    #  arCHARDATA<-array(style_matches()$char)[[1]]$data %>% rename(Row_No = names(array(style_matches()$char)[[1]]$data)[1])
+      
+      
+      charmatches<-download_matches()$char
+      names(charmatches) <- gsub("Distance_to_Centroid", "%_Char_Spp", names(charmatches))
+      charmatches<-reorder_data(charmatches)
    
-      myvar <- Sys.Date()
-      out_string <- paste0("Exported from NSW Plot to PCT assignment tool on ",myvar,". Plot to PCT assignment version:", bionetappinfo$DataLastUpdated  ,"\n", "=================\n")
+      myvar <- format(Sys.Date(), format="%d/%m/%Y")
+      #Exported from NSW Plot to PCT assignment tool on dd/mm/yyyy. PCT data last updated dd/mm/yyyy
+      out_string <- paste0("Exported from NSW Plot to PCT assignment tool on ",myvar,". PCT data last updated ", bionetappinfo$DataLastUpdated  ,"\n", "=================\n")
       cat(out_string, file = file, sep = '\n')
+      
+      
+      
+    # reorder_data(arCHARDATA)
       
       withProgress(message = 'Processing....',
                    detail = 'This may take a while...', value = 0, {
@@ -735,7 +744,7 @@ shinyServer(function(input, output,session) {
                    })
       
       future({
-      fwrite(x = reorder_data(arCHARDATA),
+      fwrite(x = charmatches,
              file= file,
              sep = ',',
              col.names=T,
@@ -755,10 +764,12 @@ shinyServer(function(input, output,session) {
     },
     content = function(file) {
    
-      myvar <- Sys.Date()
+      myvar <- format(Sys.Date(), format="%d/%m/%Y")
+      #Exported from NSW Plot to PCT assignment tool on dd/mm/yyyy. PCT data last updated dd/mm/yyyy
+      
       centmatches<-download_matches()$cent
       centmatches<-reorder_data(centmatches)
-      out_string <- paste0("Exported from NSW Plot to PCT assignment tool on ",myvar,". Plot to PCT assignment version ", bionetappinfo$DataLastUpdated  ,"\n", "=================\n")
+      out_string <- paste0("Exported from NSW Plot to PCT assignment tool on ",myvar,". PCT data last updated ", bionetappinfo$DataLastUpdated  ,"\n", "=================\n")
       cat(out_string, file = file, sep = '\n')
       
       
@@ -810,13 +821,23 @@ shinyServer(function(input, output,session) {
       pctdt<-pctprofiles$data
       allpctprofiles<-sqldf("select * from pctdt where pctid in (SELECT pctid FROM matchedpcts)")
       
+      #Maximum_Elevation_(m)	Minimum_Elevation_(m)	Median_Elevation_(m)	Maximum_Annual_Rainfall_(mm)	Minimum_Annual_Rainfall_(mm)	
+      #Median_Annual_Rainfall_(mm)	Maximum_Annual_Mean_Temperature_(°C)	Minimum_Annual_Mean_Temperature_(°C)	Median_Annual_Mean_Temperature_(°C)
+      
+      
       allpctprofiles<-allpctprofiles %>% rename(PCT_ID = PCTID, PCT_Name=PCTName, Vegetation_Description=Vegetation_description,
                                                 Classification_Confidence_Level=Classification_confidence_level,
                                                 Number_of_Primary_Replicates=Number_of_Primary_replicates,
                                                 Number_of_Secondary_Replicates=Number_of_Secondary_replicates,
-                                                Elevation_Max=Elevation_max,Elevation_Min=Elevation_min,Elevation_Median=Elevation_median,
-                                                Rainfall_Max=Rainfall_max,Rainfall_Min=Rainfall_min,Rainfall_Median=Rainfall_median,
-                                                Temperature_Max=Temperature_max,Temperature_Min=Temperature_min,Temperature_Median=Temperature_median,
+                                                "Maximum_Elevation_(m)"=Elevation_max,
+                                                "Minimum_Elevation_(m)"=Elevation_min,
+                                                "Median_Elevation_(m)"=Elevation_median,
+                                                "Maximum_Annual_Rainfall_(mm)"=Rainfall_max,
+                                                "Minimum_Annual_Rainfall_(mm)"=Rainfall_min,
+                                                "Median_Annual_Rainfall_(mm)"=Rainfall_median,
+                                                "Maximum_Annual_Mean_Temperature_(deg.C)"=Temperature_max,
+                                                "Minimum_Annual_Mean_Temperature_(deg.C)"=Temperature_min,
+                                                "Median_Annual_Mean_Temperature_(deg.C)"=Temperature_median,
                                                 TEC_List=TEC_list,Median_Native_Species_Richness=Median_species_richness)
       
       return(allpctprofiles)
@@ -831,8 +852,9 @@ shinyServer(function(input, output,session) {
     content = function(file) {
       # 
    
-      myvar <- Sys.Date()
-      out_string <- paste0("Exported from NSW Plot to PCT assignment tool on ",myvar,". Plot to PCT assignment version ", bionetappinfo$DataLastUpdated  ,"\n", "=================\n")
+      myvar <- format(Sys.Date(), format="%d/%m/%Y")
+      #Exported from NSW Plot to PCT assignment tool on dd/mm/yyyy. PCT data last updated dd/mm/yyyy
+      out_string <- paste0("Exported from NSW Plot to PCT assignment tool on ",myvar,". PCT data last updated ", bionetappinfo$DataLastUpdated  ,"\n", "=================\n")
       cat(out_string, file = file, sep = '\n')
       
       withProgress(message = 'Processing....',
@@ -900,8 +922,9 @@ shinyServer(function(input, output,session) {
     content = function(file) {
       # 
       
-      myvar <- Sys.Date()
-      out_string <- paste0("Exported from NSW Plot to PCT assignment tool on ",myvar,". Plot to PCT assignment version ", bionetappinfo$DataLastUpdated  ,"\n", "=================\n")
+      myvar <- format(Sys.Date(), format="%d/%m/%Y")
+      #Exported from NSW Plot to PCT assignment tool on dd/mm/yyyy. PCT data last updated dd/mm/yyyy
+      out_string <- paste0("Exported from NSW Plot to PCT assignment tool on ",myvar,". PCT data last updated ", bionetappinfo$DataLastUpdated  ,"\n", "=================\n")
       cat(out_string, file = file, sep = '\n')
       
       withProgress(message = 'Processing....',
@@ -984,8 +1007,9 @@ shinyServer(function(input, output,session) {
     content = function(file) {
       # 
       
-      myvar <- Sys.Date()
-      out_string <- paste0("Exported from NSW Plot to PCT assignment tool on ",myvar,". Plot to PCT assignment version ", bionetappinfo$DataLastUpdated  ,"\n", "=================\n")
+      myvar <- format(Sys.Date(), format="%d/%m/%Y")
+      #Exported from NSW Plot to PCT assignment tool on dd/mm/yyyy. PCT data last updated dd/mm/yyyy
+      out_string <- paste0("Exported from NSW Plot to PCT assignment tool on ",myvar,". PCT data last updated ", bionetappinfo$DataLastUpdated  ,"\n", "=================\n")
       cat(out_string, file = file, sep = '\n')
       
       withProgress(message = 'Processing....',

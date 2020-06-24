@@ -61,6 +61,9 @@ get_appInfo<- function(){
 
 ## function to match the spcies list - may want to think about how to weight by richness???
 species_percentage_match <- function(chars, species) {
+  
+  #print(chars)
+  #print(species)
   sum(chars %in% species) / length(chars)
 }
 
@@ -69,9 +72,15 @@ calculate_matches <- function(floristic_raw, site_labels, group_chars, topn) {
   new_site_species <- apply(X = floristic_raw, MARGIN = 1, FUN = function(x){names(x[x > 0])})
     # loop over the species lists for the new sites and calculate percentage match for each
   char_matches <- matrix(NA, nrow = length(site_labels), ncol = length(group_chars)) # pre-allocate
+  
+  if (nrow(char_matches)<=1){
+    new_site_species<-as.list(as.data.frame(new_site_species,stringsAsFactors=F))
+  }
+  
+  
   for (i in 1:nrow(char_matches)) { # can make this an other lapply when needed
     #####->>>>> this could be an mclapply call if needed (overhead is not worth it yet)
-    char_matches[i,] <- unlist(lapply(group_chars, species_percentage_match, new_site_species[[i]]))
+    char_matches[i,] <- unlist(lapply(lapply(group_chars, toupper), species_percentage_match, toupper(new_site_species[[i]])))
   }
   colnames(char_matches) <- names(group_chars)
   # join together with site info
@@ -79,12 +88,12 @@ calculate_matches <- function(floristic_raw, site_labels, group_chars, topn) {
   
   df_out2 <- data.frame(site_labels, as.data.frame(round(char_matches*100)), stringsAsFactors = F)
   
-  for(i in 1:ncol(df_out2)) {
-    if (substr(names(df_out2)[i],1,1)=="X" ){
-      names(df_out2)[i]=substr(names(df_out2)[i],2,str_length(as.character(names(df_out2[i]))) )
+  for(p in 1:ncol(df_out2)) {
+    if (substr(names(df_out2)[p],1,1)=="X" ){
+      names(df_out2)[p]=substr(names(df_out2)[p],2,str_length(as.character(names(df_out2[p]))) )
     }
   }
-  
+
   df_out2
 }
 
@@ -336,7 +345,7 @@ getPCTProfile<- function(pctid) {
   dbHasCompleted(rs)
   dbClearResult(rs)
   
-  rs <- dbSendQuery(con, paste0("SELECT Scientific_name, Group_score_median, Group_frequency, GrowthFormGroup,
+  rs <- dbSendQuery(con, paste0("SELECT Scientific_name, Group_score_median,  CAST(Group_frequency as INT) Group_frequency, GrowthFormGroup,
                         CASE GrowthFormGroup 
                                  WHEN 'Tree (TG)' THEN 1 
                                  WHEN 'Shrub (SG)' THEN 2
@@ -461,7 +470,7 @@ getPCTProfile<- function(pctid) {
                           "<tr style='width:600px;'>
       				<td style='vertical-align:top;padding:2px;margin:2px;'>",d2$Scientific_name[i],"</td>
       				<td style='vertical-align:top;padding:2px;margin:2px;'>",d2$Group_score_median[i],"</td>
-      				<td style='vertical-align:top;padding:2px;margin:2px;'>",d2$Group_frequency[i],"</td>
+      				<td style='vertical-align:top;padding:2px;margin:2px;'>",d2$Group_frequency[i],"%</td>
       				<td style='vertical-align:top;padding:2px;margin:2px;'>",d2$GrowthFormGroup[i],"</td>
       			   </tr>")
         }
