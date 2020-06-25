@@ -368,7 +368,7 @@ shinyServer(function(input, output,session) {
 
         missingSpeciesList<-paste0("There are ", ncol(check_infile()$floristics),
                                         " species, <b><mark> and ",length(check_infile()$missing_species),
-                                        " could not be matched: ", paste(check_infile()$missing_species, collapse = ", "),
+                                        " could not be found: ", paste(check_infile()$missing_species, collapse = ", "),
                                         ", so were ignored in analysis.</mark></b>")
 
       }else{
