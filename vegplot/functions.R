@@ -347,14 +347,14 @@ getPCTProfile<- function(pctid) {
   
   rs <- dbSendQuery(con, paste0("SELECT Scientific_name, Group_score_median,  CAST(Group_frequency as INT) Group_frequency, GrowthFormGroup,
                         CASE GrowthFormGroup 
-                                 WHEN 'Tree (TG)' THEN 1 
-                                 WHEN 'Shrub (SG)' THEN 2
-                                 WHEN 'Fern (EG)' THEN 3
-                                 WHEN 'Grass & grasslike (GG)' THEN 4
-                                 WHEN 'Forb (FG)' THEN 5           
-                                 ELSE 6
-                             END GGroupOrder
-                         FROM pctspeciesgrowthforms where PCT_ID='",pctid,"' and Group_frequency >=20 order by GGroupOrder asc, Group_frequency desc"))
+                                WHEN 'Tree (TG)' THEN 1 
+                                WHEN 'Shrub (SG)' THEN 2
+                                WHEN 'Fern (EG)' THEN 3
+                                WHEN 'Grass & grasslike (GG)' THEN 4
+                                WHEN 'Forb (FG)' THEN 5           
+                                ELSE 6
+                                END GGroupOrder
+                                FROM pctspeciesgrowthforms where PCT_ID='",pctid,"' and CAST(Group_frequency AS INT) >=20 order by GGroupOrder asc, CAST(Group_frequency AS INT) desc"))
   d2 <- dbFetch(rs)
   dbHasCompleted(rs)
   dbClearResult(rs)
@@ -386,6 +386,8 @@ getPCTProfile<- function(pctid) {
   StateTECName<-""
   
   TECAssessed<-"Not assessed"
+  TECAct<-""
+  TECList<-""
   
   if (n>0){
     for (i in 1:n){ 
@@ -394,9 +396,11 @@ getPCTProfile<- function(pctid) {
       StateTECName <- paste0(dtStateTEC$TECName[n]," ", s[[1]][[n]],"<br/>",StateTECName)
       
     }
-    if (TECAssessed=="") {
+    #if (TECAssessed=="") {
       TECAssessed<-dtStateTEC$TECAssessed[1]
-    }
+      TECList<-StateTECName
+      TECAct<-dtStateTEC$ACT[1]
+    #}
   }
   
   
@@ -411,9 +415,11 @@ getPCTProfile<- function(pctid) {
       CommTECName <- paste0(dtComTEC$TECName[n]," ", s[[1]][[n]],"<br/>",CommTECName)
       
     }
-    if (TECAssessed=="") {
+    #if (TECAssessed=="") {
       TECAssessed<-dtComTEC$TECAssessed[1]
-    }
+      TECList<-paste0(TECList,";",CommTECName)
+      TECAct<-paste0(TECAct,";",dtComTEC$ACT[1])
+    #}
   }
   
   
@@ -443,8 +449,8 @@ getPCTProfile<- function(pctid) {
                             ,"<b>Median Annual Mean Temperature (deg.C):</b>",d1$Temperature_median,"<br/>"
                          
                             ,"<b>TEC Assessed:</b>",TECAssessed,"<br/>"
-                            ,"<b>TEC List:</b>",if (is.na(d1$TEC_list)) "" else d1$TEC_list,"<br/>"
-                            ,"<b>TEC Act:</b>",if (is.na(d1$TEC_Act)) "" else d1$TEC_Act,"<br/>"
+                            ,"<b>TEC List:</b>",TECList,"<br/>"
+                            ,"<b>TEC Act:</b>",TECAct,"<br/>"
                             ,"<b>Median Native Species Richness:</b>",d1$Median_species_richness,"<br/>"
                             ,"<div><b>Species by Growth Form Group:</b>")
   
