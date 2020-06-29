@@ -1007,7 +1007,7 @@ shinyServer(function(input, output,session) {
       
       con <- dbConnect(RSQLite::SQLite(), dbname="data/pctdatadb.sqlite")      
       
-      rs <- dbSendQuery(con, paste0("SELECT PCT_ID, Scientific_name, Group_score_median, Group_frequency, GrowthFormGroup,
+      rs <- dbSendQuery(con, paste0("SELECT PCT_ID, Scientific_name, Group_score_median,  CAST(Group_frequency as INT) Group_frequency, GrowthFormGroup,
                         CASE GrowthFormGroup 
                                  WHEN 'Tree (TG)' THEN 1 
                                  WHEN 'Shrub (SG)' THEN 2
@@ -1016,7 +1016,7 @@ shinyServer(function(input, output,session) {
                                  WHEN 'Forb (FG)' THEN 5           
                                  ELSE 6
                              END GGroupOrder
-                         FROM pctspeciesgrowthforms order by GGroupOrder asc, Group_frequency desc"))
+                         FROM pctspeciesgrowthforms order by GGroupOrder asc,  CAST(Group_frequency as INT) desc"))
       pctdt <- dbFetch(rs)
       dbHasCompleted(rs)
       dbClearResult(rs)
@@ -1551,9 +1551,9 @@ shinyServer(function(input, output,session) {
     
     pctplotsdata<-pctplots$data
 
+   
     
-    
-    colfuncMatched <- colorRampPalette(c("AliceBlue",  "Aquamarine", "Azure", "#ffd236","#fbb83e","#ec783a","#e54c41","#d04730","#782d49",
+    colfuncMatched <- colorRampPalette(c("AliceBlue",  "Aquamarine", "Azure", 
                                          "Blue", "BlueViolet", "CadetBlue",  "Coral", "CornflowerBlue",
                                          "Cornsilk",  "Cyan", "DarkBlue", "DarkCyan", "DarkGoldenRod", "DarkMagenta", "DarkOrange", "DarkOrchid", "DarkRed", "DarkSalmon", 
                                          "DarkSlateBlue",   "DarkTurquoise", "DarkViolet", "DeepPink", "DeepSkyBlue", 
