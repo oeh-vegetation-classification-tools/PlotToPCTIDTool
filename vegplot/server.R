@@ -855,11 +855,37 @@ shinyServer(function(input, output,session) {
       }
       matchedpcts<-sqldf(SQLString)
       pctdt<-pctprofiles$data
-      allpctprofiles<-sqldf("select * from pctdt where pctid in (SELECT pctid FROM matchedpcts)")
       
+      pcttecdata<-getTEC_For_PCTProfiles()
+      
+      allpctprofiles<-sqldf("select pctdt.PCTID,
+                                pctdt.PCTName,
+                                pctdt.Vegetation_description,
+                                pctdt.Classification_confidence_level,
+                                pctdt.Number_of_Primary_replicates,
+                                pctdt.Number_of_Secondary_replicates,
+                                pctdt.Vegetation_Formation,
+                                pctdt.Vegetation_Class,
+                                pctdt.IBRA_Subregion,
+                                pctdt.Elevation_max,
+                                pctdt.Elevation_min,
+                                pctdt.Elevation_median,
+                                pctdt.Rainfall_max,
+                                pctdt.Rainfall_min,
+                                pctdt.Rainfall_median,
+                                pctdt.Temperature_max,
+                                pctdt.Temperature_min,
+                                pctdt.Temperature_median,
+                                pcttecdata.TECAssessed,
+                                pctdt.TEC_list,
+                                pctdt.TEC_Act,
+                                pctdt.Median_species_richness
+                               from pctdt join pcttecdata on pcttecdata.pctid=pctdt.pctid where pctdt.pctid in (SELECT pctid FROM matchedpcts)")
+            
       #Maximum_Elevation_(m)	Minimum_Elevation_(m)	Median_Elevation_(m)	Maximum_Annual_Rainfall_(mm)	Minimum_Annual_Rainfall_(mm)	
       #Median_Annual_Rainfall_(mm)	Maximum_Annual_Mean_Temperature_(°C)	Minimum_Annual_Mean_Temperature_(°C)	Median_Annual_Mean_Temperature_(°C)
       
+     
       
       allpctprofiles<-allpctprofiles %>% rename(PCT_ID = PCTID, PCT_Name=PCTName, Vegetation_Description=Vegetation_description,
                                                 Classification_Confidence_Level=Classification_confidence_level,
@@ -874,7 +900,9 @@ shinyServer(function(input, output,session) {
                                                 "Maximum_Annual_Mean_Temperature_(deg.C)"=Temperature_max,
                                                 "Minimum_Annual_Mean_Temperature_(deg.C)"=Temperature_min,
                                                 "Median_Annual_Mean_Temperature_(deg.C)"=Temperature_median,
+                                                "TEC Assessed"=TECAssessed,
                                                 TEC_List=TEC_list,Median_Native_Species_Richness=Median_species_richness)
+        
       
       return(allpctprofiles)
     }
@@ -1377,16 +1405,18 @@ shinyServer(function(input, output,session) {
 
           ## PCT DATA UPDATES FOR FLORA SURVEY
           
-          fjs <-fromJSON("https://datatest.bionet.nsw.gov.au/BioSvcApp/odata/SystematicFloraSurvey_SiteData?$select=siteID,%20currentClassification,%20currentClassificationDescription,%20surveyName,%20PCTAssignmentCategory,%20decimalLatitude,%20decimalLongitude,%20visitNo,%20ElevationInMeters,%20annualRainfallInMillimeters,%20annualMeanTemperatureInCelsius")
+           fjs <-fromJSON("https://datatest.bionet.nsw.gov.au/BioSvcApp/odata/SystematicFloraSurvey_SiteData?$select=siteID,%20currentClassification,%20currentClassificationDescription,%20surveyName,%20PCTAssignmentCategory,%20decimalLatitude,%20decimalLongitude,%20visitNo,%20ElevationInMeters,%20annualRainfallInMillimeters,%20annualMeanTemperatureInCelsius")
           
           # n<-as.integer(length(pctdata$value))
           # Initialize a temporary in memory database and copy a data.frame into it
           con <- dbConnect(RSQLite::SQLite(), dbname="data/pctdatadb.sqlite")
+          
+          
           dbExecute(con,"DELETE FROM fsdata")
           ## for (i in 1:n){
-          
+
           fjs_df<-as.data.frame(fjs$value, stringsAsFactors = F)
-          
+
           names(fjs_df)[names(fjs_df) == "siteID"] <- "siteno"
           names(fjs_df)[names(fjs_df) == "currentClassification"] <- "pctid"
           names(fjs_df)[names(fjs_df) == "currentClassificationDescription"] <- "pctname"
@@ -1398,28 +1428,28 @@ shinyServer(function(input, output,session) {
           names(fjs_df)[names(fjs_df) == "ElevationInMeters"] <- "elevation"
           names(fjs_df)[names(fjs_df) == "annualRainfallInMillimeters"] <- "rainfall"
           names(fjs_df)[names(fjs_df) == "annualMeanTemperatureInCelsius"] <- "temp"
-          
-          
+
+
           dbWriteTable(con, "fsdata",fjs_df, overwrite=F, append=T)
-          
-        
-          
-          
+
+
+
+
           ## pct profile data
           progress$set(message = "Loading classification data", value = 0.25)
-          
+
           showNotification(paste0("Loading classification data"),duration = 20,type = c("message"))
-          
+
           pctjson <-fromJSON("https://datatest.bionet.nsw.gov.au/BioSvcApp/odata/VegetationClassification_PCTDefinition?$select=PCTID,PCTName,vegetationDescription,classificationConfidenceLevel,numberOfPrimaryReplicates,numberOfSecondaryReplicates,vegetationFormation,vegetationClass,IBRASubregion,maximumElevationInMeters,minimumElevationInMeters,medianElevationInMeters,maximumAnnualRainfallInMillimeters,minimumAnnualRainfallInMillimeters,medianAnnualRainfallInMillimeters,maximumAnnualMeanTemperatureInCelsius,minimumAnnualMeanTemperatureInCelsius,medianAnnualMeanTemperatureInCelsius,TECAssessed,stateTECFitStatus,medianNativeSpeciesRichness")
-          
-          
+
+
           # Initialize a temporary in memory database and copy a data.frame into it
           ##con <- dbConnect(RSQLite::SQLite(), dbname="data/pctdatadb.sqlite")
           dbExecute(con,"DELETE FROM pctprofiledata")
-          
-          
+
+
           pctprofiledt_df<-as.data.frame(pctjson$value, stringsAsFactors = F)
-          
+
           names(pctprofiledt_df)[names(pctprofiledt_df) == "vegetationDescription"] <- "Vegetation_description"
           names(pctprofiledt_df)[names(pctprofiledt_df) == "classificationConfidenceLevel"] <- "Classification_confidence_level"
           names(pctprofiledt_df)[names(pctprofiledt_df) == "numberOfPrimaryReplicates"] <- "Number_of_Primary_replicates"
@@ -1430,86 +1460,170 @@ shinyServer(function(input, output,session) {
           names(pctprofiledt_df)[names(pctprofiledt_df) == "maximumElevationInMeters"] <- "Elevation_max"
           names(pctprofiledt_df)[names(pctprofiledt_df) == "minimumElevationInMeters"] <- "Elevation_min"
           names(pctprofiledt_df)[names(pctprofiledt_df) == "medianElevationInMeters"] <- "Elevation_median"
-          
+
           names(pctprofiledt_df)[names(pctprofiledt_df) == "maximumAnnualRainfallInMillimeters"] <- "Rainfall_max"
           names(pctprofiledt_df)[names(pctprofiledt_df) == "minimumAnnualRainfallInMillimeters"] <- "Rainfall_min"
           names(pctprofiledt_df)[names(pctprofiledt_df) == "medianAnnualRainfallInMillimeters"] <- "Rainfall_median"
-          
+
           names(pctprofiledt_df)[names(pctprofiledt_df) == "maximumAnnualMeanTemperatureInCelsius"] <- "Temperature_max"
           names(pctprofiledt_df)[names(pctprofiledt_df) == "minimumAnnualMeanTemperatureInCelsius"] <- "Temperature_min"
           names(pctprofiledt_df)[names(pctprofiledt_df) == "medianAnnualMeanTemperatureInCelsius"] <- "Temperature_median"
-          
+
           names(pctprofiledt_df)[names(pctprofiledt_df) == "TECAssessed"] <- "TEC_list"
           names(pctprofiledt_df)[names(pctprofiledt_df) == "stateTECFitStatus"] <- "TEC_Act"
           names(pctprofiledt_df)[names(pctprofiledt_df) == "medianNativeSpeciesRichness"] <- "Median_species_richness"
-          
-          
+
+
           dbWriteTable(con, "pctprofiledata",pctprofiledt_df, overwrite=F, append=T)
-          
-          
+
+
           ## pct tec data
-          
-          
-          
+
+
+
           pcttecjson <-fromJSON("https://datatest.bionet.nsw.gov.au/BioSvcApp/odata/VegetationClassification_PCTDefinition?$select=PCTID,TECAssessed,stateTECProfileID,stateTECFitStatus,stateTECDegreeOfFit,countryTECProfileID,countryTECFitStatus,countryTECDegreeOfFit")
-          
-          
+
+
           # Initialize a temporary in memory database and copy a data.frame into it
           ##con <- dbConnect(RSQLite::SQLite(), dbname="data/pctdatadb.sqlite")
           dbExecute(con,"DELETE FROM pct_tecdata")
-          
-          
+
+
           pctTECdt_df<-as.data.frame(pcttecjson$value, stringsAsFactors = F)
-          
+
           dbWriteTable(con, "pct_tecdata",pctTECdt_df, overwrite=F, append=T)
-          
-          
-         
+
+
+
           progress$set(message = "Loading TEC data", value = 0.50)
           showNotification(paste0("Loading TEC data"),duration = 20,type = c("message"))
-          
+
           ## tec data only
           tecjson <-fromJSON("https://datatest.bionet.nsw.gov.au/BioSvcApp/odata/ThreatenedBiodiversity_EcologicalCommunities?$select=profileID,TECName,stateConservation,countryConservation")
-          
-          
+
+
           # Initialize a temporary in memory database and copy a data.frame into it
           ##con <- dbConnect(RSQLite::SQLite(), dbname="data/pctdatadb.sqlite")
           dbExecute(con,"DELETE FROM tecdata")
-          
-          
+
+
           TECdt_df<-as.data.frame(tecjson$value, stringsAsFactors = F)
-          
-          
-          
+
+
+
           dbWriteTable(con, "tecdata",TECdt_df, overwrite=F, append=T)
-          
-      
-          
+
+
+
           ## PCT SPP GF data only
           progress$set(message = "Loading PCT Species growth forms data", value = 0.95)
           showNotification(paste0("Loading PCT Species growth form data"),duration = 20,type = c("message"))
-          
+
           spgfjson <-fromJSON("https://datatest.bionet.nsw.gov.au/BioSvcApp/odata/VegetationClassification_PCTGrowthForm?$select=PCTID,scientificName,medianCoverScore,speciesFrequency,primaryGrowthFormGroup")
-          
-          
+
+
           # Initialize a temporary in memory database and copy a data.frame into it
           ##con <- dbConnect(RSQLite::SQLite(), dbname="data/pctdatadbtest.sqlite")
           dbExecute(con,"DELETE FROM pctspeciesgrowthforms")
-          
-          
+
+
           SPGFdt_df<-as.data.frame(spgfjson$value, stringsAsFactors = F)
-          
+
           names(SPGFdt_df)[names(SPGFdt_df) == "PCTID"] <- "PCT_ID"
           names(SPGFdt_df)[names(SPGFdt_df) == "scientificName"] <- "Scientific_name"
           names(SPGFdt_df)[names(SPGFdt_df) == "medianCoverScore"] <- "Group_score_median"
           names(SPGFdt_df)[names(SPGFdt_df) == "speciesFrequency"] <- "Group_frequency"
           names(SPGFdt_df)[names(SPGFdt_df) == "primaryGrowthFormGroup"] <- "GrowthFormGroup"
-          
-          
+
+
           dbWriteTable(con, "pctspeciesgrowthforms",SPGFdt_df, overwrite=F, append=T)
-          
-          
+
+
           dbExecute(con,"update pctspeciesgrowthforms set group_frequency = group_frequency*100")
+
+
+          
+          
+          rsTECS <- dbSendQuery(con, paste0("SELECT * FROM pctprofiledata"))
+          dataToUpdateTECS <- dbFetch(rsTECS)
+          dbHasCompleted(rsTECS)
+          dbClearResult(rsTECS)
+          
+          NRECS<-nrow(dataToUpdateTECS)
+          sqlstring<-""
+          
+          
+          for (X in 1:NRECS){
+            
+            pctid<-dataToUpdateTECS$PCTID[X]
+            
+            ##state tec names 
+            rs <- dbSendQuery(con, paste0("SELECT B.profileID,B.TECName,'BC Act' as ACT, A.stateTECFitStatus as TECFitStatus, A.TECAssessed TECAssessed FROM PCT_TECData A 
+                                          INNER JOIN TECData B on A.stateTECProfileID like '%'||B.profileID||'%'
+                                          where A.PCTID='",pctid,"' "))
+            dtStateTEC <- dbFetch(rs)
+            dbHasCompleted(rs)
+            dbClearResult(rs)
+            
+            
+            ##comm tec names
+            rs <- dbSendQuery(con, paste0("SELECT B.profileID,B.TECName, 'EPBC Act' as ACT, A.countryTECFitStatus as TECFitStatus, A.TECAssessed TECAssessed FROM PCT_TECData A 
+                                          INNER JOIN TECData B on A.countryTECProfileID like '%'||B.profileID||'%'
+                                          where A.PCTID='",pctid,"' "))
+            dtComTEC <- dbFetch(rs)
+            dbHasCompleted(rs)
+            dbClearResult(rs)
+            
+            
+            n<-0
+            n<-nrow(dtStateTEC)
+            StateTECName<-""
+            
+            TECAssessed<-"Not assessed"
+            TECAct<-""
+            TECList<-""
+            
+            if (n>0){
+              for (i in 1:n){ 
+                
+                s<-as.data.frame(strsplit(toString(dtStateTEC$TECFitStatus[n]),";"), stringsAsFactors = F)
+                StateTECName <- paste0(dtStateTEC$TECName[n]," ", s[[1]][[n]],";",StateTECName)
+                
+              }
+              
+              TECAssessed<-dtStateTEC$TECAssessed[1]
+              TECList<-StateTECName
+              TECAct<-dtStateTEC$ACT[1]
+              
+            }
+            
+            
+            n<-0
+            n<-nrow(dtComTEC)
+            CommTECName<-""
+            
+            if (n>0){
+              for (i in 1:n){ 
+                
+                s<-as.data.frame(strsplit(toString(dtComTEC$TECFitStatus[n]),";"), stringsAsFactors = F)
+                CommTECName <- paste0(dtComTEC$TECName[n]," ", s[[1]][[n]],";",CommTECName)
+                
+              }
+              
+              TECAssessed<-dtComTEC$TECAssessed[1]
+              TECList<-paste0(TECList,";",CommTECName)
+              TECAct<-paste0(TECAct,";",dtComTEC$ACT[1])
+              
+            }
+            
+            
+            #update
+            sqlstring<-paste0("UPDATE pctprofiledata SET TEC_list='",TECList,"', TEC_Act='", TECAct,"' WHERE PCTID='",pctid,"'")
+            dbExecute(con,sqlstring)
+            
+          }
+          
+          
           
           
           # clean up

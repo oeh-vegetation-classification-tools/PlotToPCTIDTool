@@ -505,3 +505,28 @@ getPCTSites<- function(pctid) {
   return(d1)
 }
 
+
+
+
+getTEC_For_PCTProfiles<- function() {
+  # Initialize a temporary in memory database and copy a data.frame into it
+  con <- dbConnect(RSQLite::SQLite(), dbname="data/pctdatadb.sqlite")
+  
+  
+  
+    ##state tec names 
+    rs <- dbSendQuery(con, paste0("select PCT_TECData.PCTID, PCT_TECData.TECAssessed from  PCT_TECData"))
+    dtPCTTEC <- dbFetch(rs)
+    dbHasCompleted(rs)
+    dbClearResult(rs)
+    
+  # clean up
+  dbDisconnect(con)
+  
+  return(dtPCTTEC)
+  
+}
+
+
+
+
