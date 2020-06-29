@@ -374,7 +374,7 @@ shinyServer(function(input, output,session) {
       }else{
 
         missingSpeciesList<-paste0("There are no missing",
-                                         " species: all species have been matched in the database.")
+                                         " species: all species could be found.")
       }
 
       #check if spatial data. If yes then do numplotsOutsideStudy else "N/A. Spatial data not imported"
