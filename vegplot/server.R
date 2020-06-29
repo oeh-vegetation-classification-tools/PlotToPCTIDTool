@@ -1587,7 +1587,7 @@ shinyServer(function(input, output,session) {
               for (i in 1:n){ 
                 
                 s<-as.data.frame(strsplit(toString(dtStateTEC$TECFitStatus[n]),";"), stringsAsFactors = F)
-                StateTECName <- paste0(dtStateTEC$TECName[n]," ", s[[1]][[n]],";",StateTECName)
+                StateTECName <- paste0(dtStateTEC$TECName[n]," ", s[[1]][[n]]," ",StateTECName)
                 
               }
               
@@ -1606,7 +1606,7 @@ shinyServer(function(input, output,session) {
               for (i in 1:n){ 
                 
                 s<-as.data.frame(strsplit(toString(dtComTEC$TECFitStatus[n]),";"), stringsAsFactors = F)
-                CommTECName <- paste0(dtComTEC$TECName[n]," ", s[[1]][[n]],";",CommTECName)
+                CommTECName <- paste0(dtComTEC$TECName[n]," ", s[[1]][[n]]," ",CommTECName)
                 
               }
               
