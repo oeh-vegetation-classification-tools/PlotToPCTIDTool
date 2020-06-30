@@ -530,3 +530,148 @@ getTEC_For_PCTProfiles<- function() {
 
 
 
+
+##////////////////////////////////////////////////////////////////////
+
+# Configuration Environment, to be used as needed.
+.config <- new.env(parent = emptyenv())
+
+loggitBIONET <- function(log_lvl, log_msg, log_detail = "", ..., echo = TRUE) {
+  
+ 
+  
+  if (.config$templogfile && !.config$seenmessage) {
+    base::warning(paste0("loggit has no persistent log file. Please set with ",
+                         "setLogFile(logfile), or see package?loggit for more help.\n ",
+                         "Otherwise, you can recover your logs (from THIS R SESSION ONLY) ",
+                         "via copying ", .config$logfile, " to a persistent folder."))
+    if (log_detail == "") log_detail <- "User was warned about non-persistent log file."
+    .config$seenmessage <- TRUE
+  } else {
+    .config$templogfile <- FALSE
+  }
+  
+  setTimestampFormat()
+  
+  timestamp <- format(Sys.time(), format = .config$ts_format)
+  
+  dots <- list(...)
+  
+  if (length(dots) > 0) {
+    if (any(unlist(lapply(dots, length)) > 1))
+      base::warning("Each custom log field should be of length one, or else your logs will be multiplied!")
+    log_df <- data.frame(
+      timestamp = timestamp,
+      log_lvl = as.character(log_lvl),
+      log_msg = as.character(log_msg),
+      log_detail = log_detail,
+      dots,
+      stringsAsFactors = FALSE)
+  } else {
+    log_df <- data.frame(
+      timestamp = timestamp,
+      log_lvl = as.character(log_lvl),
+      log_msg = as.character(log_msg),
+      log_detail = log_detail,
+      stringsAsFactors = FALSE)
+  }
+  
+  if (!file.exists(.config$logfile) || length(readLines(.config$logfile)) == 0) {
+    logs_json <- dplyr::bind_rows(
+      data.frame(timestamp = timestamp,
+                 log_lvl = "INFO",
+                 log_msg = "Initial log",
+                 log_detail = "",
+                 stringsAsFactors = FALSE),
+      log_df)
+    jsonlite::write_json(logs_json, path = .config$logfile, pretty = TRUE)
+  } else {
+    logs_json <- jsonlite::read_json(.config$logfile, simplifyVector = TRUE)
+    logs_json <- dplyr::bind_rows(logs_json, log_df)
+    jsonlite::write_json(logs_json, path = .config$logfile, pretty = TRUE)
+  }
+  
+  if (echo) base::message(paste(c(log_lvl, log_msg), collapse = ": "))
+  
+  invisible()
+  
+}
+
+
+#' Set Log File
+#'
+#' Set the log file that loggit will write to. No logs will be written until
+#' this is set, as per CRAN policy. The suggested use of this function would be
+#' to call it early, to log to the current working directory, as follows:
+#' `setLogFile(paste0(getwd(), "/loggit.json"))`. If you are using `loggit` in
+#' your package, you can wrap this function in `.onLoad()` so that the logfile
+#' is set when your package loads.
+#'
+#' @param logfile Full path to log file. Until other output formats are
+#'   introduced, the file name must end in ".json".
+#' @param confirm Print confirmation of log file setting? Defaults to `TRUE`.
+#'
+#' @examples setLogFile(file.path(tempdir(), "loggit.json"))
+#'
+#' @export
+setLogFileBIONET <- function(logfile = NULL, confirm = TRUE) {
+  
+  if (is.null(logfile)) {
+    .config$logfile <- file.path(tempdir(), "loggit.json")
+  } else {
+    
+    if (substr(logfile, nchar(logfile) - 4, nchar(logfile)) != ".json")
+      base::stop("Log file path must be explicitly JSON, i.e. end in '.json'")
+    .config$logfile <- logfile
+    .config$templogfile <- FALSE
+    if (confirm) print(paste0("Log file set to ", logfile))
+    
+  }
+  
+  invisible()
+  
+}
+
+#' Get Log File
+#'
+#' Get the log file that loggit will write to.
+#' 
+#' @examples getLogFile()
+#'
+#' @export
+getLogFileBIONET <- function() {
+  .config$logfile
+}
+
+
+
+#' Set Timestamp Format
+#'
+#' Set timestamp format for use in output logs.
+#'
+#' @param ts_format ISO date format.
+#' @param confirm Print confirmation of timestamp format setting? Defaults to
+#'   `TRUE`.
+#'   
+#' @examples setTimestampFormat("%Y-%m-%d %H:%M:%S")
+#'
+#' @export
+setTimestampFormat <- function(ts_format = "%Y-%m-%d %H:%M:%S", confirm = TRUE) {
+  .config$ts_format <- ts_format
+  if (confirm) print(paste0("Timestamp format set to ", ts_format))
+  invisible()
+}
+
+#' Get Timestamp Format
+#' 
+#' Get timestamp format for use in output logs.
+#' 
+#' @examples getTimestampFormat()
+#'
+#' @export
+getTimestampFormat <- function() {
+  .config$ts_format
+}
+
+
+
