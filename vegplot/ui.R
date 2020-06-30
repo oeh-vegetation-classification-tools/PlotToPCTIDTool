@@ -316,7 +316,8 @@ ui<-  htmlTemplate("main.html",
                                       tabPanel("Map view", value=3,
                                                fluidPage(
                                                  HTML("<br/>Displayed are: sites drawn from the BioNet Atlas Systematic Surveys flora survey data collection that have been classified to a PCT in the eastern NSW PCT classification; sites input to this Plot to PCT assignment tool during the current session.<br/>
-                                                 Additional sites held by BioNet but not visible here include: recently collected data, data that are not publicly available, data collected using methods inconsistent with those used in the development of PCTs."),
+                                                 Additional sites held by BioNet but not visible here include: recently collected data, data that are not publicly available, data collected using methods inconsistent with those used in the development of PCTs.<br/>
+                                                 PCT symbols on the map may be difficult to see against the Terrain background. Selecting Satellite background may make some symbols easier to see."),
                                                  htmlOutput("MapViewMessage", style="padding:20px"),
                                                  withSpinner(leafletOutput("map", width = "100%", height = "800px")),
                                                  tags$p(" ",style="padding:20px")

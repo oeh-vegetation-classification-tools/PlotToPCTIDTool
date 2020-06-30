@@ -1671,11 +1671,11 @@ shinyServer(function(input, output,session) {
     
     colfuncMatched <- colorRampPalette(c("AliceBlue",  "Aquamarine", "Azure", 
                                          "Blue", "BlueViolet", "CadetBlue",  "Coral", "CornflowerBlue",
-                                         "Cornsilk",  "Cyan", "DarkBlue", "DarkCyan", "DarkGoldenRod", "DarkMagenta", "DarkOrange", "DarkOrchid", "DarkRed", "DarkSalmon", 
+                                         "Cyan", "DarkBlue", "DarkCyan", "DarkGoldenRod", "DarkMagenta", "DarkOrange", "DarkOrchid", "DarkRed", "DarkSalmon", 
                                          "DarkSlateBlue",   "DarkTurquoise", "DarkViolet", "DeepPink", "DeepSkyBlue", 
                                           "DodgerBlue",  "Gold",
                                          "GoldenRod",  "HotPink", "IndianRed",  
-                                         "Lavender", "LavenderBlush",  "LemonChiffon", "LightBlue", "LightCoral", "LightCyan", "LightGoldenRodYellow"))
+                                         "Lavender", "LawnGreen",  "LemonChiffon", "LightBlue", "LightCoral", "LightCyan", "LightGreen"))
     
     
     
