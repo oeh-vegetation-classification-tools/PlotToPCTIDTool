@@ -23240,3 +23240,12 @@
     "sessionid": "2d392cadce05c2bb16191453602dc4bf"
   }
 ]
+{"timestamp": "2020-06-30T10:13:54+1000", "log_lvl": "INFO", "log_msg": "session started", "log_detail": "session has started", "event": "session start", "sessionid": "9681fde5ca8b06a888f29281be2fe785"}
+{"timestamp": "2020-06-30T10:15:33+1000", "log_lvl": "INFO", "log_msg": "session has ended", "log_detail": "session has ended", "sessionid": "9681fde5ca8b06a888f29281be2fe785"}
+{"timestamp": "2020-06-30T10:15:33+1000", "log_lvl": "INFO", "log_msg": "session started", "log_detail": "session has started", "event": "session start", "sessionid": "8f65d739dfe8294c16f32b5d78121ffb"}
+{"timestamp": "2020-06-30T10:24:08+1000", "log_lvl": "INFO", "log_msg": "session has ended", "log_detail": "session has ended", "sessionid": "8f65d739dfe8294c16f32b5d78121ffb"}
+{"timestamp": "2020-06-30T10:54:27+1000", "log_lvl": "INFO", "log_msg": "session started", "log_detail": "session has started", "event": "session start", "sessionid": "36ed5d972f891e931db06ebf6608ba48"}
+{"timestamp": "2020-06-30T10:54:37+1000", "log_lvl": "INFO", "log_msg": "uploadresults", "log_detail": "Number of plots (rows):12__COMMA__ Number of species (columns):148__COMMA__ Number of plots (rows) with environmental data detected:12__LF__                   __COMMA__ Number of plots (rows) with spatial data detected:12", "Numplots": "12", "Numspecies": "148", "NumplotsWithEnvData": "12", "NumplotsWithSpatialData": "12", "event": "upload", "sessionid": "36ed5d972f891e931db06ebf6608ba48"}
+{"timestamp": "2020-06-30T10:54:38+1000", "log_lvl": "INFO", "log_msg": "uploadresults", "log_detail": "Species names not found in eastern NSW PCT standardised taxonomy:There are 148 species__COMMA__ <b><mark> and 1 could not be found: Pratpurp__COMMA__ so were ignored in analysis.</mark></b>__COMMA__ Sites outside eastern NSW study region:0", "MissingSpeciesList": "There are 148 species__COMMA__ <b><mark> and 1 could not be found: Pratpurp__COMMA__ so were ignored in analysis.</mark></b>", "NumplotsOutsideStudy": "0", "event": "upload", "sessionid": "36ed5d972f891e931db06ebf6608ba48"}
+{"timestamp": "2020-06-30T10:55:08+1000", "log_lvl": "INFO", "log_msg": "download PCTProfile_data", "log_detail": "download PCTProfile_data", "event": "download", "sessionid": "36ed5d972f891e931db06ebf6608ba48"}
+{"timestamp": "2020-06-30T10:56:00+1000", "log_lvl": "INFO", "log_msg": "session has ended", "log_detail": "session has ended", "sessionid": "36ed5d972f891e931db06ebf6608ba48"}

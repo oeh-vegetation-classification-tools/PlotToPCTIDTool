@@ -900,7 +900,7 @@ shinyServer(function(input, output,session) {
                                                 "Maximum_Annual_Mean_Temperature_(deg.C)"=Temperature_max,
                                                 "Minimum_Annual_Mean_Temperature_(deg.C)"=Temperature_min,
                                                 "Median_Annual_Mean_Temperature_(deg.C)"=Temperature_median,
-                                                "TEC Assessed"=TECAssessed,
+                                                "TEC_Assessed"=TECAssessed,
                                                 TEC_List=TEC_list,Median_Native_Species_Richness=Median_species_richness)
         
       
