@@ -48,7 +48,7 @@ library(rdrop2)
 source("functions.R")
 
 # make the logfile
-logfile_path <- paste0("www/log_",isolate(session$token),".json")
+logfile_path <- paste0("www/logfiles/log_",isolate(session$token),".json")
 set_logfile(logfile_path)
 
 # options(shiny.sanitize.errors = TRUE)
