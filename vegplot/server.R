@@ -2210,7 +2210,7 @@ shinyServer(function(input, output,session) {
     function() {
       loggit("INFO", "session has ended",log_detail="session has ended", sessionid=isolate(session$token), echo = FALSE)
       
-      drop_upload(file = logfile_path, path = "logfiles", dtoken = drop_token)
+      drop_upload(file = logfile_path, path = "PlotToPCTAssignmentTool_ActivityLogFiles", dtoken = drop_token)
       
       }
 
