@@ -43,10 +43,13 @@ library(stringr)
 library(future)
 library(sanitizers)
 
+library(rdrop2)
 
 source("functions.R")
 
-setLogFileBIONET("www/applog.json")
+# make the logfile
+logfile_path <- paste0("www/log_",isolate(session$token),".json")
+set_logfile(logfile_path)
 
 # options(shiny.sanitize.errors = TRUE)
 # #options(shiny.error = browser)
@@ -2201,10 +2204,18 @@ shinyServer(function(input, output,session) {
   
 
   
-  session$onSessionEnded(function(){    loggitBIONET("INFO", "session has ended",log_detail="session has ended", sessionid=isolate(session$token), echo = FALSE)   })
 
+  session$onSessionEnded(
+    
+    function() {
+      loggit("INFO", "session has ended",log_detail="session has ended", sessionid=isolate(session$token), echo = FALSE)
+      
+      drop_upload(file = logfile_path, path = "logfiles", dtoken = drop_token)
+      
+      }
 
-  
+    )
+
   
   
 })

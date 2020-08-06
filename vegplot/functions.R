@@ -13,6 +13,8 @@ env_thresh <- readRDS("data/env_thresholds.rds")
 # a master list of what not to include in floristic data
 non_floristic <- c("X","Latitude","Longitude","Elevation","RainfallAnn","TempAnn")
 
+# drop box token load
+drop_token <- readRDS("www/drop_token.rds")
 
 
 # utils -------------------------------------------------------------------
