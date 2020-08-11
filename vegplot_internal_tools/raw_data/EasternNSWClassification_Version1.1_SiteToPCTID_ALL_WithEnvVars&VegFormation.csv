@@ -1913,8 +1913,8 @@ AC_GRAH92,3074,Primary,26.12,1070.32,17.17,Rainforests
 BA86_20,3074,Primary,99.63,963.25,17.3,Rainforests
 BA86_31,3074,Primary,85.97,1028.58,16.88,Rainforests
 BA86_36,3074,Primary,83.07,979.42,17.23,Rainforests
-SWN52P6V,3074,Primary,59.88,1221.42,17.07,Rainforests
-SWN53P3V,3074,Primary,36.34,1199.8,17.29,Rainforests
+SWNJ4P6V,3074,Primary,59.88,1221.42,17.07,Rainforests
+SWNJ5P3V,3074,Primary,36.34,1199.8,17.29,Rainforests
 CLR53A2V,3074,Primary,64.83,1345.3,16.14,Rainforests
 CLR67A3V,3074,Primary,33.14,1234.9,16.68,Rainforests
 THB47A0F,3074,Primary,16.01,1258.47,16.91,Rainforests
@@ -7412,7 +7412,7 @@ WYNE1A1F,3234,Primary,7.8,1240.65,17.17,Wet Sclerophyll Forests (Grassy sub-form
 MRSB3N1U,3234,Primary,60.5,1113.2,17.08,Wet Sclerophyll Forests (Grassy sub-formation)
 AC_WIND08,3234,Primary,24.29,1152.44,17.34,Wet Sclerophyll Forests (Grassy sub-formation)
 AC_WIND11,3234,Primary,18.01,1146.94,17.41,Wet Sclerophyll Forests (Grassy sub-formation)
-CTH52P4V,3234,Primary,30.1,1193.64,17.33,Wet Sclerophyll Forests (Grassy sub-formation)
+CTHJ8P4V,3234,Primary,30.1,1193.64,17.33,Wet Sclerophyll Forests (Grassy sub-formation)
 PST37C3U,3234,Primary,28.51,1239.52,17.04,Wet Sclerophyll Forests (Grassy sub-formation)
 PST40C5M,3234,Primary,17.01,1235.22,17.04,Wet Sclerophyll Forests (Grassy sub-formation)
 PST42C7U,3234,Primary,27.15,1239.07,17.04,Wet Sclerophyll Forests (Grassy sub-formation)
@@ -38955,7 +38955,7 @@ THB14A2D,4044,Primary,13.28,1215.65,16.95,Forested Wetlands
 AC_WWALLS09,4044,Primary,29.7,1021.82,17.55,Forested Wetlands
 AC_WWALLS10,4044,Primary,26.1,1021.21,17.57,Forested Wetlands
 AC_WWALLS18,4044,Primary,17.4,1022.29,17.58,Forested Wetlands
-CTH51P0V,4044,Primary,64.72,1239,16.97,Forested Wetlands
+CTHJ7P0V,4044,Primary,64.72,1239,16.97,Forested Wetlands
 BUL16A0F,4044,Primary,52.19,1348.37,16.54,Forested Wetlands
 MYL11A3F,4044,Primary,10.14,1330.69,16.81,Forested Wetlands
 CLR55A3V,4044,Primary,92.11,1210.27,16.8,Forested Wetlands
