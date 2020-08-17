@@ -49,4 +49,4 @@ vegplot_code-dev/logs/
 vegplot_code-dev/group_chars_per_RCP.rds
 vegplot_internal_tools/raw_data/eg_cents.csv
 vegplot_internal_tools/intermediates/char-spp_analysis.rds
-vegplot/www/logfiles/
+vegplot/www/logfiles/log_*
