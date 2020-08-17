@@ -47,10 +47,6 @@ library(rdrop2)
 
 source("functions.R")
 
-# make the logfile
-logfile_path <- paste0("www/logfiles/log_",isolate(session$token),".json")
-set_logfile(logfile_path)
-
 # options(shiny.sanitize.errors = TRUE)
 # #options(shiny.error = browser)
 # options(shiny.trace = TRUE)
@@ -61,6 +57,9 @@ set_logfile(logfile_path)
 
 shinyServer(function(input, output,session) {
   
+  # make the logfile
+  logfile_path <- paste0("www/logfiles/log_",isolate(session$token),".json")
+  set_logfile(logfile_path)
   
   #session$allowReconnect(TRUE)
   
@@ -69,9 +68,9 @@ shinyServer(function(input, output,session) {
   #/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   
  
-  #loggitBIONET("INFO","session started", log_detail="session has started", event = "session start",sessionid=isolate(session$token), echo = FALSE)
+  #loggit("INFO","session started", log_detail="session has started", event = "session start",sessionid=isolate(session$token), echo = FALSE)
   
-  loggitBIONET("INFO","session started", log_detail="session has started", event = "session start",sessionid=isolate(session$token), echo = FALSE)
+  loggit("INFO","session started", log_detail="session has started", event = "session start",sessionid=isolate(session$token), echo = FALSE)
  
   get_example_data <- reactive({
     read.csv("www/ENSWPlotToPCTAssignmentTool_SampleData.csv", check.names = FALSE)
@@ -328,7 +327,7 @@ shinyServer(function(input, output,session) {
         txtResult<-paste0("Number of plots (rows):", numplots ,", Number of species (columns):", numspecies ,", Number of plots (rows) with environmental data detected:", numplotsWithEnvData ,"
                    , Number of plots (rows) with spatial data detected:", numplotsWithSpatialData)
         
-        loggitBIONET("INFO","uploadresults", log_detail=txtResult,Numplots=numplots, Numspecies=numspecies, NumplotsWithEnvData=numplotsWithEnvData,NumplotsWithSpatialData=numplotsWithSpatialData, event = "upload", sessionid=isolate(session$token), echo = FALSE, custom_log_lvl=FALSE)
+        loggit("INFO","uploadresults", log_detail=txtResult,Numplots=numplots, Numspecies=numspecies, NumplotsWithEnvData=numplotsWithEnvData,NumplotsWithSpatialData=numplotsWithSpatialData, event = "upload", sessionid=isolate(session$token), echo = FALSE, custom_log_lvl=FALSE)
         
         
         }
@@ -434,7 +433,7 @@ shinyServer(function(input, output,session) {
       
       
       txtResult<-toString(paste0("Species names not found in eastern NSW PCT standardised taxonomy:", missingSpeciesList ,", Sites outside eastern NSW study region:", numplotsOutsideStudyHTML))
-      loggitBIONET("INFO","uploadresults", log_detail=txtResult, MissingSpeciesList=toString(missingSpeciesList), NumplotsOutsideStudy=toString(numplotsOutsideStudyHTML), event = "upload", sessionid=isolate(session$token), echo = FALSE)
+      loggit("INFO","uploadresults", log_detail=txtResult, MissingSpeciesList=toString(missingSpeciesList), NumplotsOutsideStudy=toString(numplotsOutsideStudyHTML), event = "upload", sessionid=isolate(session$token), echo = FALSE)
       
 
     }
@@ -792,7 +791,7 @@ shinyServer(function(input, output,session) {
              append=T)
       })
       
-      loggitBIONET("INFO","download char_matches", log_detail="download char_matches", event = "download", sessionid=isolate(session$token), echo = FALSE) 
+      loggit("INFO","download char_matches", log_detail="download char_matches", event = "download", sessionid=isolate(session$token), echo = FALSE) 
       
     
       
@@ -833,7 +832,7 @@ shinyServer(function(input, output,session) {
       })
       
       
-      loggitBIONET("INFO","download centroid_matches", log_detail="download centroid_matches", event = "download", sessionid=isolate(session$token), echo = FALSE) 
+      loggit("INFO","download centroid_matches", log_detail="download centroid_matches", event = "download", sessionid=isolate(session$token), echo = FALSE) 
       
       #write.csv(download_matches()$cent, file, row.names = F)
     }
@@ -942,7 +941,7 @@ shinyServer(function(input, output,session) {
                  append=T)
       })
       
-      loggitBIONET("INFO","download PCTProfile_data", log_detail="download PCTProfile_data", event = "download",  sessionid=isolate(session$token), echo = FALSE)
+      loggit("INFO","download PCTProfile_data", log_detail="download PCTProfile_data", event = "download",  sessionid=isolate(session$token), echo = FALSE)
       
      # write.csv(get_PCTProfile_data(), file, row.names = F)
     },
@@ -1012,7 +1011,7 @@ shinyServer(function(input, output,session) {
                append=T)
       })
       
-      loggitBIONET("INFO","download download_combo_data", log_detail="download download_combo_data", event = "download",  sessionid=isolate(session$token), echo = FALSE)
+      loggit("INFO","download download_combo_data", log_detail="download download_combo_data", event = "download",  sessionid=isolate(session$token), echo = FALSE)
       
       
     },
@@ -1097,7 +1096,7 @@ shinyServer(function(input, output,session) {
                  append=T)
       })
         
-      loggitBIONET("INFO","download PCTSppGFData", log_detail="download PCTSppGFData", event = "download",  sessionid=isolate(session$token), echo = FALSE)
+      loggit("INFO","download PCTSppGFData", log_detail="download PCTSppGFData", event = "download",  sessionid=isolate(session$token), echo = FALSE)
       
       
     },
@@ -2199,7 +2198,7 @@ shinyServer(function(input, output,session) {
   
   
   observeEvent(input$linkDownloadSampleData, {
-    loggitBIONET("INFO","download download sample csv", log_detail="link to download sample csv", event = "download",  sessionid=isolate(session$token), echo = FALSE)  
+    loggit("INFO","download download sample csv", log_detail="link to download sample csv", event = "download",  sessionid=isolate(session$token), echo = FALSE)  
   })
   
 
