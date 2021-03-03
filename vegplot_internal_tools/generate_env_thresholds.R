@@ -15,7 +15,7 @@ library(dplyr)
 #     - it can have others but they will be ignored not required for the generate env thresholds)
 
 
-site_env <- read.csv("raw_data/EasternNSWClassification_Version1.1_SiteToPCTID_ALL_WithEnvVars&VegFormation.csv", stringsAsFactors = F) %>%
+site_env <- read.csv("raw_data/ENSWClassification_Version1.1_SiteToPCTID_WithEnvVars&VegForm_EnvVarsExportedFromAtlas11February2021_MinusWesternOnly25PCTs.csv", stringsAsFactors = F) %>%
   filter(PCTAssignmentCategory %in% c("Primary","Secondary")) %>%
   rename(site = Site.no) %>%
   filter(site != "") %>%
