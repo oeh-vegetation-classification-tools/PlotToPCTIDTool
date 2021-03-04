@@ -1662,6 +1662,47 @@ shinyServer(function(input, output,session) {
   })
   
   
+  pctprofiles <- reactiveValues(data = NULL)
+  pctplots <- reactiveValues(data = NULL)
+  observe({
+    
+    tryCatch({
+      
+      # Initialize a temporary in memory database and copy a data.frame into it
+      con <- dbConnect(RSQLite::SQLite(), dbname="data/pctdatadb.sqlite")
+      
+      SQLQuery<-paste0("SELECT * FROM fsdata WHERE lat is not NULL ORDER BY pctid")
+      
+      rs <- dbSendQuery(con, SQLQuery)
+      pctplots$data <- dbFetch(rs)
+      dbHasCompleted(rs)
+      dbClearResult(rs)
+      
+      
+      SQLQuery<-paste0("SELECT * FROM pctprofiledata ORDER BY pctid")
+      rs <- dbSendQuery(con, SQLQuery)
+      pctprofiles$data <- dbFetch(rs)
+      dbHasCompleted(rs)
+      dbClearResult(rs)
+      
+      # clean up
+      dbDisconnect(con)
+      
+    }
+    , error = function(e) {
+      showNotification(paste0("Error: ",e),duration = 20,type = c("error"))
+      errmsg <- paste(Sys.time(), ", Error:",e)
+      write(errmsg, paste0(file.path(getwd(), "www"),"/errorlog.txt"), append = TRUE) 
+      # Choose a return value in case of error
+      # clean up
+      dbDisconnect(con)
+    }, finally = {
+      #message("Some other message at the end")
+      
+    })
+    
+  })
+  
   output$map <- renderLeaflet({
     # Use leaflet() here, and only include aspects of the map that
     # won't need to change dynamically (at least, not unless the
@@ -1727,7 +1768,10 @@ shinyServer(function(input, output,session) {
       matchedplots<- sqldf("SELECT * from pctplotsdata where replace(pctid,'.','_') in (SELECT pctid FROM matchedplots)")
       unmatchedplots<- sqldf("SELECT * from pctplotsdata where replace(pctid,'.','_') in (SELECT pctid FROM unmatchedplots)")
       
-      unmatchedplots<-unmatchedplots %>% filter((unmatchedplots$lat>=min(dtfinal$Latitude)-0.6),(unmatchedplots$lat<=max(dtfinal$Latitude)+0.6),(unmatchedplots$long>=min(dtfinal$Longitude)-0.5),(unmatchedplots$long<=max(dtfinal$Longitude)+0.5))
+      unmatchedplots<-unmatchedplots %>% filter((unmatchedplots$lat>=min(dtfinal$Latitude)-0.6),
+                                                (unmatchedplots$lat<=max(dtfinal$Latitude)+0.6),
+                                                (unmatchedplots$long>=min(dtfinal$Longitude)-0.5),
+                                                (unmatchedplots$long<=max(dtfinal$Longitude)+0.5))
       
       pctstats<-""
       if ("Distance_to_Centroid1" %in% names(dtfinal)) {pctstats<-paste0("<b>PCT_Match1</b>: ",dtfinal$PCT_Match1," <b>Distance_to_Centroid1:</b> ",dtfinal$Distance_to_Centroid1,"<br/>")}
@@ -1755,100 +1799,87 @@ shinyServer(function(input, output,session) {
                                      squareMarker =  TRUE)
       
       groupName<-"Display sites for PCTs that are<br/>not one of your top 10 matches, and are <br/>within 55km distance of your site(s)"
-    
-      
-   m<- leaflet(data=dtfinal )%>% addTiles(group = "Terrain") %>% 
-        addScaleBar() %>%
-        addProviderTiles(providers$Esri.WorldTopoMap, group = "Terrain")%>%
-        addProviderTiles(providers$Esri.WorldImagery, group = "Satellite")%>%
-      clearShapes() %>%
-        clearMarkers()%>%
-        addMeasure(
-          position = "bottomleft",
-          primaryLengthUnit = "meters",
-          primaryAreaUnit = "sqmeters",
-          activeColor = "#3D535D",
-          completedColor = "#7D4479")%>%
-        
-        addPolygons(data = EasternNSWStudyRegion, fill = F, weight = 2, color = "#9932CC") %>%
-        
-        addAwesomeMarkers(icon=oehblueicon ,lat = dtfinal$Latitude,lng = dtfinal$Longitude,layerId = dtfinal$sites,label = dtfinal$sites, labelOptions = labelOptions(noHide = T, direction = "bottom"),
-                   popup = ~paste("<b>Site No:</b>",dtfinal$sites,"<br/><b>Lat:</b>",dtfinal$Latitude," <b>Long:</b>",dtfinal$Longitude,"<br/><b>Elevation (m):</b>",dtfinal$Elevation,"<br/><b>Annual Rainfall (mm):</b>",dtfinal$RainfallAnn,"<br/><b>Annual Mean Temperature (°C):</b>",dtfinal$TempAnn,"<br/>", pctstats) ) %>%
-        
-        addCircles(radius= 100, lat = ~matchedplots$lat, lng = ~matchedplots$long, layerId = ~matchedplots$siteno, label = ~matchedplots$pctid,  color =~MatchedCol(matchedplots$pctid), fillColor =~MatchedCol(matchedplots$pctid),opacity = 1,   fillOpacity = 0.7,
-                   data = matchedplots, popup = ~paste("<b>PCT ID:</b>", matchedplots$pctid,"<br/><b>PCT Name:</b>", matchedplots$pctname, "<br/><b>PCT Assignment Category:</b>",matchedplots$pctassignmentcategory,"<br/><b>Site No:</b>",matchedplots$siteno,"<br/><b>Survey Name:</b>", matchedplots$surveyname  ,"<br/><b>Lat:</b>",matchedplots$lat," <b>Long:</b>",matchedplots$long,"<br/><b>Elevation (m):</b>",matchedplots$elevation,"<br/><b>Annual Rainfall (mm):</b>",matchedplots$rainfall,"<br/><b>Annual Mean Temperature (°C):</b>",matchedplots$temp))%>%
-      
-      addCircles(radius= 50, lat = ~unmatchedplots$lat, lng = ~unmatchedplots$long, layerId = ~unmatchedplots$siteno, color = ~UnMatchedCol(unmatchedplots$pctid),  fillOpacity = 0.5, group = groupName,
-                 data = unmatchedplots, popup = ~paste("<b>PCT ID:</b>", unmatchedplots$pctid,"<br/><b>PCT Name:</b>", unmatchedplots$pctname, "<br/><b>PCT Assignment Category:</b>",unmatchedplots$pctassignmentcategory,"<br/><b>Site No:</b>",unmatchedplots$siteno,"<br/><b>Survey Name:</b>", unmatchedplots$surveyname  ,"<br/><b>Lat:</b>",unmatchedplots$lat," <b>Long:</b>",unmatchedplots$long,"<br/><b>Elevation (m):</b>",unmatchedplots$elevation,"<br/><b>Annual Rainfall (mm):</b>",unmatchedplots$rainfall,"<br/><b>Annual Mean Temperature (°C):</b>",unmatchedplots$temp))%>%
-                     hideGroup(groupName)%>%
-            addLayersControl(
-              baseGroups = c("Terrain", "Satellite"),
-              overlayGroups = c(groupName),
-              options = layersControlOptions(collapsed = FALSE)
-            )
-    
-    
-         if (nrow(dtfinal)>1){
-         
-            m<- m %>% fitBounds(~min(dtfinal$Longitude), ~min(dtfinal$Latitude), ~max(dtfinal$Longitude), ~max(dtfinal$Latitude))
-         
-         }
-         m
       
       
+    
       
-    } 
-      else{ 
-            shinyjs::show("MapViewMessage") 
-            
-        }
+      m <- leaflet(data=dtfinal )%>% addTiles(group = "Terrain") %>%
+       addScaleBar() %>%
+       addProviderTiles(providers$Esri.WorldTopoMap, group = "Terrain") %>%
+       addProviderTiles(providers$Esri.WorldImagery, group = "Satellite") %>%
+       clearShapes() %>%
+       clearMarkers() %>%
+       addMeasure(
+         position = "bottomleft",
+         primaryLengthUnit = "meters",
+         primaryAreaUnit = "sqmeters",
+         activeColor = "#3D535D",
+         completedColor = "#7D4479") %>%
+       addPolygons(data = EasternNSWStudyRegion, fill = F, weight = 2, color = "#9932CC") %>%
+       addAwesomeMarkers(icon=oehblueicon, lat = dtfinal$Latitude, lng = dtfinal$Longitude,
+                         layerId = dtfinal$sites, label = dtfinal$sites, 
+                         labelOptions = labelOptions(noHide = T, direction = "bottom"),
+                         popup = ~paste("<b>Site No:</b>", dtfinal$sites,"<br/><b>Lat:</b>", 
+                                        dtfinal$Latitude," <b>Long:</b>", dtfinal$Longitude, 
+                                        "<br/><b>Elevation (m):</b>", dtfinal$Elevation, 
+                                        "<br/><b>Annual Rainfall (mm):</b>",dtfinal$RainfallAnn,
+                                        "<br/><b>Annual Mean Temperature (°C):</b>",dtfinal$TempAnn,
+                                        "<br/>", pctstats)
+                         ) %>%
+       addCircles(radius= 100, lat = ~matchedplots$lat, lng = ~matchedplots$long,
+                  layerId = ~matchedplots$siteno, 
+                  #label = ~matchedplots$pctid,
+                  color =~MatchedCol(matchedplots$pctid), fillColor =~MatchedCol(matchedplots$pctid),
+                  opacity = 1,   fillOpacity = 0.7,
+                  data = matchedplots,
+                  popup = ~paste("<b>PCT ID:</b>",matchedplots$pctid,
+                                 "<br/><b>PCT Name:</b>", matchedplots$pctname,
+                                 "<br/><b>PCT Assignment Category:</b>",matchedplots$pctassignmentcategory,
+                                 "<br/><b>Site No:</b>",matchedplots$siteno,"<br/><b>Survey Name:</b>",
+                                 matchedplots$surveyname  ,"<br/><b>Lat:</b>",matchedplots$lat,
+                                 " <b>Long:</b>",matchedplots$long,"<br/><b>Elevation (m):</b>",
+                                 matchedplots$elevation,"<br/><b>Annual Rainfall (mm):</b>",
+                                 matchedplots$rainfall,"<br/><b>Annual Mean Temperature (°C):</b>",
+                                 matchedplots$temp)
+                  ) %>%
+        addCircles(radius= 50, lat = ~unmatchedplots$lat, lng = ~unmatchedplots$long,
+                   layerId = ~unmatchedplots$siteno,
+                   color = ~UnMatchedCol(unmatchedplots$pctid),
+                   fillOpacity = 0.5,
+                   group = groupName,
+                   data = unmatchedplots,
+                   popup = ~paste("<b>PCT ID:</b>", unmatchedplots$pctid,
+                                  "<br/><b>PCT Name:</b>", unmatchedplots$pctname,
+                                  "<br/><b>PCT Assignment Category:</b>",
+                                  unmatchedplots$pctassignmentcategory,
+                                  "<br/><b>Site No:</b>",unmatchedplots$siteno,
+                                  "<br/><b>Survey Name:</b>", unmatchedplots$surveyname  ,
+                                  "<br/><b>Lat:</b>",unmatchedplots$lat," <b>Long:</b>",
+                                  unmatchedplots$long,"<br/><b>Elevation (m):</b>",
+                                  unmatchedplots$elevation,"<br/><b>Annual Rainfall (mm):</b>",
+                                  unmatchedplots$rainfall,"<br/><b>Annual Mean Temperature (°C):</b>",
+                                  unmatchedplots$temp)
+                   ) %>%
+       hideGroup(groupName) %>%
+       addLayersControl(
+                baseGroups = c("Terrain", "Satellite"),
+                overlayGroups = c(groupName),
+                options = layersControlOptions(collapsed = FALSE)
+              )
     
-  
-    
-  })
-
-  pctprofiles <- reactiveValues(data = NULL)
-  pctplots <- reactiveValues(data = NULL)
-  observe({
-
-    tryCatch({
-
-        # Initialize a temporary in memory database and copy a data.frame into it
-        con <- dbConnect(RSQLite::SQLite(), dbname="data/pctdatadb.sqlite")
-        
-        SQLQuery<-paste0("SELECT * FROM fsdata WHERE lat is not NULL ORDER BY pctid")
-        
-        rs <- dbSendQuery(con, SQLQuery)
-        pctplots$data <- dbFetch(rs)
-        dbHasCompleted(rs)
-        dbClearResult(rs)
-        
-        
-        SQLQuery<-paste0("SELECT * FROM pctprofiledata ORDER BY pctid")
-        rs <- dbSendQuery(con, SQLQuery)
-        pctprofiles$data <- dbFetch(rs)
-        dbHasCompleted(rs)
-        dbClearResult(rs)
-        
-        # clean up
-        dbDisconnect(con)
-        
+     if (nrow(dtfinal)>1){
+       
+       m <- m %>% fitBounds(~min(dtfinal$Longitude), ~min(dtfinal$Latitude), 
+                            ~max(dtfinal$Longitude), ~max(dtfinal$Latitude))
+     }
+     
+     m
+     
+    } else {
+      shinyjs::show("MapViewMessage")
     }
-    , error = function(e) {
-      showNotification(paste0("Error: ",e),duration = 20,type = c("error"))
-      errmsg <- paste(Sys.time(), ", Error:",e)
-      write(errmsg, paste0(file.path(getwd(), "www"),"/errorlog.txt"), append = TRUE) 
-      # Choose a return value in case of error
-      # clean up
-      dbDisconnect(con)
-    }, finally = {
-      #message("Some other message at the end")
-      
-    })
-
   })
-  
-  
+
   
   output$MapViewMessage <- renderUI({
     
@@ -1862,337 +1893,337 @@ shinyServer(function(input, output,session) {
   })
   
   #///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-  output$mapView <- renderLeaflet({
-    
-    # Use leaflet() here, and only include aspects of the map that
-    # won't need to change dynamically (at least, not unless the
-    # entire map is being torn down and recreated).
-    
-    
-    if (!is.null(input$cent_table_cell_clicked$col))
-    {
-      ar<-array(style_matches()$cent)
-      columnName <-colnames(ar[[1]]$data[input$cent_table_cell_clicked$col])
-      
-      if (!columnName==""){
-        
-        
-        if ((substr(columnName,1,nchar(columnName)-1)=="PCT_Match")||(substr(columnName,1,nchar(columnName)-2)=="PCT_Match")){
-          
-          sitename<-ar[[1]]$data$Site_No[input$cent_table_cell_clicked$row]
-          pctid<-input$cent_table_cell_clicked$value
-          
-          pctplotsdata<-pctplots$data 
-          
-          colfuncMatched <- colorRampPalette(c("#ec783a"))
-          
-          
-          
-          categories<-pctplotsdata$pctid
-          
-          if ((!is.null(match_data$matches))) {      ##   &&(check_infile()$env_present)) {
-            
-             
-            dt<-style_matches()$cent$x$data %>% select(starts_with("PCT_Match"))  
-            
-            dtFilteredData<-filteredData()
-            dtmerged<- NULL
-            
-            if (is.null(dtFilteredData)){
-              dtmerged<-style_matches()$cent$x$data
-              dtfinal<-sqldf(paste0("SELECT * from dtmerged WHERE Site_No='",sitename,"'"))
-              
-            }else{
-            
-                dtmerged<-merge(filteredData(),style_matches()$cent$x$data,by.x="sites",by.y="Site_No")
-                dtfinal<-sqldf(paste0("SELECT * from dtmerged WHERE sites='",sitename,"'"))
-            
-            }
-            
-            
-            
-            
-            SQLString<-""
-            for (i in 1:length(dt)){
-              
-              if (i==length(dt)){
-                SQLString<-paste0(SQLString,"select PCT_Match",i," as pctid from dt")
-              }else{
-                SQLString<-paste0(SQLString,"select PCT_Match",i," as pctid from dt union ")
-              } 
-            }
-            
-            matchedplots<-sqldf(SQLString)      
-            matchedplots<- sqldf(paste0("SELECT * from pctplotsdata where pctid='",pctid,"'"))
-            
-            pctstats<-""
-            if ("Distance_to_Centroid1" %in% names(dtfinal)) {pctstats<-paste0("<b>PCT_Match1</b>: ",dtfinal$PCT_Match1," <b>Distance_to_Centroid1:</b> ",dtfinal$Distance_to_Centroid1,"<br/>")}
-            if ("Distance_to_Centroid2" %in% names(dtfinal)) {pctstats<-paste0(pctstats,"<b>PCT_Match2:</b> ",dtfinal$PCT_Match2," <b>Distance_to_Centroid2:</b> ",dtfinal$Distance_to_Centroid2,"<br/>")}
-            if ("Distance_to_Centroid3" %in% names(dtfinal)) {pctstats<-paste0(pctstats,"<b>PCT_Match3:</b> ",dtfinal$PCT_Match3," <b>Distance_to_Centroid3:</b> ",dtfinal$Distance_to_Centroid3,"<br/>")}
-            if ("Distance_to_Centroid4" %in% names(dtfinal)) {pctstats<-paste0(pctstats,"<b>PCT_Match4:</b> ",dtfinal$PCT_Match4," <b>Distance_to_Centroid4:</b> ",dtfinal$Distance_to_Centroid4,"<br/>")}
-            if ("Distance_to_Centroid5" %in% names(dtfinal)) {pctstats<-paste0(pctstats,"<b>PCT_Match5:</b> ",dtfinal$PCT_Match5," <b>Distance_to_Centroid5:</b> ",dtfinal$Distance_to_Centroid5,"<br/>")}
-            if ("Distance_to_Centroid6" %in% names(dtfinal)) {pctstats<-paste0(pctstats,"<b>PCT_Match6:</b> ",dtfinal$PCT_Match6," <b>Distance_to_Centroid6:</b> ",dtfinal$Distance_to_Centroid6,"<br/>")}
-            if ("Distance_to_Centroid7" %in% names(dtfinal)) {pctstats<-paste0(pctstats,"<b>PCT_Match7:</b> ",dtfinal$PCT_Match7," <b>Distance_to_Centroid7:</b> ",dtfinal$Distance_to_Centroid7,"<br/>")}
-            if ("Distance_to_Centroid8" %in% names(dtfinal)) {pctstats<-paste0(pctstats,"<b>PCT_Match8:</b> ",dtfinal$PCT_Match8," <b>Distance_to_Centroid8:</b> ",dtfinal$Distance_to_Centroid8,"<br/>")}
-            if ("Distance_to_Centroid9" %in% names(dtfinal)) {pctstats<-paste0(pctstats,"<b>PCT_Match9:</b> ",dtfinal$PCT_Match9," <b>Distance_to_Centroid9:</b> ",dtfinal$Distance_to_Centroid9,"<br/>")}
-            if ("Distance_to_Centroid10" %in% names(dtfinal)) {pctstats<-paste0(pctstats,"<b>PCT_Match10:</b> ",dtfinal$PCT_Match10," <b>Distance_to_Centroid10:</b> ",dtfinal$Distance_to_Centroid10,"<br/>")}
-            
-            
-            
-            MatchedCol <-colorFactor(colfuncMatched(5), domain = matchedplots$pctid)
-            
-            
-            EasternNSWStudyRegion <- readOGR("spatial/EasternNSW_PrimaryStudyArea_Merged.shp", layer="EasternNSW_PrimaryStudyArea_Merged")
-            proj4string(EasternNSWStudyRegion)<-CRS("+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs +towgs84=0,0,0")
-            
-            
-            oehblueicon <- makeAwesomeIcon(icon = "plus-sign", markerColor = "blue",
-                                           iconColor = "white", library = "glyphicon",
-                                           squareMarker =  TRUE)
-            
-            
-            if (is.null(dtFilteredData)){
-            
-                    leaflet(data=dtfinal )%>% addTiles(group = "Terrain") %>% 
-                      addScaleBar() %>%
-                      addProviderTiles(providers$Esri.WorldTopoMap, group = "Terrain")%>%
-                      addProviderTiles(providers$Esri.WorldImagery, group = "Satellite")%>%
-                      #fitBounds(~min(dtfinal$Longitude), ~min(dtfinal$Latitude), ~max(dtfinal$Longitude), ~max(dtfinal$Latitude)) %>%
-                      clearShapes() %>%
-                      clearMarkers()%>%
-                      addMeasure(
-                        position = "bottomleft",
-                        primaryLengthUnit = "meters",
-                        primaryAreaUnit = "sqmeters",
-                        activeColor = "#3D535D",
-                        completedColor = "#7D4479")%>%
-                      
-                      addPolygons(data = EasternNSWStudyRegion, fill = F, weight = 2, color = "#9932CC") %>%
-                      
-                      # addAwesomeMarkers(icon = oehblueicon, lat = dtfinal$Latitude,lng = dtfinal$Longitude,layerId = dtfinal$sites,label = dtfinal$sites, labelOptions = labelOptions(noHide = T, direction = "bottom"),
-                      #            popup = ~paste("<b>Site No:</b>",dtfinal$sites,"<br/><b>Lat:</b>",dtfinal$Latitude," <b>Long:</b>",dtfinal$Longitude,"<br/><b>Elevation(m):</b>",dtfinal$Elevation,"<br/><b>Rainfall(mm):</b>",dtfinal$RainfallAnn,"<br/><b>Temperature(deg.C):</b>",dtfinal$TempAnn,"<br/>", pctstats) ) %>%
-                      # 
-                      addCircles(radius= 200, lat = ~matchedplots$lat, lng = ~matchedplots$long, layerId = ~matchedplots$siteno, label = ~matchedplots$pctid,  color =~MatchedCol(matchedplots$pctid), fillColor =~MatchedCol(matchedplots$pctid),opacity = 1,   fillOpacity = 0.7,
-                                 data = matchedplots, popup = ~paste("<b>PCT ID:</b>", matchedplots$pctid,"<br/><b>PCT Name:</b>", matchedplots$pctname, "<br/><b>PCT Assignment Category:</b>",matchedplots$pctassignmentcategory,"<br/><b>Site No:</b>",matchedplots$siteno,"<br/><b>Survey Name:</b>", matchedplots$surveyname  ,"<br/><b>Lat:</b>",matchedplots$lat," <b>Long:</b>",matchedplots$long,"<br/><b>Elevation (m):</b>",matchedplots$elevation,"<br/><b>Annual Rainfall (mm):</b>",matchedplots$rainfall,"<br/><b>Annual Mean Temperature (°C):</b>",matchedplots$temp))%>%
-                      
-                      addLayersControl(
-                        baseGroups = c("Terrain", "Satellite"),             
-                        options = layersControlOptions(collapsed = FALSE)
-                      )
-              
-            } else
-            {
-              
-              checkpoint<-1
-              
-                    leaflet(data=dtfinal )%>% addTiles(group = "Terrain") %>% 
-                      addScaleBar() %>%
-                      addProviderTiles(providers$Esri.WorldTopoMap, group = "Terrain")%>%
-                      addProviderTiles(providers$Esri.WorldImagery, group = "Satellite")%>%
-                      #fitBounds(~min(dtfinal$Longitude), ~min(dtfinal$Latitude), ~max(dtfinal$Longitude), ~max(dtfinal$Latitude)) %>%
-                      clearShapes() %>%
-                      clearMarkers()%>%
-                      addMeasure(
-                        position = "bottomleft",
-                        primaryLengthUnit = "meters",
-                        primaryAreaUnit = "sqmeters",
-                        activeColor = "#3D535D",
-                        completedColor = "#7D4479")%>%
-                      
-                      addPolygons(data = EasternNSWStudyRegion, fill = F, weight = 2, color = "#9932CC") %>%
-                      
-                      addAwesomeMarkers(icon = oehblueicon, lat = dtfinal$Latitude,lng = dtfinal$Longitude,layerId = dtfinal$sites,label = dtfinal$sites, labelOptions = labelOptions(noHide = T, direction = "bottom"),
-                                        popup = ~paste("<b>Site No:</b>",dtfinal$sites,"<br/><b>Lat:</b>",dtfinal$Latitude," <b>Long:</b>",dtfinal$Longitude,"<br/><b>Elevation (m):</b>",dtfinal$Elevation,"<br/><b>Annual Rainfall (mm):</b>",dtfinal$RainfallAnn,"<br/><b>Annual Mean Temperature (°C):</b>",dtfinal$TempAnn,"<br/>", pctstats) ) %>%
-                      
-                      addCircles(radius= 200, lat = ~matchedplots$lat, lng = ~matchedplots$long, layerId = ~matchedplots$siteno, label = ~matchedplots$pctid,  color =~MatchedCol(matchedplots$pctid), fillColor =~MatchedCol(matchedplots$pctid),opacity = 1,   fillOpacity = 0.7,
-                                 data = matchedplots, popup = ~paste("<b>PCT ID:</b>", matchedplots$pctid,"<br/><b>PCT Name:</b>", matchedplots$pctname, "<br/><b>PCT Assignment Category:</b>",matchedplots$pctassignmentcategory,"<br/><b>Site No:</b>",matchedplots$siteno,"<br/><b>Survey Name:</b>", matchedplots$surveyname  ,"<br/><b>Lat:</b>",matchedplots$lat," <b>Long:</b>",matchedplots$long,"<br/><b>Elevation (m):</b>",matchedplots$elevation,"<br/><b>Annual Rainfall (mm):</b>",matchedplots$rainfall,"<br/><b>Annual Mean Temperature (°C):</b>",matchedplots$temp))%>%
-                      
-                      addLayersControl(
-                        baseGroups = c("Terrain", "Satellite"),             
-                        options = layersControlOptions(collapsed = FALSE)
-                      )
-              
-            }
-                        
-            
-          } 
-          
-          
-          
-        } # PCT_Match
-        
-        
-      }
-    }
-    
-    
-  })
-  
-  #///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  output$mapView2 <- renderLeaflet({
-    
-    # Use leaflet() here, and only include aspects of the map that
-    # won't need to change dynamically (at least, not unless the
-    # entire map is being torn down and recreated).
-    
-    
-    if (!is.null(input$char_table_cell_clicked$col))
-    {
-      ar<-array(style_matches()$cent)
-      columnName <-colnames(ar[[1]]$data[input$char_table_cell_clicked$col])
-      
-      if (!columnName==""){
-        
-        
-        if ((substr(columnName,1,nchar(columnName)-1)=="PCT_Match")||(substr(columnName,1,nchar(columnName)-2)=="PCT_Match")){
-          
-          sitename<-ar[[1]]$data$Site_No[input$char_table_cell_clicked$row]
-          pctid<-input$char_table_cell_clicked$value
-          
-          pctplotsdata<-pctplots$data 
-          
-          colfuncMatched <- colorRampPalette(c("#ec783a"))
-          
-          
-          
-          categories<-pctplotsdata$pctid
-          
-          if ((!is.null(match_data$matches))) {      ##   &&(check_infile()$env_present)) {
-            
-            
-            dt<-style_matches()$cent$x$data %>% select(starts_with("PCT_Match"))  
-            
-            dtFilteredData<-filteredData()
-            dtmerged<- NULL
-            
-            if (is.null(dtFilteredData)){
-              dtmerged<-style_matches()$cent$x$data
-              dtfinal<-sqldf(paste0("SELECT * from dtmerged WHERE Site_No='",sitename,"'"))
-              
-            }else{
-              
-              dtmerged<-merge(filteredData(),style_matches()$cent$x$data,by.x="sites",by.y="Site_No")
-              dtfinal<-sqldf(paste0("SELECT * from dtmerged WHERE sites='",sitename,"'"))
-              
-            }
-            
-            
-            
-            
-            SQLString<-""
-            for (i in 1:length(dt)){
-              
-              if (i==length(dt)){
-                SQLString<-paste0(SQLString,"select PCT_Match",i," as pctid from dt")
-              }else{
-                SQLString<-paste0(SQLString,"select PCT_Match",i," as pctid from dt union ")
-              } 
-            }
-            
-            matchedplots<-sqldf(SQLString)      
-            matchedplots<- sqldf(paste0("SELECT * from pctplotsdata where pctid='",pctid,"'"))
-            
-            pctstats<-""
-            if ("Distance_to_Centroid1" %in% names(dtfinal)) {pctstats<-paste0("<b>PCT_Match1</b>: ",dtfinal$PCT_Match1," <b>Distance_to_Centroid1:</b> ",dtfinal$Distance_to_Centroid1,"<br/>")}
-            if ("Distance_to_Centroid2" %in% names(dtfinal)) {pctstats<-paste0(pctstats,"<b>PCT_Match2:</b> ",dtfinal$PCT_Match2," <b>Distance_to_Centroid2:</b> ",dtfinal$Distance_to_Centroid2,"<br/>")}
-            if ("Distance_to_Centroid3" %in% names(dtfinal)) {pctstats<-paste0(pctstats,"<b>PCT_Match3:</b> ",dtfinal$PCT_Match3," <b>Distance_to_Centroid3:</b> ",dtfinal$Distance_to_Centroid3,"<br/>")}
-            if ("Distance_to_Centroid4" %in% names(dtfinal)) {pctstats<-paste0(pctstats,"<b>PCT_Match4:</b> ",dtfinal$PCT_Match4," <b>Distance_to_Centroid4:</b> ",dtfinal$Distance_to_Centroid4,"<br/>")}
-            if ("Distance_to_Centroid5" %in% names(dtfinal)) {pctstats<-paste0(pctstats,"<b>PCT_Match5:</b> ",dtfinal$PCT_Match5," <b>Distance_to_Centroid5:</b> ",dtfinal$Distance_to_Centroid5,"<br/>")}
-            if ("Distance_to_Centroid6" %in% names(dtfinal)) {pctstats<-paste0(pctstats,"<b>PCT_Match6:</b> ",dtfinal$PCT_Match6," <b>Distance_to_Centroid6:</b> ",dtfinal$Distance_to_Centroid6,"<br/>")}
-            if ("Distance_to_Centroid7" %in% names(dtfinal)) {pctstats<-paste0(pctstats,"<b>PCT_Match7:</b> ",dtfinal$PCT_Match7," <b>Distance_to_Centroid7:</b> ",dtfinal$Distance_to_Centroid7,"<br/>")}
-            if ("Distance_to_Centroid8" %in% names(dtfinal)) {pctstats<-paste0(pctstats,"<b>PCT_Match8:</b> ",dtfinal$PCT_Match8," <b>Distance_to_Centroid8:</b> ",dtfinal$Distance_to_Centroid8,"<br/>")}
-            if ("Distance_to_Centroid9" %in% names(dtfinal)) {pctstats<-paste0(pctstats,"<b>PCT_Match9:</b> ",dtfinal$PCT_Match9," <b>Distance_to_Centroid9:</b> ",dtfinal$Distance_to_Centroid9,"<br/>")}
-            if ("Distance_to_Centroid10" %in% names(dtfinal)) {pctstats<-paste0(pctstats,"<b>PCT_Match10:</b> ",dtfinal$PCT_Match10," <b>Distance_to_Centroid10:</b> ",dtfinal$Distance_to_Centroid10,"<br/>")}
-            
-            
-            
-            MatchedCol <-colorFactor(colfuncMatched(5), domain = matchedplots$pctid)
-            
-            
-            EasternNSWStudyRegion <- readOGR("spatial/EasternNSW_PrimaryStudyArea_Merged.shp", layer="EasternNSW_PrimaryStudyArea_Merged")
-            proj4string(EasternNSWStudyRegion)<-CRS("+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs +towgs84=0,0,0")
-            
-            
-            oehblueicon <- makeAwesomeIcon(icon = "plus-sign", markerColor = "blue",
-                                           iconColor = "white", library = "glyphicon",
-                                           squareMarker =  TRUE)
-            
-            
-            if (is.null(dtFilteredData)){
-              
-              leaflet(data=dtfinal )%>% addTiles(group = "Terrain") %>%
-                addScaleBar() %>%
-                addProviderTiles(providers$Esri.WorldTopoMap, group = "Terrain")%>%
-                addProviderTiles(providers$Esri.WorldImagery, group = "Satellite")%>%
-                clearShapes() %>%
-                clearMarkers()%>%
-                addMeasure(
-                  position = "bottomleft",
-                  primaryLengthUnit = "meters",
-                  primaryAreaUnit = "sqmeters",
-                  activeColor = "#3D535D",
-                  completedColor = "#7D4479")%>%
-                addPolygons(data = EasternNSWStudyRegion, fill = F, weight = 2, color = "#9932CC") %>%
-                
-                # addAwesomeMarkers(icon = oehblueicon, lat = dtfinal$Latitude,lng = dtfinal$Longitude,layerId = dtfinal$sites,label = dtfinal$sites, labelOptions = labelOptions(noHide = T, direction = "bottom"),
-                #            popup = ~paste("<b>Site No:</b>",dtfinal$sites,"<br/><b>Lat:</b>",dtfinal$Latitude," <b>Long:</b>",dtfinal$Longitude,"<br/><b>Elevation(m):</b>",dtfinal$Elevation,"<br/><b>Rainfall(mm):</b>",dtfinal$RainfallAnn,"<br/><b>Temperature(deg.C):</b>",dtfinal$TempAnn,"<br/>", pctstats) ) %>%
-                # 
-                addCircles(radius= 200, lat = ~matchedplots$lat, lng = ~matchedplots$long, layerId = ~matchedplots$siteno, label = ~matchedplots$pctid,  color =~MatchedCol(matchedplots$pctid), fillColor =~MatchedCol(matchedplots$pctid),opacity = 1,   fillOpacity = 0.7,
-                           data = matchedplots, popup = ~paste("<b>PCT ID:</b>", matchedplots$pctid,"<br/><b>PCT Name:</b>", matchedplots$pctname, "<br/><b>PCT Assignment Category:</b>",matchedplots$pctassignmentcategory,"<br/><b>Site No:</b>",matchedplots$siteno,"<br/><b>Survey Name:</b>", matchedplots$surveyname  ,"<br/><b>Lat:</b>",matchedplots$lat," <b>Long:</b>",matchedplots$long,"<br/><b>Elevation (m):</b>",matchedplots$elevation,"<br/><b>Annual Rainfall (mm):</b>",matchedplots$rainfall,"<br/><b>Annual Mean Temperature (°C):</b>",matchedplots$temp))%>%
-                
-                addLayersControl(
-                  baseGroups = c("Terrain", "Satellite"),             
-                  options = layersControlOptions(collapsed = FALSE)
-                )
-              
-            }else
-            {
-              leaflet(data=dtfinal )%>% addTiles(group = "Terrain") %>% 
-                addScaleBar() %>%
-                addProviderTiles(providers$Esri.WorldTopoMap, group = "Terrain")%>%
-                addProviderTiles(providers$Esri.WorldImagery, group = "Satellite")%>%
-                #fitBounds(~min(dtfinal$Longitude), ~min(dtfinal$Latitude), ~max(dtfinal$Longitude), ~max(dtfinal$Latitude)) %>%
-                clearShapes() %>%
-                clearMarkers()%>%
-                addMeasure(
-                  position = "bottomleft",
-                  primaryLengthUnit = "meters",
-                  primaryAreaUnit = "sqmeters",
-                  activeColor = "#3D535D",
-                  completedColor = "#7D4479")%>%
-                
-                addPolygons(data = EasternNSWStudyRegion, fill = F, weight = 2, color = "#9932CC") %>%
-                
-                addAwesomeMarkers(icon = oehblueicon, lat = dtfinal$Latitude,lng = dtfinal$Longitude,layerId = dtfinal$sites,label = dtfinal$sites, labelOptions = labelOptions(noHide = T, direction = "bottom"),
-                                  popup = ~paste("<b>Site No:</b>",dtfinal$sites,"<br/><b>Lat:</b>",dtfinal$Latitude," <b>Long:</b>",dtfinal$Longitude,"<br/><b>Elevation (m):</b>",dtfinal$Elevation,"<br/><b>Annual Rainfall (mm):</b>",dtfinal$RainfallAnn,"<br/><b>Annual Mean Temperature (°C):</b>",dtfinal$TempAnn,"<br/>", pctstats) ) %>%
-                
-                addCircles(radius= 200, lat = ~matchedplots$lat, lng = ~matchedplots$long, layerId = ~matchedplots$siteno, label = ~matchedplots$pctid,  color =~MatchedCol(matchedplots$pctid), fillColor =~MatchedCol(matchedplots$pctid),opacity = 1,   fillOpacity = 0.7,
-                           data = matchedplots, popup = ~paste("<b>PCT ID:</b>", matchedplots$pctid,"<br/><b>PCT Name:</b>", matchedplots$pctname, "<br/><b>PCT Assignment Category:</b>",matchedplots$pctassignmentcategory,"<br/><b>Site No:</b>",matchedplots$siteno,"<br/><b>Survey Name:</b>", matchedplots$surveyname  ,"<br/><b>Lat:</b>",matchedplots$lat," <b>Long:</b>",matchedplots$long,"<br/><b>Elevation (m):</b>",matchedplots$elevation,"<br/><b>Annual Rainfall (mm):</b>",matchedplots$rainfall,"<br/><b>Annual Mean Temperature (°C):</b>",matchedplots$temp))%>%
-                
-                addLayersControl(
-                  baseGroups = c("Terrain", "Satellite"),             
-                  options = layersControlOptions(collapsed = FALSE)
-                )
-              
-            }
-            
-            
-            
-            
-          } 
-          
-          
-          
-        } # PCT_Match
-        
-        
-      }
-    }
-    
-    
-  })
-  
+# 
+#   output$mapView <- renderLeaflet({
+#     
+#     # Use leaflet() here, and only include aspects of the map that
+#     # won't need to change dynamically (at least, not unless the
+#     # entire map is being torn down and recreated).
+#     
+#     
+#     if (!is.null(input$cent_table_cell_clicked$col))
+#     {
+#       ar<-array(style_matches()$cent)
+#       columnName <-colnames(ar[[1]]$data[input$cent_table_cell_clicked$col])
+#       
+#       if (!columnName==""){
+#         
+#         
+#         if ((substr(columnName,1,nchar(columnName)-1)=="PCT_Match")||(substr(columnName,1,nchar(columnName)-2)=="PCT_Match")){
+#           
+#           sitename<-ar[[1]]$data$Site_No[input$cent_table_cell_clicked$row]
+#           pctid<-input$cent_table_cell_clicked$value
+#           
+#           pctplotsdata<-pctplots$data 
+#           
+#           colfuncMatched <- colorRampPalette(c("#ec783a"))
+#           
+#           
+#           
+#           categories<-pctplotsdata$pctid
+#           
+#           if ((!is.null(match_data$matches))) {      ##   &&(check_infile()$env_present)) {
+#             
+#              
+#             dt<-style_matches()$cent$x$data %>% select(starts_with("PCT_Match"))  
+#             
+#             dtFilteredData<-filteredData()
+#             dtmerged<- NULL
+#             
+#             if (is.null(dtFilteredData)){
+#               dtmerged<-style_matches()$cent$x$data
+#               dtfinal<-sqldf(paste0("SELECT * from dtmerged WHERE Site_No='",sitename,"'"))
+#               
+#             }else{
+#             
+#                 dtmerged<-merge(filteredData(),style_matches()$cent$x$data,by.x="sites",by.y="Site_No")
+#                 dtfinal<-sqldf(paste0("SELECT * from dtmerged WHERE sites='",sitename,"'"))
+#             
+#             }
+#             
+#             
+#             
+#             
+#             SQLString<-""
+#             for (i in 1:length(dt)){
+#               
+#               if (i==length(dt)){
+#                 SQLString<-paste0(SQLString,"select PCT_Match",i," as pctid from dt")
+#               }else{
+#                 SQLString<-paste0(SQLString,"select PCT_Match",i," as pctid from dt union ")
+#               } 
+#             }
+#             
+#             matchedplots<-sqldf(SQLString)      
+#             matchedplots<- sqldf(paste0("SELECT * from pctplotsdata where pctid='",pctid,"'"))
+#             
+#             pctstats<-""
+#             if ("Distance_to_Centroid1" %in% names(dtfinal)) {pctstats<-paste0("<b>PCT_Match1</b>: ",dtfinal$PCT_Match1," <b>Distance_to_Centroid1:</b> ",dtfinal$Distance_to_Centroid1,"<br/>")}
+#             if ("Distance_to_Centroid2" %in% names(dtfinal)) {pctstats<-paste0(pctstats,"<b>PCT_Match2:</b> ",dtfinal$PCT_Match2," <b>Distance_to_Centroid2:</b> ",dtfinal$Distance_to_Centroid2,"<br/>")}
+#             if ("Distance_to_Centroid3" %in% names(dtfinal)) {pctstats<-paste0(pctstats,"<b>PCT_Match3:</b> ",dtfinal$PCT_Match3," <b>Distance_to_Centroid3:</b> ",dtfinal$Distance_to_Centroid3,"<br/>")}
+#             if ("Distance_to_Centroid4" %in% names(dtfinal)) {pctstats<-paste0(pctstats,"<b>PCT_Match4:</b> ",dtfinal$PCT_Match4," <b>Distance_to_Centroid4:</b> ",dtfinal$Distance_to_Centroid4,"<br/>")}
+#             if ("Distance_to_Centroid5" %in% names(dtfinal)) {pctstats<-paste0(pctstats,"<b>PCT_Match5:</b> ",dtfinal$PCT_Match5," <b>Distance_to_Centroid5:</b> ",dtfinal$Distance_to_Centroid5,"<br/>")}
+#             if ("Distance_to_Centroid6" %in% names(dtfinal)) {pctstats<-paste0(pctstats,"<b>PCT_Match6:</b> ",dtfinal$PCT_Match6," <b>Distance_to_Centroid6:</b> ",dtfinal$Distance_to_Centroid6,"<br/>")}
+#             if ("Distance_to_Centroid7" %in% names(dtfinal)) {pctstats<-paste0(pctstats,"<b>PCT_Match7:</b> ",dtfinal$PCT_Match7," <b>Distance_to_Centroid7:</b> ",dtfinal$Distance_to_Centroid7,"<br/>")}
+#             if ("Distance_to_Centroid8" %in% names(dtfinal)) {pctstats<-paste0(pctstats,"<b>PCT_Match8:</b> ",dtfinal$PCT_Match8," <b>Distance_to_Centroid8:</b> ",dtfinal$Distance_to_Centroid8,"<br/>")}
+#             if ("Distance_to_Centroid9" %in% names(dtfinal)) {pctstats<-paste0(pctstats,"<b>PCT_Match9:</b> ",dtfinal$PCT_Match9," <b>Distance_to_Centroid9:</b> ",dtfinal$Distance_to_Centroid9,"<br/>")}
+#             if ("Distance_to_Centroid10" %in% names(dtfinal)) {pctstats<-paste0(pctstats,"<b>PCT_Match10:</b> ",dtfinal$PCT_Match10," <b>Distance_to_Centroid10:</b> ",dtfinal$Distance_to_Centroid10,"<br/>")}
+#             
+#             
+#             
+#             MatchedCol <-colorFactor(colfuncMatched(5), domain = matchedplots$pctid)
+#             
+#             
+#             EasternNSWStudyRegion <- readOGR("spatial/EasternNSW_PrimaryStudyArea_Merged.shp", layer="EasternNSW_PrimaryStudyArea_Merged")
+#             proj4string(EasternNSWStudyRegion)<-CRS("+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs +towgs84=0,0,0")
+#             
+#             
+#             oehblueicon <- makeAwesomeIcon(icon = "plus-sign", markerColor = "blue",
+#                                            iconColor = "white", library = "glyphicon",
+#                                            squareMarker =  TRUE)
+#             
+#             
+#             if (is.null(dtFilteredData)){
+#             
+#                     leaflet(data=dtfinal )%>% addTiles(group = "Terrain") %>% 
+#                       addScaleBar() %>%
+#                       addProviderTiles(providers$Esri.WorldTopoMap, group = "Terrain")%>%
+#                       addProviderTiles(providers$Esri.WorldImagery, group = "Satellite")%>%
+#                       #fitBounds(~min(dtfinal$Longitude), ~min(dtfinal$Latitude), ~max(dtfinal$Longitude), ~max(dtfinal$Latitude)) %>%
+#                       clearShapes() %>%
+#                       clearMarkers()%>%
+#                       addMeasure(
+#                         position = "bottomleft",
+#                         primaryLengthUnit = "meters",
+#                         primaryAreaUnit = "sqmeters",
+#                         activeColor = "#3D535D",
+#                         completedColor = "#7D4479")%>%
+#                       
+#                       addPolygons(data = EasternNSWStudyRegion, fill = F, weight = 2, color = "#9932CC") %>%
+#                       
+#                       # addAwesomeMarkers(icon = oehblueicon, lat = dtfinal$Latitude,lng = dtfinal$Longitude,layerId = dtfinal$sites,label = dtfinal$sites, labelOptions = labelOptions(noHide = T, direction = "bottom"),
+#                       #            popup = ~paste("<b>Site No:</b>",dtfinal$sites,"<br/><b>Lat:</b>",dtfinal$Latitude," <b>Long:</b>",dtfinal$Longitude,"<br/><b>Elevation(m):</b>",dtfinal$Elevation,"<br/><b>Rainfall(mm):</b>",dtfinal$RainfallAnn,"<br/><b>Temperature(deg.C):</b>",dtfinal$TempAnn,"<br/>", pctstats) ) %>%
+#                       # 
+#                       addCircles(radius= 200, lat = ~matchedplots$lat, lng = ~matchedplots$long, layerId = ~matchedplots$siteno, label = ~matchedplots$pctid,  color =~MatchedCol(matchedplots$pctid), fillColor =~MatchedCol(matchedplots$pctid),opacity = 1,   fillOpacity = 0.7,
+#                                  data = matchedplots, popup = ~paste("<b>PCT ID:</b>", matchedplots$pctid,"<br/><b>PCT Name:</b>", matchedplots$pctname, "<br/><b>PCT Assignment Category:</b>",matchedplots$pctassignmentcategory,"<br/><b>Site No:</b>",matchedplots$siteno,"<br/><b>Survey Name:</b>", matchedplots$surveyname  ,"<br/><b>Lat:</b>",matchedplots$lat," <b>Long:</b>",matchedplots$long,"<br/><b>Elevation (m):</b>",matchedplots$elevation,"<br/><b>Annual Rainfall (mm):</b>",matchedplots$rainfall,"<br/><b>Annual Mean Temperature (°C):</b>",matchedplots$temp))%>%
+#                       
+#                       addLayersControl(
+#                         baseGroups = c("Terrain", "Satellite"),             
+#                         options = layersControlOptions(collapsed = FALSE)
+#                       )
+#               
+#             } else
+#             {
+#               
+#               checkpoint<-1
+#               
+#                     leaflet(data=dtfinal )%>% addTiles(group = "Terrain") %>% 
+#                       addScaleBar() %>%
+#                       addProviderTiles(providers$Esri.WorldTopoMap, group = "Terrain")%>%
+#                       addProviderTiles(providers$Esri.WorldImagery, group = "Satellite")%>%
+#                       #fitBounds(~min(dtfinal$Longitude), ~min(dtfinal$Latitude), ~max(dtfinal$Longitude), ~max(dtfinal$Latitude)) %>%
+#                       clearShapes() %>%
+#                       clearMarkers()%>%
+#                       addMeasure(
+#                         position = "bottomleft",
+#                         primaryLengthUnit = "meters",
+#                         primaryAreaUnit = "sqmeters",
+#                         activeColor = "#3D535D",
+#                         completedColor = "#7D4479")%>%
+#                       
+#                       addPolygons(data = EasternNSWStudyRegion, fill = F, weight = 2, color = "#9932CC") %>%
+#                       
+#                       addAwesomeMarkers(icon = oehblueicon, lat = dtfinal$Latitude,lng = dtfinal$Longitude,layerId = dtfinal$sites,label = dtfinal$sites, labelOptions = labelOptions(noHide = T, direction = "bottom"),
+#                                         popup = ~paste("<b>Site No:</b>",dtfinal$sites,"<br/><b>Lat:</b>",dtfinal$Latitude," <b>Long:</b>",dtfinal$Longitude,"<br/><b>Elevation (m):</b>",dtfinal$Elevation,"<br/><b>Annual Rainfall (mm):</b>",dtfinal$RainfallAnn,"<br/><b>Annual Mean Temperature (°C):</b>",dtfinal$TempAnn,"<br/>", pctstats) ) %>%
+#                       
+#                       addCircles(radius= 200, lat = ~matchedplots$lat, lng = ~matchedplots$long, layerId = ~matchedplots$siteno, label = ~matchedplots$pctid,  color =~MatchedCol(matchedplots$pctid), fillColor =~MatchedCol(matchedplots$pctid),opacity = 1,   fillOpacity = 0.7,
+#                                  data = matchedplots, popup = ~paste("<b>PCT ID:</b>", matchedplots$pctid,"<br/><b>PCT Name:</b>", matchedplots$pctname, "<br/><b>PCT Assignment Category:</b>",matchedplots$pctassignmentcategory,"<br/><b>Site No:</b>",matchedplots$siteno,"<br/><b>Survey Name:</b>", matchedplots$surveyname  ,"<br/><b>Lat:</b>",matchedplots$lat," <b>Long:</b>",matchedplots$long,"<br/><b>Elevation (m):</b>",matchedplots$elevation,"<br/><b>Annual Rainfall (mm):</b>",matchedplots$rainfall,"<br/><b>Annual Mean Temperature (°C):</b>",matchedplots$temp))%>%
+#                       
+#                       addLayersControl(
+#                         baseGroups = c("Terrain", "Satellite"),             
+#                         options = layersControlOptions(collapsed = FALSE)
+#                       )
+#               
+#             }
+#                         
+#             
+#           } 
+#           
+#           
+#           
+#         } # PCT_Match
+#         
+#         
+#       }
+#     }
+#     
+#     
+#   })
+#   
+#   #///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+#   output$mapView2 <- renderLeaflet({
+#     
+#     # Use leaflet() here, and only include aspects of the map that
+#     # won't need to change dynamically (at least, not unless the
+#     # entire map is being torn down and recreated).
+#     
+#     
+#     if (!is.null(input$char_table_cell_clicked$col))
+#     {
+#       ar<-array(style_matches()$cent)
+#       columnName <-colnames(ar[[1]]$data[input$char_table_cell_clicked$col])
+#       
+#       if (!columnName==""){
+#         
+#         
+#         if ((substr(columnName,1,nchar(columnName)-1)=="PCT_Match")||(substr(columnName,1,nchar(columnName)-2)=="PCT_Match")){
+#           
+#           sitename<-ar[[1]]$data$Site_No[input$char_table_cell_clicked$row]
+#           pctid<-input$char_table_cell_clicked$value
+#           
+#           pctplotsdata<-pctplots$data 
+#           
+#           colfuncMatched <- colorRampPalette(c("#ec783a"))
+#           
+#           
+#           
+#           categories<-pctplotsdata$pctid
+#           
+#           if ((!is.null(match_data$matches))) {      ##   &&(check_infile()$env_present)) {
+#             
+#             
+#             dt<-style_matches()$cent$x$data %>% select(starts_with("PCT_Match"))  
+#             
+#             dtFilteredData<-filteredData()
+#             dtmerged<- NULL
+#             
+#             if (is.null(dtFilteredData)){
+#               dtmerged<-style_matches()$cent$x$data
+#               dtfinal<-sqldf(paste0("SELECT * from dtmerged WHERE Site_No='",sitename,"'"))
+#               
+#             }else{
+#               
+#               dtmerged<-merge(filteredData(),style_matches()$cent$x$data,by.x="sites",by.y="Site_No")
+#               dtfinal<-sqldf(paste0("SELECT * from dtmerged WHERE sites='",sitename,"'"))
+#               
+#             }
+#             
+#             
+#             
+#             
+#             SQLString<-""
+#             for (i in 1:length(dt)){
+#               
+#               if (i==length(dt)){
+#                 SQLString<-paste0(SQLString,"select PCT_Match",i," as pctid from dt")
+#               }else{
+#                 SQLString<-paste0(SQLString,"select PCT_Match",i," as pctid from dt union ")
+#               } 
+#             }
+#             
+#             matchedplots<-sqldf(SQLString)      
+#             matchedplots<- sqldf(paste0("SELECT * from pctplotsdata where pctid='",pctid,"'"))
+#             
+#             pctstats<-""
+#             if ("Distance_to_Centroid1" %in% names(dtfinal)) {pctstats<-paste0("<b>PCT_Match1</b>: ",dtfinal$PCT_Match1," <b>Distance_to_Centroid1:</b> ",dtfinal$Distance_to_Centroid1,"<br/>")}
+#             if ("Distance_to_Centroid2" %in% names(dtfinal)) {pctstats<-paste0(pctstats,"<b>PCT_Match2:</b> ",dtfinal$PCT_Match2," <b>Distance_to_Centroid2:</b> ",dtfinal$Distance_to_Centroid2,"<br/>")}
+#             if ("Distance_to_Centroid3" %in% names(dtfinal)) {pctstats<-paste0(pctstats,"<b>PCT_Match3:</b> ",dtfinal$PCT_Match3," <b>Distance_to_Centroid3:</b> ",dtfinal$Distance_to_Centroid3,"<br/>")}
+#             if ("Distance_to_Centroid4" %in% names(dtfinal)) {pctstats<-paste0(pctstats,"<b>PCT_Match4:</b> ",dtfinal$PCT_Match4," <b>Distance_to_Centroid4:</b> ",dtfinal$Distance_to_Centroid4,"<br/>")}
+#             if ("Distance_to_Centroid5" %in% names(dtfinal)) {pctstats<-paste0(pctstats,"<b>PCT_Match5:</b> ",dtfinal$PCT_Match5," <b>Distance_to_Centroid5:</b> ",dtfinal$Distance_to_Centroid5,"<br/>")}
+#             if ("Distance_to_Centroid6" %in% names(dtfinal)) {pctstats<-paste0(pctstats,"<b>PCT_Match6:</b> ",dtfinal$PCT_Match6," <b>Distance_to_Centroid6:</b> ",dtfinal$Distance_to_Centroid6,"<br/>")}
+#             if ("Distance_to_Centroid7" %in% names(dtfinal)) {pctstats<-paste0(pctstats,"<b>PCT_Match7:</b> ",dtfinal$PCT_Match7," <b>Distance_to_Centroid7:</b> ",dtfinal$Distance_to_Centroid7,"<br/>")}
+#             if ("Distance_to_Centroid8" %in% names(dtfinal)) {pctstats<-paste0(pctstats,"<b>PCT_Match8:</b> ",dtfinal$PCT_Match8," <b>Distance_to_Centroid8:</b> ",dtfinal$Distance_to_Centroid8,"<br/>")}
+#             if ("Distance_to_Centroid9" %in% names(dtfinal)) {pctstats<-paste0(pctstats,"<b>PCT_Match9:</b> ",dtfinal$PCT_Match9," <b>Distance_to_Centroid9:</b> ",dtfinal$Distance_to_Centroid9,"<br/>")}
+#             if ("Distance_to_Centroid10" %in% names(dtfinal)) {pctstats<-paste0(pctstats,"<b>PCT_Match10:</b> ",dtfinal$PCT_Match10," <b>Distance_to_Centroid10:</b> ",dtfinal$Distance_to_Centroid10,"<br/>")}
+#             
+#             
+#             
+#             MatchedCol <-colorFactor(colfuncMatched(5), domain = matchedplots$pctid)
+#             
+#             
+#             EasternNSWStudyRegion <- readOGR("spatial/EasternNSW_PrimaryStudyArea_Merged.shp", layer="EasternNSW_PrimaryStudyArea_Merged")
+#             proj4string(EasternNSWStudyRegion)<-CRS("+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs +towgs84=0,0,0")
+#             
+#             
+#             oehblueicon <- makeAwesomeIcon(icon = "plus-sign", markerColor = "blue",
+#                                            iconColor = "white", library = "glyphicon",
+#                                            squareMarker =  TRUE)
+#             
+#             
+#             if (is.null(dtFilteredData)){
+#               
+#               leaflet(data=dtfinal )%>% addTiles(group = "Terrain") %>%
+#                 addScaleBar() %>%
+#                 addProviderTiles(providers$Esri.WorldTopoMap, group = "Terrain")%>%
+#                 addProviderTiles(providers$Esri.WorldImagery, group = "Satellite")%>%
+#                 clearShapes() %>%
+#                 clearMarkers()%>%
+#                 addMeasure(
+#                   position = "bottomleft",
+#                   primaryLengthUnit = "meters",
+#                   primaryAreaUnit = "sqmeters",
+#                   activeColor = "#3D535D",
+#                   completedColor = "#7D4479")%>%
+#                 addPolygons(data = EasternNSWStudyRegion, fill = F, weight = 2, color = "#9932CC") %>%
+#                 
+#                 # addAwesomeMarkers(icon = oehblueicon, lat = dtfinal$Latitude,lng = dtfinal$Longitude,layerId = dtfinal$sites,label = dtfinal$sites, labelOptions = labelOptions(noHide = T, direction = "bottom"),
+#                 #            popup = ~paste("<b>Site No:</b>",dtfinal$sites,"<br/><b>Lat:</b>",dtfinal$Latitude," <b>Long:</b>",dtfinal$Longitude,"<br/><b>Elevation(m):</b>",dtfinal$Elevation,"<br/><b>Rainfall(mm):</b>",dtfinal$RainfallAnn,"<br/><b>Temperature(deg.C):</b>",dtfinal$TempAnn,"<br/>", pctstats) ) %>%
+#                 # 
+#                 addCircles(radius= 200, lat = ~matchedplots$lat, lng = ~matchedplots$long, layerId = ~matchedplots$siteno, label = ~matchedplots$pctid,  color =~MatchedCol(matchedplots$pctid), fillColor =~MatchedCol(matchedplots$pctid),opacity = 1,   fillOpacity = 0.7,
+#                            data = matchedplots, popup = ~paste("<b>PCT ID:</b>", matchedplots$pctid,"<br/><b>PCT Name:</b>", matchedplots$pctname, "<br/><b>PCT Assignment Category:</b>",matchedplots$pctassignmentcategory,"<br/><b>Site No:</b>",matchedplots$siteno,"<br/><b>Survey Name:</b>", matchedplots$surveyname  ,"<br/><b>Lat:</b>",matchedplots$lat," <b>Long:</b>",matchedplots$long,"<br/><b>Elevation (m):</b>",matchedplots$elevation,"<br/><b>Annual Rainfall (mm):</b>",matchedplots$rainfall,"<br/><b>Annual Mean Temperature (°C):</b>",matchedplots$temp))%>%
+#                 
+#                 addLayersControl(
+#                   baseGroups = c("Terrain", "Satellite"),             
+#                   options = layersControlOptions(collapsed = FALSE)
+#                 )
+#               
+#             }else
+#             {
+#               leaflet(data=dtfinal )%>% addTiles(group = "Terrain") %>% 
+#                 addScaleBar() %>%
+#                 addProviderTiles(providers$Esri.WorldTopoMap, group = "Terrain")%>%
+#                 addProviderTiles(providers$Esri.WorldImagery, group = "Satellite")%>%
+#                 #fitBounds(~min(dtfinal$Longitude), ~min(dtfinal$Latitude), ~max(dtfinal$Longitude), ~max(dtfinal$Latitude)) %>%
+#                 clearShapes() %>%
+#                 clearMarkers()%>%
+#                 addMeasure(
+#                   position = "bottomleft",
+#                   primaryLengthUnit = "meters",
+#                   primaryAreaUnit = "sqmeters",
+#                   activeColor = "#3D535D",
+#                   completedColor = "#7D4479")%>%
+#                 
+#                 addPolygons(data = EasternNSWStudyRegion, fill = F, weight = 2, color = "#9932CC") %>%
+#                 
+#                 addAwesomeMarkers(icon = oehblueicon, lat = dtfinal$Latitude,lng = dtfinal$Longitude,layerId = dtfinal$sites,label = dtfinal$sites, labelOptions = labelOptions(noHide = T, direction = "bottom"),
+#                                   popup = ~paste("<b>Site No:</b>",dtfinal$sites,"<br/><b>Lat:</b>",dtfinal$Latitude," <b>Long:</b>",dtfinal$Longitude,"<br/><b>Elevation (m):</b>",dtfinal$Elevation,"<br/><b>Annual Rainfall (mm):</b>",dtfinal$RainfallAnn,"<br/><b>Annual Mean Temperature (°C):</b>",dtfinal$TempAnn,"<br/>", pctstats) ) %>%
+#                 
+#                 addCircles(radius= 200, lat = ~matchedplots$lat, lng = ~matchedplots$long, layerId = ~matchedplots$siteno, label = ~matchedplots$pctid,  color =~MatchedCol(matchedplots$pctid), fillColor =~MatchedCol(matchedplots$pctid),opacity = 1,   fillOpacity = 0.7,
+#                            data = matchedplots, popup = ~paste("<b>PCT ID:</b>", matchedplots$pctid,"<br/><b>PCT Name:</b>", matchedplots$pctname, "<br/><b>PCT Assignment Category:</b>",matchedplots$pctassignmentcategory,"<br/><b>Site No:</b>",matchedplots$siteno,"<br/><b>Survey Name:</b>", matchedplots$surveyname  ,"<br/><b>Lat:</b>",matchedplots$lat," <b>Long:</b>",matchedplots$long,"<br/><b>Elevation (m):</b>",matchedplots$elevation,"<br/><b>Annual Rainfall (mm):</b>",matchedplots$rainfall,"<br/><b>Annual Mean Temperature (°C):</b>",matchedplots$temp))%>%
+#                 
+#                 addLayersControl(
+#                   baseGroups = c("Terrain", "Satellite"),             
+#                   options = layersControlOptions(collapsed = FALSE)
+#                 )
+#               
+#             }
+#             
+#             
+#             
+#             
+#           } 
+#           
+#           
+#           
+#         } # PCT_Match
+#         
+#         
+#       }
+#     }
+#     
+#     
+#   })
+#   
   
   #/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   
