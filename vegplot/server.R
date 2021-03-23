@@ -45,6 +45,9 @@ library(sanitizers)
 
 library(rdrop2)
 
+library(tidyverse)
+library(tibble)
+
 source("functions.R")
 
 # options(shiny.sanitize.errors = TRUE)
@@ -521,7 +524,10 @@ shinyServer(function(input, output,session) {
     # do the char species / centroid calculations
     #infile_df <- check_infile()$infile_df
     char_matches <- calculate_matches(floristics, infile_df[,1], char_spp_list)
+    
+    
     progress$set(message = "Matching centroids", value = 0.35)
+    
     cent_matches <- calculate_centroids(floristics, infile_df[,1], centroids)
     # make ordination plot
     progress$set(message = "Making plots", value = 0.85)

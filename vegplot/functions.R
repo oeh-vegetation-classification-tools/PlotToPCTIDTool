@@ -114,7 +114,11 @@ dist_to_centroid <- function(site, centres) {
                 FUN = euc_dist, j = site))
 }
 
+
+
 calculate_centroids <- function(floristic_raw, site_labels, centroids) {
+  
+ 
   # find species uploaded not in database, then discard
   missing_species <- names(floristic_raw)[!names(floristic_raw) %in% colnames(centroids)]
   floristic_raw <- floristic_raw[,!names(floristic_raw) %in% missing_species]
@@ -135,13 +139,25 @@ calculate_centroids <- function(floristic_raw, site_labels, centroids) {
            FUN = dist_to_centroid,
            centres = centroids,
            mc.cores = mc_cores)
+    
     # lapply(X = as.data.frame(t(new_dat_absenses)),
     #          FUN = dist_to_centroid,
     #          centres = centroids)
   )
-  rownames(cent_matches) <- NULL
-  colnames(cent_matches) <- rownames(centroids)
-  df_out <- data.frame(site_labels, as.data.frame(round(cent_matches, 3)), stringsAsFactors = F)
+  
+  
+  cm<-as.data.table(round(cent_matches, 3))
+  #rownames(dftemp) <- NULL
+  colnames(cm) <- rownames(centroids)
+  
+  
+ 
+  #write.csv(dftemp,paste0(file.path(getwd(), "www"),"/errorlog.txt"), row.names = FALSE)
+  
+  dtt<-cbind(cm,site_labels)
+  col_idx <- grep("site_labels", names(dtt))
+  dtt <- as.data.frame(dtt)
+  df_out <- dtt[, c(col_idx, (1:ncol(dtt))[-col_idx])]
   
   for(i in 1:ncol(df_out)) {
     if (substr(names(df_out)[i],1,1)=="X" ){
@@ -149,9 +165,13 @@ calculate_centroids <- function(floristic_raw, site_labels, centroids) {
     }
   }
   
+  
+ 
   attr(df_out, "mc_cores") <- mc_cores
   
   df_out  
+  
+  
   # cent_matches_top <- data.frame(site_labels,
   #                                round(t(bind_rows(lapply(distances, `[[`, 1))), 3),
   #                                t(bind_rows(lapply(distances, `[[`, 2))))
@@ -362,8 +382,8 @@ getPCTProfile<- function(pctid) {
   dbClearResult(rs)
   
   
- ##state tec names 
-  rs <- dbSendQuery(con, paste0("SELECT B.profileID,B.TECName,'BC Act' as ACT, A.stateTECFitStatus as TECFitStatus, A.TECAssessed TECAssessed FROM PCT_TECData A 
+ ##state tec names -- B.profileID,'Listed BC Act: '|| B.stateConservation || ': ' || B.TECName ||'' as TEC_Name,'BC Act' as ACT, A.stateTECFitStatus as TECFitStatus, A.TECAssessed TECAssessed
+  rs <- dbSendQuery(con, paste0("SELECT B.profileID,'Listed BC Act: '|| B.stateConservation || ': ' || B.TECName ||'' as TEC_Name,'BC Act' as ACT, A.stateTECFitStatus as TECFitStatus, A.TECAssessed TECAssessed FROM PCT_TECData A 
                                 INNER JOIN TECData B on A.stateTECProfileID like '%'||B.profileID||'%'
                                 where A.PCTID='",pctid,"' "))
   dtStateTEC <- dbFetch(rs)
@@ -372,7 +392,7 @@ getPCTProfile<- function(pctid) {
   
   
   ##comm tec names
-  rs <- dbSendQuery(con, paste0("SELECT B.profileID,B.TECName, 'EPBC Act' as ACT, A.countryTECFitStatus as TECFitStatus, A.TECAssessed TECAssessed FROM PCT_TECData A 
+  rs <- dbSendQuery(con, paste0("SELECT B.profileID,'Listed EPBC Act: '|| B.countryConservation || ': ' || B.TECName ||'' as TEC_Name, 'EPBC Act' as ACT, A.countryTECFitStatus as TECFitStatus, A.TECAssessed TECAssessed FROM PCT_TECData A 
                                          INNER JOIN TECData B on A.countryTECProfileID like '%'||B.profileID||'%'
                                         where A.PCTID='",pctid,"' "))
   dtComTEC <- dbFetch(rs)
@@ -394,8 +414,8 @@ getPCTProfile<- function(pctid) {
   if (n>0){
     for (i in 1:n){ 
       
-      s<-as.data.frame(strsplit(toString(dtStateTEC$TECFitStatus[n]),";"), stringsAsFactors = F)
-      StateTECName <- paste0(dtStateTEC$TECName[n]," ", s[[1]][[n]],"<br/>",StateTECName)
+      s<-as.data.frame(strsplit(toString(dtStateTEC$TECFitStatus[i]),";"), stringsAsFactors = F)
+      StateTECName <- paste0(dtStateTEC$TEC_Name[i]," ", s[[1]][[i]],"<br/>",StateTECName)
       
     }
     #if (TECAssessed=="") {
@@ -413,8 +433,8 @@ getPCTProfile<- function(pctid) {
   if (n>0){
     for (i in 1:n){ 
       
-      s<-as.data.frame(strsplit(toString(dtComTEC$TECFitStatus[n]),";"), stringsAsFactors = F)
-      CommTECName <- paste0(dtComTEC$TECName[n]," ", s[[1]][[n]],"<br/>",CommTECName)
+      s<-as.data.frame(strsplit(toString(dtComTEC$TECFitStatus[i]),";"), stringsAsFactors = F)
+      CommTECName <- paste0(dtComTEC$TEC_Name[i]," ", s[[1]][[i]],"<br/>",CommTECName)
       
     }
     #if (TECAssessed=="") {
