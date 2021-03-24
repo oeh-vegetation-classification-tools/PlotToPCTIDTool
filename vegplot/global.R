@@ -117,8 +117,6 @@ dist_to_centroid <- function(site, centres) {
 
 
 calculate_centroids <- function(floristic_raw, site_labels, centroids) {
-  
- 
   # find species uploaded not in database, then discard
   missing_species <- names(floristic_raw)[!names(floristic_raw) %in% colnames(centroids)]
   floristic_raw <- floristic_raw[,!names(floristic_raw) %in% missing_species]
@@ -135,49 +133,34 @@ calculate_centroids <- function(floristic_raw, site_labels, centroids) {
   # calculate the distances and hack the matches and group names together
   mc_cores <- get_cores(nrow(floristic_raw))
   cent_matches <- bind_rows(
-    mclapply(X = as.data.frame(t(new_dat_absenses)),
-           FUN = dist_to_centroid,
-           centres = centroids,
-           mc.cores = mc_cores)
-    
-    # lapply(X = as.data.frame(t(new_dat_absenses)),
+    # mclapply(X = as.data.frame(t(new_dat_absenses)),
     #          FUN = dist_to_centroid,
-    #          centres = centroids)
+    #          centres = centroids,
+    #          mc.cores = mc_cores)
+    lapply(X = as.data.frame(t(new_dat_absenses)),
+             FUN = dist_to_centroid,
+             centres = centroids)
   )
-  
-  
-  cm<-as.data.table(round(cent_matches, 3))
-  #rownames(dftemp) <- NULL
-  colnames(cm) <- rownames(centroids)
-  
-  
- 
-  #write.csv(dftemp,paste0(file.path(getwd(), "www"),"/errorlog.txt"), row.names = FALSE)
-  
-  dtt<-cbind(cm,site_labels)
-  col_idx <- grep("site_labels", names(dtt))
-  dtt <- as.data.frame(dtt)
-  df_out <- dtt[, c(col_idx, (1:ncol(dtt))[-col_idx])]
-  
+  rownames(cent_matches) <- NULL
+  colnames(cent_matches) <- rownames(centroids)
+  df_out <- bind_cols(data.frame(site_labels=site_labels),
+                                 round(cent_matches, 3)
+  )
+
   for(i in 1:ncol(df_out)) {
     if (substr(names(df_out)[i],1,1)=="X" ){
       names(df_out)[i]=substr(names(df_out)[i],2,str_length(as.character(names(df_out[i]))) )
     }
   }
-  
-  
- 
+
   attr(df_out, "mc_cores") <- mc_cores
+
+  df_out
   
-  df_out  
+  # # some debugging info
+  # list(flor = dim(new_dat_absenses), cents = dim(centroids), sites = length(site_labels), 
+  #      centms = dim(cent_matches))
   
-  
-  # cent_matches_top <- data.frame(site_labels,
-  #                                round(t(bind_rows(lapply(distances, `[[`, 1))), 3),
-  #                                t(bind_rows(lapply(distances, `[[`, 2))))
-  # names(cent_matches_top) <- c("Site_Name", paste0("match",1:topn), paste0("group",1:topn))
-  # list(distances = cent_matches_top,
-  #      missing_species = missing_species)
 }
 
 

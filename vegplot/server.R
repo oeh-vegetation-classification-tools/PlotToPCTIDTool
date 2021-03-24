@@ -48,7 +48,7 @@ library(rdrop2)
 library(tidyverse)
 library(tibble)
 
-source("functions.R")
+#source("functions.R")
 
 # options(shiny.sanitize.errors = TRUE)
 # #options(shiny.error = browser)
@@ -549,6 +549,13 @@ shinyServer(function(input, output,session) {
     
     showNotification(paste0("Analysis complete. CPU cores used: ", match_data$matches$mc_cores,
                             " (analysis took ", match_data$matches$compute_time, " seconds)."),duration = 10,type = c("message"))
+    
+    # #some debugging info
+    # showNotification(paste0("Flor: ", paste0(match_data$matches$cent_matches$flor, collapse = ","),
+    #                         "Cents: ", paste0(match_data$matches$cent_matches$cents, collapse = ","),
+    #                         "Sites: ", paste0(match_data$matches$cent_matches$sites, collapse = ","),
+    #                         "Matches: ", paste0(match_data$matches$cent_matches$centms, collapse = ",")),
+    #                  duration = 30,type = c("message"))
     
     }
     , error = function(e) {
