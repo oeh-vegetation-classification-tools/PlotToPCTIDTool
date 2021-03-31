@@ -365,8 +365,8 @@ getPCTProfile<- function(pctid) {
   dbClearResult(rs)
   
   
- ##state tec names -- B.profileID,'Listed BC Act: '|| B.stateConservation || ': ' || B.TECName ||'' as TEC_Name,'BC Act' as ACT, A.stateTECFitStatus as TECFitStatus, A.TECAssessed TECAssessed
-  rs <- dbSendQuery(con, paste0("SELECT B.profileID,'Listed BC Act: '|| B.stateConservation || ': ' || B.TECName ||'' as TEC_Name,'BC Act' as ACT, A.stateTECFitStatus as TECFitStatus, A.TECAssessed TECAssessed FROM PCT_TECData A 
+ ##state tec names SELECT B.profileID,'Listed BC Act: '|| B.stateConservation || ': ' || B.TECName ||'' as TEC_Name,'BC Act' as ACT, A.stateTECFitStatus as TECFitStatus, A.TECAssessed TECAssessed, CASE WHEN A.TEC_Comments IS NULL THEN '' ELSE A.TEC_Comments END TECComments
+  rs <- dbSendQuery(con, paste0("SELECT B.profileID,'Listed BC Act: '|| B.stateConservation || ': ' || B.TECName ||'' as TEC_Name,'BC Act' as ACT, A.stateTECFitStatus as TECFitStatus, A.TECAssessed TECAssessed, CASE WHEN A.TEC_Comments IS NULL THEN '' ELSE A.TEC_Comments END TECComments FROM PCT_TECData A 
                                 INNER JOIN TECData B on A.stateTECProfileID like '%'||B.profileID||'%'
                                 where A.PCTID='",pctid,"' "))
   dtStateTEC <- dbFetch(rs)
@@ -393,8 +393,12 @@ getPCTProfile<- function(pctid) {
   TECAssessed<-"Not assessed"
   TECAct<-""
   TECList<-""
+  TECComments<-""
   
   if (n>0){
+    
+     TECComments<-toString(dtStateTEC$TECComments[0])
+    
     for (i in 1:n){ 
       
       s<-as.data.frame(strsplit(toString(dtStateTEC$TECFitStatus[i]),";"), stringsAsFactors = F)
@@ -456,6 +460,7 @@ getPCTProfile<- function(pctid) {
                             ,"<b>TEC Assessed:</b>",TECAssessed,"<br/>"
                             ,"<b>TEC List:</b>",TECList,"<br/>"
                             ,"<b>TEC Act:</b>",TECAct,"<br/>"
+                            ,"<b>TEC Comments:</b>",TECComments,"<br/>"
                             ,"<b>Median Native Species Richness:</b>",d1$Median_species_richness,"<br/>"
                             ,"<div><b>Species by Growth Form Group:</b>")
   
