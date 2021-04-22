@@ -1495,7 +1495,9 @@ shinyServer(function(input, output,session) {
 
 
           ## pct tec data
-          ## Liz - need to add ,TECComments to end of url string below.
+
+
+
           pcttecjson <-fromJSON("https://datatest.bionet.nsw.gov.au/BioSvcApp/odata/VegetationClassification_PCTDefinition?$select=PCTID,TECAssessed,stateTECProfileID,stateTECFitStatus,stateTECDegreeOfFit,countryTECProfileID,countryTECFitStatus,countryTECDegreeOfFit")
 
 
