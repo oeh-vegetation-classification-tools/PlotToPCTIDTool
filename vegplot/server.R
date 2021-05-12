@@ -1495,9 +1495,7 @@ shinyServer(function(input, output,session) {
 
 
           ## pct tec data
-
-
-
+          ## Liz - need to add ,TECComments to end of url string below. when web service has TEC_Comments added
           pcttecjson <-fromJSON("https://datatest.bionet.nsw.gov.au/BioSvcApp/odata/VegetationClassification_PCTDefinition?$select=PCTID,TECAssessed,stateTECProfileID,stateTECFitStatus,stateTECDegreeOfFit,countryTECProfileID,countryTECFitStatus,countryTECDegreeOfFit")
 
 
@@ -1560,7 +1558,9 @@ shinyServer(function(input, output,session) {
 
 
           
+        
           
+          ## -- UPDATE TEC DATA LIST CORRECTLY
           rsTECS <- dbSendQuery(con, paste0("SELECT * FROM pctprofiledata"))
           dataToUpdateTECS <- dbFetch(rsTECS)
           dbHasCompleted(rsTECS)
@@ -1574,18 +1574,24 @@ shinyServer(function(input, output,session) {
             
             pctid<-dataToUpdateTECS$PCTID[X]
             
-            ##state tec names 
-            rs <- dbSendQuery(con, paste0("SELECT B.profileID,B.TECName,'BC Act' as ACT, A.stateTECFitStatus as TECFitStatus, A.TECAssessed TECAssessed FROM PCT_TECData A 
-                                          INNER JOIN TECData B on A.stateTECProfileID like '%'||B.profileID||'%'
-                                          where A.PCTID='",pctid,"' "))
+            ##state tec names          
+            rs <- dbSendQuery(con, paste0("SELECT B.profileID,'Listed BC Act: '|| B.stateConservation || ': ' || B.TECName ||'' as TEC_Name,'BC Act' as ACT, 
+                                          A.stateTECFitStatus as TECFitStatus, A.TECAssessed TECAssessed FROM PCT_TECData A 
+                                          LEFT JOIN TECData B on A.stateTECProfileID like '%'||B.profileID||'%'
+                                          where A.PCTID='",pctid,"' "))                                          
+            
+            
+            
+            
             dtStateTEC <- dbFetch(rs)
             dbHasCompleted(rs)
             dbClearResult(rs)
             
             
-            ##comm tec names
-            rs <- dbSendQuery(con, paste0("SELECT B.profileID,B.TECName, 'EPBC Act' as ACT, A.countryTECFitStatus as TECFitStatus, A.TECAssessed TECAssessed FROM PCT_TECData A 
-                                          INNER JOIN TECData B on A.countryTECProfileID like '%'||B.profileID||'%'
+            ##comm tec names                 
+            rs <- dbSendQuery(con, paste0("SELECT B.profileID,'Listed EPBC Act: '|| B.countryConservation || ': ' || B.TECName ||'' as TEC_Name, 'EPBC Act' as ACT, 
+                                          A.countryTECFitStatus as TECFitStatus, A.TECAssessed TECAssessed FROM PCT_TECData A 
+                                          LEFT JOIN TECData B on A.countryTECProfileID like '%'||B.profileID||'%'
                                           where A.PCTID='",pctid,"' "))
             dtComTEC <- dbFetch(rs)
             dbHasCompleted(rs)
@@ -1599,12 +1605,16 @@ shinyServer(function(input, output,session) {
             TECAssessed<-"Not assessed"
             TECAct<-""
             TECList<-""
+            TECComments<-""
             
             if (n>0){
+              
+              TECComments<-toString(dtStateTEC$TECComments[0])
+              
               for (i in 1:n){ 
                 
-                s<-as.data.frame(strsplit(toString(dtStateTEC$TECFitStatus[n]),";"), stringsAsFactors = F)
-                StateTECName <- paste0(dtStateTEC$TECName[n]," ", s[[1]][[n]]," ",StateTECName)
+                s<-as.data.frame(strsplit(toString(dtStateTEC$TECFitStatus[i]),";"), stringsAsFactors = F)
+                StateTECName <- paste0(dtStateTEC$TEC_Name[i]," ", s[[1]][[i]]," ",StateTECName)
                 
               }
               
@@ -1622,8 +1632,8 @@ shinyServer(function(input, output,session) {
             if (n>0){
               for (i in 1:n){ 
                 
-                s<-as.data.frame(strsplit(toString(dtComTEC$TECFitStatus[n]),";"), stringsAsFactors = F)
-                CommTECName <- paste0(dtComTEC$TECName[n]," ", s[[1]][[n]]," ",CommTECName)
+                s<-as.data.frame(strsplit(toString(dtComTEC$TECFitStatus[i]),";"), stringsAsFactors = F)
+                CommTECName <- paste0(dtComTEC$TEC_Name[i]," ", s[[1]][[i]]," ",CommTECName)
                 
               }
               
@@ -1637,10 +1647,8 @@ shinyServer(function(input, output,session) {
             #update
             sqlstring<-paste0("UPDATE pctprofiledata SET TEC_list='",TECList,"', TEC_Act='", TECAct,"' WHERE PCTID='",pctid,"'")
             dbExecute(con,sqlstring)
-            
+          
           }
-          
-          
           
           
           # clean up
