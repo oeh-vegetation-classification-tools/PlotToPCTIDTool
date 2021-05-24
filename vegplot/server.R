@@ -1602,7 +1602,7 @@ shinyServer(function(input, output,session) {
             n<-nrow(dtStateTEC)
             StateTECName<-""
             
-            TECAssessed<-"Not assessed"
+            TECAssessed<-"No associated TEC"
             TECAct<-""
             TECList<-""
             TECComments<-""
