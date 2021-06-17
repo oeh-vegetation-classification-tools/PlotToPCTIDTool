@@ -437,6 +437,8 @@ getPCTProfile<- function(pctid) {
   # Elevation_max, Elevation_min, Elevation_median, Rainfall_max, Rainfall_min, Rainfall_median, 
   # Temperature_max, Temperature_min, Temperature_median, TEC_list, TEC_Act, Median_species_richness
   
+  # removed 17/06/21 ,"<b>TEC Act:</b>",TECAct,"<br/>"
+  
     pctprofile01<-paste0("<b>PCT ID:</b>",pctid,"<br/>"
                             ,"<b>PCT Name:</b>",d1$PCTName,"<br/>"
                             ,"<b>Classification Confidence Level:</b>",if (is.na(d1$Classification_confidence_level)) "" else d1$Classification_confidence_level,"<br/>"
@@ -459,7 +461,6 @@ getPCTProfile<- function(pctid) {
                          
                             ,"<b>TEC Assessed:</b>",TECAssessed,"<br/>"
                             ,"<b>TEC List:</b>",TECList,"<br/>"
-                            ,"<b>TEC Act:</b>",TECAct,"<br/>"
                             ,"<b>TEC Comments:</b>",TECComments,"<br/>"
                             ,"<b>Median Native Species Richness:</b>",d1$Median_species_richness,"<br/>"
                             ,"<div><b>Species by Growth Form Group:</b>")

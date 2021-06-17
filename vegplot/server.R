@@ -875,6 +875,8 @@ shinyServer(function(input, output,session) {
       
       pcttecdata<-getTEC_For_PCTProfiles()
       
+      # removed 17/06/21  pctdt.TEC_Act,
+      
       allpctprofiles<-sqldf("select pctdt.PCTID,
                                 pctdt.PCTName,
                                 pctdt.Vegetation_description,
@@ -895,7 +897,7 @@ shinyServer(function(input, output,session) {
                                 pctdt.Temperature_median,
                                 pcttecdata.TECAssessed,
                                 pctdt.TEC_list,
-                                pctdt.TEC_Act,
+                               
                                 pctdt.Median_species_richness
                                from pctdt join pcttecdata on pcttecdata.pctid=pctdt.pctid where pctdt.pctid in (SELECT pctid FROM matchedpcts)")
             
