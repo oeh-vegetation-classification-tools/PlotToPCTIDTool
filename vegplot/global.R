@@ -366,7 +366,8 @@ getPCTProfile<- function(pctid) {
   
   
  ##state tec names SELECT B.profileID,'Listed BC Act: '|| B.stateConservation || ': ' || B.TECName ||'' as TEC_Name,'BC Act' as ACT, A.stateTECFitStatus as TECFitStatus, A.TECAssessed TECAssessed, CASE WHEN A.TEC_Comments IS NULL THEN '' ELSE A.TEC_Comments END TECComments
-  rs <- dbSendQuery(con, paste0("SELECT B.profileID,'Listed BC Act: '|| B.stateConservation || ': ' || B.TECName ||'' as TEC_Name,'BC Act' as ACT, A.stateTECFitStatus as TECFitStatus, A.TECAssessed TECAssessed, CASE WHEN A.TEC_Comments IS NULL THEN '' ELSE A.TEC_Comments END TECComments FROM PCT_TECData A 
+  ## for Liz removed ", CASE WHEN A.TEC_Comments IS NULL THEN '' ELSE A.TEC_Comments END TECComments" from select statement below. To replace copy and paste without quotes after word TECAssessed
+  rs <- dbSendQuery(con, paste0("SELECT B.profileID,'Listed BC Act: '|| B.stateConservation || ': ' || B.TECName ||'' as TEC_Name,'BC Act' as ACT, A.stateTECFitStatus as TECFitStatus, A.TECAssessed TECAssessed FROM PCT_TECData A 
                                 INNER JOIN TECData B on A.stateTECProfileID like '%'||B.profileID||'%'
                                 where A.PCTID='",pctid,"' "))
   dtStateTEC <- dbFetch(rs)
@@ -397,7 +398,8 @@ getPCTProfile<- function(pctid) {
   
   if (n>0){
     
-     TECComments<-toString(dtStateTEC$TECComments[0])
+    ## for Liz uncomment line below to implement TEC_Comments
+    ## TECComments<-toString(dtStateTEC$TECComments[0])
     
     for (i in 1:n){ 
       
@@ -439,6 +441,9 @@ getPCTProfile<- function(pctid) {
   
   # removed 17/06/21 ,"<b>TEC Act:</b>",TECAct,"<br/>"
   
+  ##for Liz, removed string as is with first comma from below ,"<b>TEC Comments:</b>",TECComments,"<br/>"
+  ## to replace copy and paste under TECList below.
+  
     pctprofile01<-paste0("<b>PCT ID:</b>",pctid,"<br/>"
                             ,"<b>PCT Name:</b>",d1$PCTName,"<br/>"
                             ,"<b>Classification Confidence Level:</b>",if (is.na(d1$Classification_confidence_level)) "" else d1$Classification_confidence_level,"<br/>"
@@ -461,7 +466,8 @@ getPCTProfile<- function(pctid) {
                          
                             ,"<b>TEC Assessed:</b>",TECAssessed,"<br/>"
                             ,"<b>TEC List:</b>",TECList,"<br/>"
-                            ,"<b>TEC Comments:</b>",TECComments,"<br/>"
+                            
+                            
                             ,"<b>Median Native Species Richness:</b>",d1$Median_species_richness,"<br/>"
                             ,"<div><b>Species by Growth Form Group:</b>")
   
