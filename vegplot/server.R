@@ -435,7 +435,7 @@ shinyServer(function(input, output,session) {
       }
       
       
-      txtResult<-toString(paste0("Species names not found in eastern NSW PCT standardised taxonomy:", missingSpeciesList ,", Sites outside eastern NSW study region:", numplotsOutsideStudyHTML))
+      txtResult<-toString(paste0("Species names not found in PCT classification standardised taxonomy:", missingSpeciesList ,", Sites outside Plot to PCT Assignment Tool bioregions:", numplotsOutsideStudyHTML))
       loggit("INFO","uploadresults", log_detail=txtResult, MissingSpeciesList=toString(missingSpeciesList), NumplotsOutsideStudy=toString(numplotsOutsideStudyHTML), event = "upload", sessionid=isolate(session$token), echo = FALSE)
       
 
@@ -458,11 +458,11 @@ shinyServer(function(input, output,session) {
     return(list(results=paste0("<p style='padding:10px; clear: both;'><h4>Uploaded data checks:</h4>
                                   <table border='1px' style='width:100%; padding:5px;'>
                                    <tr>
-                                   <td style='width:45%; vertical-align:top'>Species names not found in eastern NSW PCT standardised taxonomy</td>
+                                   <td style='width:45%; vertical-align:top'>Species names not found in PCT classification standardised taxonomy</td>
                                    <td>", missingSpeciesList ,"</td>
                                    </tr>
                                    <tr>
-                                   <td>Sites outside eastern NSW study region</td>
+                                   <td>Sites outside Plot to PCT Assignment Tool bioregions</td>
                                    <td>", numplotsOutsideStudyHTML ,"</td>
                                    </tr>
                                    </table></p>"),
@@ -780,8 +780,8 @@ shinyServer(function(input, output,session) {
       charmatches<-reorder_data(charmatches)
    
       myvar <- format(Sys.Date(), format="%d/%m/%Y")
-      #Exported from NSW Plot to PCT assignment tool on dd/mm/yyyy. PCT data last updated dd/mm/yyyy
-      out_string <- paste0("Exported from NSW Plot to PCT assignment tool on ",myvar,". PCT data last updated ", bionetappinfo$DataLastUpdated  ,"\n", "=================\n")
+      #Exported from Plot to PCT Assignment Tool on dd/mm/yyyy. PCT data last updated dd/mm/yyyy
+      out_string <- paste0("Exported from Plot to PCT Assignment Tool on ",myvar,". PCT data is Eastern NSW PCT Classification version 1.1."  ,"\n", "=================\n")
       cat(out_string, file = file, sep = '\n')
       
       
@@ -818,11 +818,11 @@ shinyServer(function(input, output,session) {
     content = function(file) {
    
       myvar <- format(Sys.Date(), format="%d/%m/%Y")
-      #Exported from NSW Plot to PCT assignment tool on dd/mm/yyyy. PCT data last updated dd/mm/yyyy
+      #Exported from Plot to PCT Assignment Tool on dd/mm/yyyy. PCT data last updated dd/mm/yyyy
       
       centmatches<-download_matches()$cent
       centmatches<-reorder_data(centmatches)
-      out_string <- paste0("Exported from NSW Plot to PCT assignment tool on ",myvar,". PCT data last updated ", bionetappinfo$DataLastUpdated  ,"\n", "=================\n")
+      out_string <- paste0("Exported from Plot to PCT Assignment Tool on ",myvar,". PCT data is Eastern NSW PCT Classification version 1.1."  ,"\n", "=================\n")
       cat(out_string, file = file, sep = '\n')
       
       
@@ -936,8 +936,8 @@ shinyServer(function(input, output,session) {
       # 
    
       myvar <- format(Sys.Date(), format="%d/%m/%Y")
-      #Exported from NSW Plot to PCT assignment tool on dd/mm/yyyy. PCT data last updated dd/mm/yyyy
-      out_string <- paste0("Exported from NSW Plot to PCT assignment tool on ",myvar,". PCT data last updated ", bionetappinfo$DataLastUpdated  ,"\n", "=================\n")
+      #Exported from Plot to PCT Assignment Tool on dd/mm/yyyy. PCT data last updated dd/mm/yyyy
+      out_string <- paste0("Exported from Plot to PCT Assignment Tool on ",myvar,". PCT data is Eastern NSW PCT Classification version 1.1."  ,"\n", "=================\n")
       cat(out_string, file = file, sep = '\n')
       
       withProgress(message = 'Processing....',
@@ -1006,8 +1006,8 @@ shinyServer(function(input, output,session) {
       # 
       
       myvar <- format(Sys.Date(), format="%d/%m/%Y")
-      #Exported from NSW Plot to PCT assignment tool on dd/mm/yyyy. PCT data last updated dd/mm/yyyy
-      out_string <- paste0("Exported from NSW Plot to PCT assignment tool on ",myvar,". PCT data last updated ", bionetappinfo$DataLastUpdated  ,"\n", "=================\n")
+      #Exported from Plot to PCT Assignment Tool on dd/mm/yyyy. PCT data last updated dd/mm/yyyy
+      out_string <- paste0("Exported from Plot to PCT Assignment Tool on ",myvar,". PCT data is Eastern NSW PCT Classification version 1.1."  ,"\n", "=================\n")
       cat(out_string, file = file, sep = '\n')
       
       withProgress(message = 'Processing....',
@@ -1091,8 +1091,8 @@ shinyServer(function(input, output,session) {
       # 
       
       myvar <- format(Sys.Date(), format="%d/%m/%Y")
-      #Exported from NSW Plot to PCT assignment tool on dd/mm/yyyy. PCT data last updated dd/mm/yyyy
-      out_string <- paste0("Exported from NSW Plot to PCT assignment tool on ",myvar,". PCT data last updated ", bionetappinfo$DataLastUpdated  ,"\n", "=================\n")
+      #Exported from Plot to PCT Assignment Tool on dd/mm/yyyy. PCT data last updated dd/mm/yyyy
+      out_string <- paste0("Exported from Plot to PCT Assignment Tool on ",myvar,". PCT data is Eastern NSW PCT Classification version 1.1."  ,"\n", "=================\n")
       cat(out_string, file = file, sep = '\n')
       
       withProgress(message = 'Processing....',
