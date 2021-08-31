@@ -780,8 +780,8 @@ shinyServer(function(input, output,session) {
       charmatches<-reorder_data(charmatches)
    
       myvar <- format(Sys.Date(), format="%d/%m/%Y")
-      #Exported from Plot to PCT Assignment Tool on dd/mm/yyyy. PCT data last updated dd/mm/yyyy
-      out_string <- paste0("Exported from Plot to PCT Assignment Tool on ",myvar,". PCT data is Eastern NSW PCT Classification version 1.1."  ,"\n", "=================\n")
+      #Exported from the Plot to PCT Assignment Tool on dd/mm/yyyy. PCT data last updated dd/mm/yyyy
+      out_string <- paste0("Exported from the Plot to PCT Assignment Tool on ",myvar,". PCT data is Eastern NSW PCT Classification version 1.1."  ,"\n", "=================\n")
       cat(out_string, file = file, sep = '\n')
       
       
@@ -818,11 +818,11 @@ shinyServer(function(input, output,session) {
     content = function(file) {
    
       myvar <- format(Sys.Date(), format="%d/%m/%Y")
-      #Exported from Plot to PCT Assignment Tool on dd/mm/yyyy. PCT data last updated dd/mm/yyyy
+      #Exported from the Plot to PCT Assignment Tool on dd/mm/yyyy. PCT data last updated dd/mm/yyyy
       
       centmatches<-download_matches()$cent
       centmatches<-reorder_data(centmatches)
-      out_string <- paste0("Exported from Plot to PCT Assignment Tool on ",myvar,". PCT data is Eastern NSW PCT Classification version 1.1."  ,"\n", "=================\n")
+      out_string <- paste0("Exported from the Plot to PCT Assignment Tool on ",myvar,". PCT data is Eastern NSW PCT Classification version 1.1."  ,"\n", "=================\n")
       cat(out_string, file = file, sep = '\n')
       
       
@@ -936,8 +936,8 @@ shinyServer(function(input, output,session) {
       # 
    
       myvar <- format(Sys.Date(), format="%d/%m/%Y")
-      #Exported from Plot to PCT Assignment Tool on dd/mm/yyyy. PCT data last updated dd/mm/yyyy
-      out_string <- paste0("Exported from Plot to PCT Assignment Tool on ",myvar,". PCT data is Eastern NSW PCT Classification version 1.1."  ,"\n", "=================\n")
+      #Exported from the Plot to PCT Assignment Tool on dd/mm/yyyy. PCT data last updated dd/mm/yyyy
+      out_string <- paste0("Exported from the Plot to PCT Assignment Tool on ",myvar,". PCT data is Eastern NSW PCT Classification version 1.1."  ,"\n", "=================\n")
       cat(out_string, file = file, sep = '\n')
       
       withProgress(message = 'Processing....',
@@ -1006,8 +1006,8 @@ shinyServer(function(input, output,session) {
       # 
       
       myvar <- format(Sys.Date(), format="%d/%m/%Y")
-      #Exported from Plot to PCT Assignment Tool on dd/mm/yyyy. PCT data last updated dd/mm/yyyy
-      out_string <- paste0("Exported from Plot to PCT Assignment Tool on ",myvar,". PCT data is Eastern NSW PCT Classification version 1.1."  ,"\n", "=================\n")
+      #Exported from the Plot to PCT Assignment Tool on dd/mm/yyyy. PCT data last updated dd/mm/yyyy
+      out_string <- paste0("Exported from the Plot to PCT Assignment Tool on ",myvar,". PCT data is Eastern NSW PCT Classification version 1.1."  ,"\n", "=================\n")
       cat(out_string, file = file, sep = '\n')
       
       withProgress(message = 'Processing....',
@@ -1091,8 +1091,8 @@ shinyServer(function(input, output,session) {
       # 
       
       myvar <- format(Sys.Date(), format="%d/%m/%Y")
-      #Exported from Plot to PCT Assignment Tool on dd/mm/yyyy. PCT data last updated dd/mm/yyyy
-      out_string <- paste0("Exported from Plot to PCT Assignment Tool on ",myvar,". PCT data is Eastern NSW PCT Classification version 1.1."  ,"\n", "=================\n")
+      #Exported from the Plot to PCT Assignment Tool on dd/mm/yyyy. PCT data last updated dd/mm/yyyy
+      out_string <- paste0("Exported from the Plot to PCT Assignment Tool on ",myvar,". PCT data is Eastern NSW PCT Classification version 1.1."  ,"\n", "=================\n")
       cat(out_string, file = file, sep = '\n')
       
       withProgress(message = 'Processing....',
@@ -1366,7 +1366,7 @@ shinyServer(function(input, output,session) {
     #   if (!columnName==""){
     #     
     #     if (substr(columnName,1,nchar(columnName)-1)=="PCT_Match"){
-          showModal(modalDialog(title="PCT Profile data", fluidPage(br(),ClickedCharSppPCT()),size = "l",easyClose = TRUE))
+          showModal(modalDialog(title="PCT Profile", fluidPage(br(),ClickedCharSppPCT()),size = "l",easyClose = TRUE))
     #     }
     #   }
     # }
