@@ -2,6 +2,7 @@ library(jsonlite)
 library(loggit)
 library(rdrop2)
 library(dplyr)
+library(tidyr)
 
 source("json_logfile_reader_functions.R")
 
@@ -29,8 +30,36 @@ download_folder(path = "PlotToPCTAssignmentTool_ActivityLogFiles/",
 log_files <- dir(path = "PlotToPCTAssignmentTool_ActivityLogFiles/",
                  pattern = "*json", full.names = T)
 
+#log_files_list <- lapply(log_files, read_logs)
+
 log_files_df <- bind_rows(
   lapply(log_files, read_logs)
 )
+
+# extract missing species lists
+cols_to_keep <- c("timestamp","log_lvl","log_msg","log_detail","event","sessionid",
+                  "Numplots","Numspecies","NumplotsWithEnvData","NumplotsWithSpatialData")
+
+log_files_species <- log_files_df %>%
+  filter(grepl("Species names not found", log_detail, fixed = T)) %>%
+  unite("missing_spp", !(any_of(cols_to_keep))) %>%
+  mutate(missing_spp = gsub("NA", "", .$missing_spp)) %>%
+  mutate(missing_spp = gsub("_", "", .$missing_spp)) %>%
+  mutate(missing_spp = gsub("N/A", "", .$missing_spp)) %>%
+  mutate(missing_spp = gsub("MissingSpeciesList", "", .$missing_spp)) %>%
+  mutate(missing_spp = gsub("so were ignored in analysis.", "", .$missing_spp)) %>%
+  mutate(missing_spp = gsub("</mark>", "", .$missing_spp)) %>%
+  mutate(missing_spp = gsub("</b>0", "", .$missing_spp)) %>%
+  mutate(missing_spp = gsub("Spatial data not imported", "", .$missing_spp)) %>%
+  mutate(missing_spp = gsub("0", "", .$missing_spp)) %>%
+  mutate(missing_spp = gsub("all species could be found.", "", .$missing_spp))
+
+log_files_main <- log_files_df %>%
+  filter(grepl("Number of plots", log_detail, fixed = T)) %>%
+  unite("other_info", !(any_of(cols_to_keep))) %>%
+  mutate(other_info = gsub("NA", "", .$other_info)) %>%
+  mutate(other_info = gsub("_", "", .$other_info)) %>%
+  mutate(other_info = gsub("N/A", "", .$other_info))
+
 
 # now you're ready to do something with the data!
