@@ -1459,7 +1459,7 @@ shinyServer(function(input, output,session) {
 
           showNotification(paste0("Loading classification data"),duration = 20,type = c("message"))
 
-          pctjson <-fromJSON("https://datatest.bionet.nsw.gov.au/BioSvcApp/odata/VegetationClassification_PCTDefinition?$select=PCTID,PCTName,vegetationDescription,classificationConfidenceLevel,numberOfPrimaryReplicates,numberOfSecondaryReplicates,vegetationFormation,vegetationClass,IBRASubregion,maximumElevationInMeters,minimumElevationInMeters,medianElevationInMeters,maximumAnnualRainfallInMillimeters,minimumAnnualRainfallInMillimeters,medianAnnualRainfallInMillimeters,maximumAnnualMeanTemperatureInCelsius,minimumAnnualMeanTemperatureInCelsius,medianAnnualMeanTemperatureInCelsius,TECAssessed,stateTECFitStatus,medianNativeSpeciesRichness")
+          pctjson <-fromJSON("https://data.bionet.nsw.gov.au/BioSvcApp/odata/VegetationClassification_PCTDefinition?$select=PCTID,PCTName,vegetationDescription,classificationConfidenceLevel,numberOfPrimaryReplicates,numberOfSecondaryReplicates,vegetationFormation,vegetationClass,IBRASubregion,maximumElevationInMeters,minimumElevationInMeters,medianElevationInMeters,maximumAnnualRainfallInMillimeters,minimumAnnualRainfallInMillimeters,medianAnnualRainfallInMillimeters,maximumAnnualMeanTemperatureInCelsius,minimumAnnualMeanTemperatureInCelsius,medianAnnualMeanTemperatureInCelsius,TECAssessed,stateTECFitStatus,medianNativeSpeciesRichness")
 
 
           # Initialize a temporary in memory database and copy a data.frame into it
@@ -1498,7 +1498,7 @@ shinyServer(function(input, output,session) {
 
           ## pct tec data
           ## Liz - need to add ,TECComments to end of url string below. when web service has TEC_Comments added
-          pcttecjson <-fromJSON("https://datatest.bionet.nsw.gov.au/BioSvcApp/odata/VegetationClassification_PCTDefinition?$select=PCTID,TECAssessed,stateTECProfileID,stateTECFitStatus,stateTECDegreeOfFit,countryTECProfileID,countryTECFitStatus,countryTECDegreeOfFit")
+          pcttecjson <-fromJSON("https://data.bionet.nsw.gov.au/BioSvcApp/odata/VegetationClassification_PCTDefinition?$select=PCTID,TECAssessed,stateTECProfileID,stateTECFitStatus,stateTECDegreeOfFit,countryTECProfileID,countryTECFitStatus,countryTECDegreeOfFit")
 
 
           # Initialize a temporary in memory database and copy a data.frame into it
@@ -1536,7 +1536,7 @@ shinyServer(function(input, output,session) {
           progress$set(message = "Loading PCT Species growth forms data", value = 0.95)
           showNotification(paste0("Loading PCT Species growth form data"),duration = 20,type = c("message"))
 
-          spgfjson <-fromJSON("https://datatest.bionet.nsw.gov.au/BioSvcApp/odata/VegetationClassification_PCTGrowthForm?$select=PCTID,scientificName,medianCoverScore,speciesFrequency,primaryGrowthFormGroup")
+          spgfjson <-fromJSON("https://data.bionet.nsw.gov.au/BioSvcApp/odata/VegetationClassification_PCTGrowthForm?$select=PCTID,scientificName,medianCoverScore,speciesFrequency,primaryGrowthFormGroup")
 
 
           # Initialize a temporary in memory database and copy a data.frame into it

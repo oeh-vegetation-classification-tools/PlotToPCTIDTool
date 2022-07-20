@@ -59,3 +59,11 @@
 2019-06-14 23:23:35 , Error: Uploaded data file is not comma separated. Please check acceptable file formats. file:KT_TestData_SitexSpMatrix_WithEnvVars_TAB.txt
 2019-06-21 21:51:43 , Error: data is incorrect format. Check sample data for correct format. file:DummyPCTIDToolDataInputFormatNOX.csv
 2019-06-21 21:51:56 , Error: Cell(s)  93  have no data. file:KT_TestData_SitexSpMatrix_WithEnvVars_BLANK_DATA.txt
+2022-06-22 15:07:17 , Error: Error in s[[1]][[i]]: subscript out of bounds
+
+2022-06-22 15:09:45 , Error: Error in s[[1]][[i]]: subscript out of bounds
+
+2022-06-22 15:16:09 , Error: Error in s[[1]][[i]]: subscript out of bounds
+
+2022-06-23 14:34:30 , Error: Error in s[[1]][[i]]: subscript out of bounds
+
