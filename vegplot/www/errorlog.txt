@@ -67,3 +67,54 @@
 
 2022-06-23 14:34:30 , Error: Error in s[[1]][[i]]: subscript out of bounds
 
+2023-12-01 09:16:04 , Error: Error: Columns `TEC_Comments` not found
+
+2023-12-01 09:20:13 , Error: Error: Columns `TEC_Comments` not found
+
+2023-12-01 09:34:28 , Error: Error: near "A": syntax error
+
+2023-12-01 09:55:50 , Error: Error in open.connection(con, "rb"): cannot open the connection
+
+2023-12-08 17:54:13 , Error: [1m[33mError[39m in `between()` at ]8;line = 239:col = 5;file://C:\Users\magaree\PlotToPCTIDTool\vegplot\server.RC:\Users\magaree\PlotToPCTIDTool\vegplot/server.R:239:5]8;;:[22m
+[33m![39m Can't combine `x` <data.frame> and `left` <double>.
+
+2023-12-08 17:58:16 , Error: [1m[33mError[39m in `between()` at ]8;line = 239:col = 5;file://C:\Users\magaree\PlotToPCTIDTool\vegplot\server.RC:\Users\magaree\PlotToPCTIDTool\vegplot/server.R:239:5]8;;:[22m
+[33m![39m Can't combine `x` <data.frame> and `left` <double>.
+
+2023-12-08 17:59:19 , Error: [1m[33mError[39m in `between()` at ]8;line = 239:col = 5;file://C:\Users\magaree\PlotToPCTIDTool\vegplot\server.RC:\Users\magaree\PlotToPCTIDTool\vegplot/server.R:239:5]8;;:[22m
+[33m![39m Can't combine `x` <data.frame> and `left` <double>.
+
+2023-12-08 18:00:11 , Error: [1m[33mError[39m in `between()` at ]8;line = 239:col = 5;file://C:\Users\magaree\PlotToPCTIDTool\vegplot\server.RC:\Users\magaree\PlotToPCTIDTool\vegplot/server.R:239:5]8;;:[22m
+[33m![39m Can't combine `x` <data.frame> and `left` <double>.
+
+2023-12-08 18:01:15 , Error: [1m[33mError[39m in `between()` at ]8;line = 239:col = 5;file://C:\Users\magaree\PlotToPCTIDTool\vegplot\server.RC:\Users\magaree\PlotToPCTIDTool\vegplot/server.R:239:5]8;;:[22m
+[33m![39m Can't combine `x` <data.frame> and `left` <double>.
+
+2023-12-08 18:08:02 , Error: [1m[33mError[39m in `between()` at ]8;line = 237:col = 5;file://C:\Users\magaree\PlotToPCTIDTool\vegplot\server.RC:\Users\magaree\PlotToPCTIDTool\vegplot/server.R:237:5]8;;:[22m
+[33m![39m Can't combine `x` <data.frame> and `left` <double>.
+
+2023-12-08 18:08:44 , Error: [1m[33mError[39m in `between()`:[22m
+[33m![39m Can't combine `x` <data.frame> and `left` <double>.
+
+2023-12-08 23:52:04 , Error: Cell(s)  6  have data with values outside cover-abundance score range (range = 0-6 inclusive) file:Error1ValueOutOfCARange_ShinyTest_SiteXSpeciesMatrix_WithEnvVars.csv
+2023-12-08 23:55:54 , Error: Cell(s)  6  have data with values outside cover-abundance score range (range = 0-6 inclusive) file:Error1ValueOutOfCARange_ShinyTest_SiteXSpeciesMatrix_WithEnvVars.csv
+2023-12-08 23:56:28 , Error: Cell(s)  1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28  have data with values outside cover-abundance score range (range = 0-6 inclusive) file:8625_EM_TestCUMBSurveyExport.csv
+2023-12-08 23:57:20 , Error: Cell(s)  1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28  have data with values outside cover-abundance score range (range = 0-6 inclusive) file:8625_EM_TestCUMBSurveyExport.csv
+2023-12-09 00:54:08 , Error: Cell(s)  1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28  have data with values outside cover-abundance score range (range = 0-6 inclusive) file:8625_EM_TestCUMBSurveyExport.csv
+2023-12-09 00:54:26 , Error: Cell(s)  6  have data with values outside cover-abundance score range (range = 0-6 inclusive) file:Error1ValueOutOfCARange_ShinyTest_SiteXSpeciesMatrix_WithEnvVars.csv
+2023-12-15 12:17:57 , Error: Error in open.connection(con, "rb"): cannot open the connection
+
+2023-12-15 12:18:42 , Error: Error in open.connection(con, "rb"): cannot open the connection
+
+2023-12-15 12:26:09 , Error: Error in open.connection(con, "rb"): cannot open the connection
+
+2023-12-15 12:29:25 , Error: Error in open.connection(con, "rb"): cannot open the connection
+
+2023-12-15 12:54:57 , Error: Error in open.connection(con, "rb"): cannot open the connection
+
+2023-12-15 13:49:21 , Error: Error in if (is.na(d1$Classification_confidence_level)) "" else d1$Classification_confidence_level: argument is of length zero
+
+2023-12-15 13:49:51 , Error: Error in if (is.na(d1$Classification_confidence_level)) "" else d1$Classification_confidence_level: argument is of length zero
+
+2023-12-15 13:50:03 , Error: Error in if (is.na(d1$Classification_confidence_level)) "" else d1$Classification_confidence_level: argument is of length zero
+

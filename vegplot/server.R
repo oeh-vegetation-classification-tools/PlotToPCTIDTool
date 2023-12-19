@@ -151,7 +151,8 @@ shinyServer(function(input, output,session) {
     fidb<-file.info(list.files(path=fp,pattern="pctdatadb.sqlite$", full.names=TRUE))
     fi<-file.info(list.files(path=fp,pattern="bionetapp.info$", full.names=TRUE))
     
-    applasteupdated <-as.character(fi$mtime,"%d/%m/%Y")
+    # Liz changed below line so that app last updated = date of sqlite file
+    applasteupdated <-as.character(fidb$mtime,"%d/%m/%Y")
     dblasteupdated <-as.character(fidb$mtime,"%d/%m/%Y")
     
     list_data <- list(c(applasteupdated), c(dblasteupdated))
@@ -196,7 +197,7 @@ shinyServer(function(input, output,session) {
       env_data <- select(infile_df, sites, one_of(non_floristic), -X)
     }
     if ((env_present==FALSE)&&(xcolmissing==TRUE)){
-      errmsg <- paste(Sys.time(), ", Error: data is incorrect format. Check sample data for correct format.")
+      errmsg <- paste(Sys.time(), ", Error: data are incorrect format. Check sample data for correct format.")
       message(errmsg)
       showNotification(errmsg,duration = 30,type = c("error"))
       write(paste0(errmsg," file:",inFile$name), paste0(file.path(getwd(), "www"),"/errorlog.txt"), append = TRUE) 
@@ -233,7 +234,8 @@ shinyServer(function(input, output,session) {
     }
     
     # cell data has value > 6 check for 'Sites with values outside cover-abundance score range' (range = 0-6 inclusive);
-    if (length(which(between(floristics,7,100)))>0) {
+    # EM changed first line below to 1000 instead of 100
+    if (length(which(between(floristics,7,1000)))>0) {
       errmsg <- paste(Sys.time(), ", Error: Cell(s) ",toString(which(between(floristics,7,1000)))," have data with values outside cover-abundance score range (range = 0-6 inclusive)")
       message(errmsg)
       showNotification(errmsg,duration = 30,type = c("error"))
@@ -241,7 +243,16 @@ shinyServer(function(input, output,session) {
       return(NULL)
     }
     
-   
+    # EM added detection of negative values
+    if (length(which(between(floristics,-10000,-1)))>0) {
+      errmsg <- paste(Sys.time(), ", Error: Cell(s) ",toString(which(between(floristics,-10000,-1)))," have data with values outside cover-abundance score range (range = 0-6 inclusive)")
+      message(errmsg)
+      showNotification(errmsg,duration = 30,type = c("error"))
+      write(paste0(errmsg," file:",inFile$name), paste0(file.path(getwd(), "www"),"/errorlog.txt"), append = TRUE) 
+      return(NULL)
+    }
+    
+    
     
     out_list <- list(sites = infile_df[,1],
                      floristics = floristics,
@@ -286,8 +297,8 @@ shinyServer(function(input, output,session) {
       numplotsWithSpatialData<-0
       
       # place holder at the moment. TODO: needs to be recalculated based on additional data from matrix file.
-      # mitch: if we want to handle incomplete environemtnal data, that will have to be done further down the track
-              # TODO: include qa/qc of incoming environemtnal data, for the meantime, assume it's complete 
+      # mitch: if we want to handle incomplete environmental data, that will have to be done further down the track
+              # TODO: include qa/qc of incoming environmental data, for the meantime, assume it's complete 
       inFile <- input$file1
       infile_df <- read.csv(inFile$datapath,
                             header = T,
@@ -781,7 +792,7 @@ shinyServer(function(input, output,session) {
    
       myvar <- format(Sys.Date(), format="%d/%m/%Y")
       #Exported from the Plot to PCT Assignment Tool on dd/mm/yyyy. PCT data last updated dd/mm/yyyy
-      out_string <- paste0("Exported from the Plot to PCT Assignment Tool on ",myvar,". PCT data is Eastern NSW PCT Classification version 1.1."  ,"\n", "=================\n")
+      out_string <- paste0("Exported from the Plot to PCT Assignment Tool on ",myvar,". PCT data are Eastern NSW PCT Classification version C2.0."  ,"\n", "=================\n")
       cat(out_string, file = file, sep = '\n')
       
       
@@ -822,7 +833,7 @@ shinyServer(function(input, output,session) {
       
       centmatches<-download_matches()$cent
       centmatches<-reorder_data(centmatches)
-      out_string <- paste0("Exported from the Plot to PCT Assignment Tool on ",myvar,". PCT data is Eastern NSW PCT Classification version 1.1."  ,"\n", "=================\n")
+      out_string <- paste0("Exported from the Plot to PCT Assignment Tool on ",myvar,". PCT data are Eastern NSW PCT Classification version C2.0."  ,"\n", "=================\n")
       cat(out_string, file = file, sep = '\n')
       
       
@@ -876,6 +887,7 @@ shinyServer(function(input, output,session) {
       pcttecdata<-getTEC_For_PCTProfiles()
       
       # removed 17/06/21  pctdt.TEC_Act,
+      # Liz added TEC Comments 30 Nov 2023. On 2 December, after adding TEC_Comments column to the pctprofiledata table of the sqlite file, I changed the below from pcttecdata.TEC_Comments to pctdt.TEC_Comments so they are coming from the same table as the popup profiles (which both feed from same column of web service anyway, but better to be safe and align)
       
       allpctprofiles<-sqldf("select pctdt.PCTID,
                                 pctdt.PCTName,
@@ -897,7 +909,7 @@ shinyServer(function(input, output,session) {
                                 pctdt.Temperature_median,
                                 pcttecdata.TECAssessed,
                                 pctdt.TEC_list,
-                               
+                                pctdt.TEC_Comments,
                                 pctdt.Median_species_richness
                                from pctdt join pcttecdata on pcttecdata.pctid=pctdt.pctid where pctdt.pctid in (SELECT pctid FROM matchedpcts)")
             
@@ -905,7 +917,7 @@ shinyServer(function(input, output,session) {
       #Median_Annual_Rainfall_(mm)	Maximum_Annual_Mean_Temperature_(°C)	Minimum_Annual_Mean_Temperature_(°C)	Median_Annual_Mean_Temperature_(°C)
       
      
-      
+      # Liz added TEC Comments below 30 Nov 2023
       allpctprofiles<-allpctprofiles %>% rename(PCT_ID = PCTID, PCT_Name=PCTName, Vegetation_Description=Vegetation_description,
                                                 Classification_Confidence_Level=Classification_confidence_level,
                                                 Number_of_Primary_Replicates=Number_of_Primary_replicates,
@@ -919,8 +931,8 @@ shinyServer(function(input, output,session) {
                                                 "Maximum_Annual_Mean_Temperature_(deg.C)"=Temperature_max,
                                                 "Minimum_Annual_Mean_Temperature_(deg.C)"=Temperature_min,
                                                 "Median_Annual_Mean_Temperature_(deg.C)"=Temperature_median,
-                                                "TEC Assessed"=TECAssessed,
-                                                TEC_List=TEC_list,Median_Native_Species_Richness=Median_species_richness)
+                                                "TEC_Assessed"=TECAssessed,
+                                                TEC_List=TEC_list,TEC_Comments=TEC_Comments,Median_Native_Species_Richness=Median_species_richness)
         
       
       return(allpctprofiles)
@@ -937,7 +949,7 @@ shinyServer(function(input, output,session) {
    
       myvar <- format(Sys.Date(), format="%d/%m/%Y")
       #Exported from the Plot to PCT Assignment Tool on dd/mm/yyyy. PCT data last updated dd/mm/yyyy
-      out_string <- paste0("Exported from the Plot to PCT Assignment Tool on ",myvar,". PCT data is Eastern NSW PCT Classification version 1.1."  ,"\n", "=================\n")
+      out_string <- paste0("Exported from the Plot to PCT Assignment Tool on ",myvar,". PCT data are Eastern NSW PCT Classification version C2.0."  ,"\n", "=================\n")
       cat(out_string, file = file, sep = '\n')
       
       withProgress(message = 'Processing....',
@@ -1007,7 +1019,7 @@ shinyServer(function(input, output,session) {
       
       myvar <- format(Sys.Date(), format="%d/%m/%Y")
       #Exported from the Plot to PCT Assignment Tool on dd/mm/yyyy. PCT data last updated dd/mm/yyyy
-      out_string <- paste0("Exported from the Plot to PCT Assignment Tool on ",myvar,". PCT data is Eastern NSW PCT Classification version 1.1."  ,"\n", "=================\n")
+      out_string <- paste0("Exported from the Plot to PCT Assignment Tool on ",myvar,". PCT data are Eastern NSW PCT Classification version C2.0."  ,"\n", "=================\n")
       cat(out_string, file = file, sep = '\n')
       
       withProgress(message = 'Processing....',
@@ -1092,7 +1104,7 @@ shinyServer(function(input, output,session) {
       
       myvar <- format(Sys.Date(), format="%d/%m/%Y")
       #Exported from the Plot to PCT Assignment Tool on dd/mm/yyyy. PCT data last updated dd/mm/yyyy
-      out_string <- paste0("Exported from the Plot to PCT Assignment Tool on ",myvar,". PCT data is Eastern NSW PCT Classification version 1.1."  ,"\n", "=================\n")
+      out_string <- paste0("Exported from the Plot to PCT Assignment Tool on ",myvar,". PCT data are Eastern NSW PCT Classification version C2.0."  ,"\n", "=================\n")
       cat(out_string, file = file, sep = '\n')
       
       withProgress(message = 'Processing....',
@@ -1424,7 +1436,7 @@ shinyServer(function(input, output,session) {
 
           ## PCT DATA UPDATES FOR FLORA SURVEY
           
-           fjs <-fromJSON("https://data.bionet.nsw.gov.au/BioSvcApp/odata/SystematicFloraSurvey_SiteData?$select=siteID,%20currentClassification,%20currentClassificationDescription,%20surveyName,%20PCTAssignmentCategory,%20decimalLatitude,%20decimalLongitude,%20visitNo,%20ElevationInMeters,%20annualRainfallInMillimeters,%20annualMeanTemperatureInCelsius")
+           fjs <-fromJSON("https://data.bionet.nsw.gov.au/biosvcapp/odata/SystematicFloraSurvey_SiteData?$select=siteID,%20currentClassification,%20currentClassificationDescription,%20surveyName,%20PCTAssignmentCategory,%20decimalLatitude,%20decimalLongitude,%20visitNo,%20ElevationInMeters,%20annualRainfallInMillimeters,%20annualMeanTemperatureInCelsius")
           
           # n<-as.integer(length(pctdata$value))
           # Initialize a temporary in memory database and copy a data.frame into it
@@ -1458,8 +1470,9 @@ shinyServer(function(input, output,session) {
           progress$set(message = "Loading classification data", value = 0.25)
 
           showNotification(paste0("Loading classification data"),duration = 20,type = c("message"))
-
-          pctjson <-fromJSON("https://data.bionet.nsw.gov.au/BioSvcApp/odata/VegetationClassification_PCTDefinition?$select=PCTID,PCTName,vegetationDescription,classificationConfidenceLevel,numberOfPrimaryReplicates,numberOfSecondaryReplicates,vegetationFormation,vegetationClass,IBRASubregion,maximumElevationInMeters,minimumElevationInMeters,medianElevationInMeters,maximumAnnualRainfallInMillimeters,minimumAnnualRainfallInMillimeters,medianAnnualRainfallInMillimeters,maximumAnnualMeanTemperatureInCelsius,minimumAnnualMeanTemperatureInCelsius,medianAnnualMeanTemperatureInCelsius,TECAssessed,stateTECFitStatus,medianNativeSpeciesRichness")
+          
+          # Liz added TEC Comments below 1 Dec 2023 then removed as didnt work. Trying again 2 December - worked so left in :) It worked after I added a TEC_Comments table to the pctprofile table in the sqlite file)
+          pctjson <-fromJSON("https://data.bionet.nsw.gov.au/biosvcapp/odata/VegetationClassification_PCTDefinition?$select=PCTID,PCTName,vegetationDescription,classificationConfidenceLevel,numberOfPrimaryReplicates,numberOfSecondaryReplicates,vegetationFormation,vegetationClass,IBRASubregion,maximumElevationInMeters,minimumElevationInMeters,medianElevationInMeters,maximumAnnualRainfallInMillimeters,minimumAnnualRainfallInMillimeters,medianAnnualRainfallInMillimeters,maximumAnnualMeanTemperatureInCelsius,minimumAnnualMeanTemperatureInCelsius,medianAnnualMeanTemperatureInCelsius,TECAssessed,stateTECFitStatus,TECComments,medianNativeSpeciesRichness")
 
 
           # Initialize a temporary in memory database and copy a data.frame into it
@@ -1467,6 +1480,8 @@ shinyServer(function(input, output,session) {
           dbExecute(con,"DELETE FROM pctprofiledata")
 
 
+          #Liz added TEC Comments below 1 Dec 2023 then removed as didnt work. Then readded 2 December  names(pctprofiledt_df)[names(pctprofiledt_df) == "TECComments"] <- "TEC_Comments"
+          # Liz noting in 2023 too that the placement of the data "TECAssessed" into a column called "TEC_list" is a misnomer and should be stopped at some point.
           pctprofiledt_df<-as.data.frame(pctjson$value, stringsAsFactors = F)
 
           names(pctprofiledt_df)[names(pctprofiledt_df) == "vegetationDescription"] <- "Vegetation_description"
@@ -1491,14 +1506,15 @@ shinyServer(function(input, output,session) {
           names(pctprofiledt_df)[names(pctprofiledt_df) == "TECAssessed"] <- "TEC_list"
           names(pctprofiledt_df)[names(pctprofiledt_df) == "stateTECFitStatus"] <- "TEC_Act"
           names(pctprofiledt_df)[names(pctprofiledt_df) == "medianNativeSpeciesRichness"] <- "Median_species_richness"
-
-
+          names(pctprofiledt_df)[names(pctprofiledt_df) == "TECComments"] <- "TEC_Comments"
+          
           dbWriteTable(con, "pctprofiledata",pctprofiledt_df, overwrite=F, append=T)
 
 
           ## pct tec data
           ## Liz - need to add ,TECComments to end of url string below. when web service has TEC_Comments added
-          pcttecjson <-fromJSON("https://data.bionet.nsw.gov.au/BioSvcApp/odata/VegetationClassification_PCTDefinition?$select=PCTID,TECAssessed,stateTECProfileID,stateTECFitStatus,stateTECDegreeOfFit,countryTECProfileID,countryTECFitStatus,countryTECDegreeOfFit")
+          # Liz added TECComments 30 Nov 2023
+          pcttecjson <-fromJSON("https://data.bionet.nsw.gov.au/biosvcapp/odata/VegetationClassification_PCTDefinition?$select=PCTID,TECAssessed,stateTECProfileID,stateTECFitStatus,stateTECDegreeOfFit,countryTECProfileID,countryTECFitStatus,countryTECDegreeOfFit,TECComments")
 
 
           # Initialize a temporary in memory database and copy a data.frame into it
@@ -1507,7 +1523,9 @@ shinyServer(function(input, output,session) {
 
 
           pctTECdt_df<-as.data.frame(pcttecjson$value, stringsAsFactors = F)
-
+          # Liz added TECComments line below 30 Nov 2023
+          names(pctTECdt_df)[names(pctTECdt_df) == "TECComments"] <-"TEC_Comments"
+          
           dbWriteTable(con, "pct_tecdata",pctTECdt_df, overwrite=F, append=T)
 
 
@@ -1516,7 +1534,7 @@ shinyServer(function(input, output,session) {
           showNotification(paste0("Loading TEC data"),duration = 20,type = c("message"))
 
           ## tec data only
-          tecjson <-fromJSON("https://data.bionet.nsw.gov.au/BioSvcApp/odata/ThreatenedBiodiversity_EcologicalCommunities?$select=profileID,TECName,stateConservation,countryConservation")
+          tecjson <-fromJSON("https://data.bionet.nsw.gov.au/biosvcapp/odata/ThreatenedBiodiversity_EcologicalCommunities?$select=profileID,TECName,stateConservation,countryConservation")
 
 
           # Initialize a temporary in memory database and copy a data.frame into it
@@ -1536,7 +1554,7 @@ shinyServer(function(input, output,session) {
           progress$set(message = "Loading PCT Species growth forms data", value = 0.95)
           showNotification(paste0("Loading PCT Species growth form data"),duration = 20,type = c("message"))
 
-          spgfjson <-fromJSON("https://data.bionet.nsw.gov.au/BioSvcApp/odata/VegetationClassification_PCTGrowthForm?$select=PCTID,scientificName,medianCoverScore,speciesFrequency,primaryGrowthFormGroup")
+          spgfjson <-fromJSON("https://data.bionet.nsw.gov.au/biosvcapp/odata/VegetationClassification_PCTGrowthForm?$select=PCTID,scientificName,medianCoverScore,speciesFrequency,primaryGrowthFormGroup")
 
 
           # Initialize a temporary in memory database and copy a data.frame into it
@@ -1576,7 +1594,8 @@ shinyServer(function(input, output,session) {
             
             pctid<-dataToUpdateTECS$PCTID[X]
             
-            ##state tec names          
+            ##state tec names
+            # Liz added TEC Comments below 1 Dec 2023 ,A.TEC_Comments TEC_Comments before FROM PCT_TECData A. Removed 2 Dec as I think not necessary now TEC_Comments added to pctprofiledata table
             rs <- dbSendQuery(con, paste0("SELECT B.profileID,'Listed BC Act: '|| B.stateConservation || ': ' || B.TECName ||'' as TEC_Name,'BC Act' as ACT, 
                                           A.stateTECFitStatus as TECFitStatus, A.TECAssessed TECAssessed FROM PCT_TECData A 
                                           LEFT JOIN TECData B on A.stateTECProfileID like '%'||B.profileID||'%'
@@ -1590,7 +1609,8 @@ shinyServer(function(input, output,session) {
             dbClearResult(rs)
             
             
-            ##comm tec names                 
+            ##comm tec names
+            # Liz added TEC Comments below 1 Dec 2023 ,A.TEC_Comments TEC_Comments before FROM PCT_TECData A. Removed 2 Dec as I think not necessary now TEC_Comments added to pctprofiledata table
             rs <- dbSendQuery(con, paste0("SELECT B.profileID,'Listed EPBC Act: '|| B.countryConservation || ': ' || B.TECName ||'' as TEC_Name, 'EPBC Act' as ACT, 
                                           A.countryTECFitStatus as TECFitStatus, A.TECAssessed TECAssessed FROM PCT_TECData A 
                                           LEFT JOIN TECData B on A.countryTECProfileID like '%'||B.profileID||'%'
@@ -1607,11 +1627,13 @@ shinyServer(function(input, output,session) {
             TECAssessed<-"No associated TEC"
             TECAct<-""
             TECList<-""
+            # Liz change below from TECComments to TEC_Comments 1 Dec 2023 then changed back again
             TECComments<-""
             
             if (n>0){
               
-              TECComments<-toString(dtStateTEC$TECComments[0])
+              #Liz changed below 1 Dec 2023 from TECComments<-toString(dtStateTEC$TECComments[0]) to TECComments<-toString(dtStateTEC$TEC_Comments[0]) then changed back again
+              TEC_Comments<-toString(dtStateTEC$TECComments[0])
               
               for (i in 1:n){ 
                 
@@ -1906,12 +1928,12 @@ shinyServer(function(input, output,session) {
   
   output$MapViewMessage <- renderUI({
     
-        HTML("Map displayed only when spatial data is provided.")
+        HTML("Map displays only when spatial data are provided.")
    
   })
   output$EnvDataViewMessage <- renderUI({
     
-    HTML("Environmental thresholds displayed only when site environmental data is loaded.")
+    HTML("Environmental thresholds display only when site environmental data are loaded.")
     
   })
   

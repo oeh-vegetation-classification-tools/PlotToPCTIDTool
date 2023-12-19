@@ -367,7 +367,8 @@ getPCTProfile<- function(pctid) {
   
  ##state tec names SELECT B.profileID,'Listed BC Act: '|| B.stateConservation || ': ' || B.TECName ||'' as TEC_Name,'BC Act' as ACT, A.stateTECFitStatus as TECFitStatus, A.TECAssessed TECAssessed, CASE WHEN A.TEC_Comments IS NULL THEN '' ELSE A.TEC_Comments END TECComments
   ## for Liz removed ", CASE WHEN A.TEC_Comments IS NULL THEN '' ELSE A.TEC_Comments END TECComments" from select statement below. To replace copy and paste without quotes after word TECAssessed
-  rs <- dbSendQuery(con, paste0("SELECT B.profileID,'Listed BC Act: '|| B.stateConservation || ': ' || B.TECName ||'' as TEC_Name,'BC Act' as ACT, A.stateTECFitStatus as TECFitStatus, A.TECAssessed TECAssessed FROM PCT_TECData A 
+  # Liz repasted 30 Nov 2023
+  rs <- dbSendQuery(con, paste0("SELECT B.profileID,'Listed BC Act: '|| B.stateConservation || ': ' || B.TECName ||'' as TEC_Name,'BC Act' as ACT, A.stateTECFitStatus as TECFitStatus, A.TECAssessed TECAssessed, CASE WHEN A.TEC_Comments IS NULL THEN '' ELSE A.TEC_Comments END TECComments FROM PCT_TECData A 
                                 INNER JOIN TECData B on A.stateTECProfileID like '%'||B.profileID||'%'
                                 where A.PCTID='",pctid,"' "))
   dtStateTEC <- dbFetch(rs)
@@ -399,7 +400,8 @@ getPCTProfile<- function(pctid) {
   if (n>0){
     
     ## for Liz uncomment line below to implement TEC_Comments
-    ## TECComments<-toString(dtStateTEC$TECComments[0])
+    # Liz uncommented 30 Nov 2023
+    TECComments<-toString(dtStateTEC$TECComments[0])
     
     for (i in 1:n){ 
       
@@ -443,6 +445,7 @@ getPCTProfile<- function(pctid) {
   
   ##for Liz, removed string as is with first comma from below ,"<b>TEC Comments:</b>",TECComments,"<br/>"
   ## to replace copy and paste under TECList below.
+  # Liz replaced 30 Nov 2023. Then on 1 Dec 2023 tried changing from  ,"<b>TEC Comments:</b>",TECComments,"<br/>" to ,"<b>TEC Comments:</b>",d1$TEC_Comments,"<br/>", but didn't work so changed back. Trying again 2 December now column added to pctprofiledata table
   
     pctprofile01<-paste0("<b>PCT ID:</b>",pctid,"<br/>"
                             ,"<b>PCT Name:</b>",d1$PCTName,"<br/>"
@@ -466,7 +469,7 @@ getPCTProfile<- function(pctid) {
                          
                             ,"<b>TEC Assessed:</b>",TECAssessed,"<br/>"
                             ,"<b>TEC List:</b>",TECList,"<br/>"
-                            
+                            ,"<b>TEC Comments:</b>",d1$TEC_Comments,"<br/>"
                             
                             ,"<b>Median Native Species Richness:</b>",d1$Median_species_richness,"<br/>"
                             ,"<div><b>Species by Growth Form Group:</b>")
@@ -532,7 +535,8 @@ getTEC_For_PCTProfiles<- function() {
   
   
     ##state tec names 
-    rs <- dbSendQuery(con, paste0("select PCT_TECData.PCTID, PCT_TECData.TECAssessed from  PCT_TECData"))
+    # Liz added TEC_Comments below 30 Nov 2023
+    rs <- dbSendQuery(con, paste0("select PCT_TECData.PCTID, PCT_TECData.TECAssessed, PCT_TECData.TEC_Comments from  PCT_TECData"))
     dtPCTTEC <- dbFetch(rs)
     dbHasCompleted(rs)
     dbClearResult(rs)
