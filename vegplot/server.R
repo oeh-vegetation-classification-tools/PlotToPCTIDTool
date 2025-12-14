@@ -1434,37 +1434,96 @@ shinyServer(function(input, output,session) {
           showNotification(paste0("Loading flora survey data"),duration = 20,type = c("message"))
 
 
-          ## PCT DATA UPDATES FOR FLORA SURVEY
+          ## PCT DATA UPDATES FOR FLORA SURVEY #Bill K code that as at December 2025 is limited the returned FS data to 5000 rows
           
-           fjs <-fromJSON("https://data.bionet.nsw.gov.au/biosvcapp/odata/SystematicFloraSurvey_SiteData?$select=siteID,%20currentClassification,%20currentClassificationDescription,%20surveyName,%20PCTAssignmentCategory,%20decimalLatitude,%20decimalLongitude,%20visitNo,%20ElevationInMeters,%20annualRainfallInMillimeters,%20annualMeanTemperatureInCelsius")
+          # fjs <-fromJSON("https://data.bionet.nsw.gov.au/BioSvcApp/odata/SystematicFloraSurvey_SiteData?$select=siteID,%20currentClassification,%20currentClassificationDescription,%20surveyName,%20PCTAssignmentCategory,%20decimalLatitude,%20decimalLongitude,%20visitNo,%20ElevationInMeters,%20annualRainfallInMillimeters,%20annualMeanTemperatureInCelsius")
           
           # n<-as.integer(length(pctdata$value))
           # Initialize a temporary in memory database and copy a data.frame into it
-          con <- dbConnect(RSQLite::SQLite(), dbname="data/pctdatadb.sqlite")
+         # con <- dbConnect(RSQLite::SQLite(), dbname="data/pctdatadb.sqlite")
           
           
-          dbExecute(con,"DELETE FROM fsdata")
+        #  dbExecute(con,"DELETE FROM fsdata")
           ## for (i in 1:n){
 
-          fjs_df<-as.data.frame(fjs$value, stringsAsFactors = F)
+        #  fjs_df<-as.data.frame(fjs$value, stringsAsFactors = F)
 
-          names(fjs_df)[names(fjs_df) == "siteID"] <- "siteno"
-          names(fjs_df)[names(fjs_df) == "currentClassification"] <- "pctid"
-          names(fjs_df)[names(fjs_df) == "currentClassificationDescription"] <- "pctname"
-          names(fjs_df)[names(fjs_df) == "PCTAssignmentCategory"] <- "pctassignmentcategory"
-          names(fjs_df)[names(fjs_df) == "surveyName"] <- "surveyname"
-          names(fjs_df)[names(fjs_df) == "decimalLatitude"] <- "lat"
-          names(fjs_df)[names(fjs_df) == "decimalLongitude"] <- "long"
-          names(fjs_df)[names(fjs_df) == "visitNo"] <- "replicatenumber"
-          names(fjs_df)[names(fjs_df) == "ElevationInMeters"] <- "elevation"
-          names(fjs_df)[names(fjs_df) == "annualRainfallInMillimeters"] <- "rainfall"
-          names(fjs_df)[names(fjs_df) == "annualMeanTemperatureInCelsius"] <- "temp"
+        #  names(fjs_df)[names(fjs_df) == "siteID"] <- "siteno"
+        #  names(fjs_df)[names(fjs_df) == "currentClassification"] <- "pctid"
+        #  names(fjs_df)[names(fjs_df) == "currentClassificationDescription"] <- "pctname"
+        #  names(fjs_df)[names(fjs_df) == "PCTAssignmentCategory"] <- "pctassignmentcategory"
+        #  names(fjs_df)[names(fjs_df) == "surveyName"] <- "surveyname"
+        #  names(fjs_df)[names(fjs_df) == "decimalLatitude"] <- "lat"
+        #  names(fjs_df)[names(fjs_df) == "decimalLongitude"] <- "long"
+        #  names(fjs_df)[names(fjs_df) == "visitNo"] <- "replicatenumber"
+        #  names(fjs_df)[names(fjs_df) == "ElevationInMeters"] <- "elevation"
+        #  names(fjs_df)[names(fjs_df) == "annualRainfallInMillimeters"] <- "rainfall"
+        #  names(fjs_df)[names(fjs_df) == "annualMeanTemperatureInCelsius"] <- "temp"
 
-
+          
+          ## PCT DATA UPDATES FOR FLORA SURVEY #Lachlan Petit code provided to EM to get around the 5000 row limit problem encountered now
+          
+          # Build the initial URL (fixed: remove stray %22 at the end) ---
+          fjs_base_url <- "https://data.bionet.nsw.gov.au/BioSvcApp/odata/SystematicFloraSurvey_SiteData"
+          fjs_select <- "$select=siteID,currentClassification,currentClassificationDescription,surveyName,PCTAssignmentCategory,decimalLatitude,decimalLongitude,visitNo,ElevationInMeters,annualRainfallInMillimeters,annualMeanTemperatureInCelsius"
+          # Optional: request larger pages to reduce calls (server decides max)
+          #top <- "$top=5000"
+          
+          fjs_start_url <- paste0(fjs_base_url, "?", fjs_select)
+          
+          # Helper: fetch all pages using @odata.nextLink ---
+          fetch_odata_all <- function(url) {
+            pages <- list()
+            next_url <- url
+            page_idx <- 0
+            while (!is.null(next_url) && nzchar(next_url)) {
+              page_idx <- page_idx + 1
+              message(sprintf("Fetching page %d: %s", page_idx, next_url))
+              # Pull JSON (flatten handles nested objects if present)
+              res <- jsonlite::fromJSON(next_url, flatten = TRUE)
+              # Extract the 'value' array into a data.frame
+              df <- as.data.frame(res$value, stringsAsFactors = FALSE)
+              pages[[length(pages) + 1]] <- df
+              # Move to next page if provided
+              # Access the literal JSON property name "@odata.nextLink"
+              next_url <- res[["@odata.nextLink"]]
+              # If you want to be kind to the API, add a small pause:
+              Sys.sleep(0.2)
+            }
+            # Combine all pages into a single data.frame
+            if (length(pages) == 0) {
+              return(data.frame())
+            } else {
+              return(dplyr::bind_rows(pages))
+            }
+          }
+          
+          # Fetch all data pages ---
+          fjs_df <- fetch_odata_all(fjs_start_url)
+          
+          # Rename columns to your schema ---
+          # (Using dplyr::rename for readability)
+          fjs_df <- fjs_df %>%
+            rename(
+              siteno                 = siteID,
+              pctid                  = currentClassification,
+              pctname                = currentClassificationDescription,
+              pctassignmentcategory  = PCTAssignmentCategory,
+              surveyname             = surveyName,
+              lat                    = decimalLatitude,
+              long                   = decimalLongitude,
+              replicatenumber        = visitNo,
+              elevation              = ElevationInMeters,
+              rainfall               = annualRainfallInMillimeters,
+              temp                   = annualMeanTemperatureInCelsius
+            )
+          
+          dbExecute(con,"DELETE FROM fsdata")
+          
           dbWriteTable(con, "fsdata",fjs_df, overwrite=F, append=T)
 
 
-
+          ## PCT DATA UPDATES OTHER
 
           ## pct profile data
           progress$set(message = "Loading classification data", value = 0.25)
@@ -1472,7 +1531,7 @@ shinyServer(function(input, output,session) {
           showNotification(paste0("Loading classification data"),duration = 20,type = c("message"))
           
           # Liz added TEC Comments below 1 Dec 2023 then removed as didnt work. Trying again 2 December - worked so left in :) It worked after I added a TEC_Comments table to the pctprofile table in the sqlite file)
-          pctjson <-fromJSON("https://data.bionet.nsw.gov.au/biosvcapp/odata/VegetationClassification_PCTDefinition?$select=PCTID,PCTName,vegetationDescription,classificationConfidenceLevel,numberOfPrimaryReplicates,numberOfSecondaryReplicates,vegetationFormation,vegetationClass,IBRASubregion,maximumElevationInMeters,minimumElevationInMeters,medianElevationInMeters,maximumAnnualRainfallInMillimeters,minimumAnnualRainfallInMillimeters,medianAnnualRainfallInMillimeters,maximumAnnualMeanTemperatureInCelsius,minimumAnnualMeanTemperatureInCelsius,medianAnnualMeanTemperatureInCelsius,TECAssessed,stateTECFitStatus,TECComments,medianNativeSpeciesRichness")
+          pctjson <-fromJSON("https://data.bionet.nsw.gov.au/BioSvcApp/odata/VegetationClassification_PCTDefinition?$select=PCTID,PCTName,vegetationDescription,classificationConfidenceLevel,numberOfPrimaryReplicates,numberOfSecondaryReplicates,vegetationFormation,vegetationClass,IBRASubregion,maximumElevationInMeters,minimumElevationInMeters,medianElevationInMeters,maximumAnnualRainfallInMillimeters,minimumAnnualRainfallInMillimeters,medianAnnualRainfallInMillimeters,maximumAnnualMeanTemperatureInCelsius,minimumAnnualMeanTemperatureInCelsius,medianAnnualMeanTemperatureInCelsius,TECAssessed,stateTECFitStatus,TECComments,medianNativeSpeciesRichness")
 
 
           # Initialize a temporary in memory database and copy a data.frame into it
@@ -1514,7 +1573,7 @@ shinyServer(function(input, output,session) {
           ## pct tec data
           ## Liz - need to add ,TECComments to end of url string below. when web service has TEC_Comments added
           # Liz added TECComments 30 Nov 2023
-          pcttecjson <-fromJSON("https://data.bionet.nsw.gov.au/biosvcapp/odata/VegetationClassification_PCTDefinition?$select=PCTID,TECAssessed,stateTECProfileID,stateTECFitStatus,stateTECDegreeOfFit,countryTECProfileID,countryTECFitStatus,countryTECDegreeOfFit,TECComments")
+          pcttecjson <-fromJSON("https://data.bionet.nsw.gov.au/BioSvcApp/odata/VegetationClassification_PCTDefinition?$select=PCTID,TECAssessed,stateTECProfileID,stateTECFitStatus,stateTECDegreeOfFit,countryTECProfileID,countryTECFitStatus,countryTECDegreeOfFit,TECComments")
 
 
           # Initialize a temporary in memory database and copy a data.frame into it
@@ -1534,7 +1593,7 @@ shinyServer(function(input, output,session) {
           showNotification(paste0("Loading TEC data"),duration = 20,type = c("message"))
 
           ## tec data only
-          tecjson <-fromJSON("https://data.bionet.nsw.gov.au/biosvcapp/odata/ThreatenedBiodiversity_EcologicalCommunities?$select=profileID,TECName,stateConservation,countryConservation")
+          tecjson <-fromJSON("https://data.bionet.nsw.gov.au/BioSvcApp/odata/ThreatenedBiodiversity_EcologicalCommunities?$select=profileID,TECName,stateConservation,countryConservation")
 
 
           # Initialize a temporary in memory database and copy a data.frame into it
@@ -1550,27 +1609,82 @@ shinyServer(function(input, output,session) {
 
 
 
-          ## PCT SPP GF data only
-          progress$set(message = "Loading PCT Species growth forms data", value = 0.95)
-          showNotification(paste0("Loading PCT Species growth form data"),duration = 20,type = c("message"))
+          ## PCT SPP GF data only #Bill K code that as at December 2025 is limited the returned FS data to 5000 rows
+          # progress$set(message = "Loading PCT Species growth forms data", value = 0.95)
+          # showNotification(paste0("Loading PCT Species growth form data"),duration = 20,type = c("message"))
 
-          spgfjson <-fromJSON("https://data.bionet.nsw.gov.au/biosvcapp/odata/VegetationClassification_PCTGrowthForm?$select=PCTID,scientificName,medianCoverScore,speciesFrequency,primaryGrowthFormGroup")
+          # spgfjson <-fromJSON("https://data.bionet.nsw.gov.au/BioSvcApp/odata/VegetationClassification_PCTGrowthForm?$select=PCTID,scientificName,medianCoverScore,speciesFrequency,primaryGrowthFormGroup")
 
 
           # Initialize a temporary in memory database and copy a data.frame into it
           ##con <- dbConnect(RSQLite::SQLite(), dbname="data/pctdatadbtest.sqlite")
+          # dbExecute(con,"DELETE FROM pctspeciesgrowthforms")
+
+
+          # SPGFdt_df<-as.data.frame(spgfjson$value, stringsAsFactors = F)
+
+          # names(SPGFdt_df)[names(SPGFdt_df) == "PCTID"] <- "PCT_ID"
+          # names(SPGFdt_df)[names(SPGFdt_df) == "scientificName"] <- "Scientific_name"
+          # names(SPGFdt_df)[names(SPGFdt_df) == "medianCoverScore"] <- "Group_score_median"
+          # names(SPGFdt_df)[names(SPGFdt_df) == "speciesFrequency"] <- "Group_frequency"
+          # names(SPGFdt_df)[names(SPGFdt_df) == "primaryGrowthFormGroup"] <- "GrowthFormGroup"
+
+
+          ## PCT SPP GF data only #EM code, using Lachlan Petit's code for FS above provided to EM to get around the 5000 row limit problem encountered now
+          progress$set(message = "Loading PCT Species growth forms data", value = 0.95)
+          showNotification(paste0("Loading PCT Species growth form data"),duration = 20,type = c("message"))
+         
+           # Build the initial URL 
+          spgf_base_url <- "https://data.bionet.nsw.gov.au/BioSvcApp/odata/VegetationClassification_PCTGrowthForm"
+          spgf_select <- "$select=PCTID,scientificName,medianCoverScore,speciesFrequency,primaryGrowthFormGroup"
+          # Optional: request larger pages to reduce calls (server decides max)
+          #top <- "$top=5000"
+          
+          spgf_start_url <- paste0(spgf_base_url, "?", spgf_select)
+          
+          # Helper: fetch all pages using @odata.nextLink ---
+          fetch_odata_all <- function(url) {
+            pages <- list()
+            next_url <- url
+            page_idx <- 0
+            while (!is.null(next_url) && nzchar(next_url)) {
+              page_idx <- page_idx + 1
+              message(sprintf("Fetching page %d: %s", page_idx, next_url))
+              # Pull JSON (flatten handles nested objects if present)
+              res <- jsonlite::fromJSON(next_url, flatten = TRUE)
+              # Extract the 'value' array into a data.frame
+              df <- as.data.frame(res$value, stringsAsFactors = FALSE)
+              pages[[length(pages) + 1]] <- df
+              # Move to next page if provided
+              # Access the literal JSON property name "@odata.nextLink"
+              next_url <- res[["@odata.nextLink"]]
+              # If you want to be kind to the API, add a small pause:
+              Sys.sleep(0.2)
+            }
+            # Combine all pages into a single data.frame
+            if (length(pages) == 0) {
+              return(data.frame())
+            } else {
+              return(dplyr::bind_rows(pages))
+            }
+          }
+          
+          # Fetch all data pages ---
+          SPGFdt_df <- fetch_odata_all(spgf_start_url)
+          
+          # Rename columns to your schema ---
+          # (Using dplyr::rename for readability)
+          SPGFdt_df <- SPGFdt_df %>%
+            rename(
+              PCT_ID                = PCTID,
+              Scientific_name       = scientificName,
+              Group_score_median    = medianCoverScore,
+              Group_frequency       = speciesFrequency,
+              GrowthFormGroup       = primaryGrowthFormGroup,
+            )
+          
           dbExecute(con,"DELETE FROM pctspeciesgrowthforms")
-
-
-          SPGFdt_df<-as.data.frame(spgfjson$value, stringsAsFactors = F)
-
-          names(SPGFdt_df)[names(SPGFdt_df) == "PCTID"] <- "PCT_ID"
-          names(SPGFdt_df)[names(SPGFdt_df) == "scientificName"] <- "Scientific_name"
-          names(SPGFdt_df)[names(SPGFdt_df) == "medianCoverScore"] <- "Group_score_median"
-          names(SPGFdt_df)[names(SPGFdt_df) == "speciesFrequency"] <- "Group_frequency"
-          names(SPGFdt_df)[names(SPGFdt_df) == "primaryGrowthFormGroup"] <- "GrowthFormGroup"
-
-
+          
           dbWriteTable(con, "pctspeciesgrowthforms",SPGFdt_df, overwrite=F, append=T)
 
 
